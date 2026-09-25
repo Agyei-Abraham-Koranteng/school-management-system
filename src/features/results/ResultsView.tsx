@@ -25,7 +25,7 @@ import { useSchool } from '../../context/SchoolContext';
 import { academicEngine } from '../../services/academics/academicEngine';
 
 export const ResultsView: React.FC = () => {
-  const { activeStudent, settings, courseAttempts, registrations, courses } = useSchool();
+  const { activeStudent, settings, courseAttempts, registrations, courses, carryovers } = useSchool();
 
   // Dynamic Results History derived from active student's actual enrollment
   const studentResultsHistory = React.useMemo(() => {

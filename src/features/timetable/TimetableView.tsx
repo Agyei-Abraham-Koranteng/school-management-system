@@ -63,6 +63,8 @@ export const TimetableView: React.FC = () => {
       courseCode: string;
       courseTitle: string;
       time: string;
+      startTime: string;
+      endTime: string;
       room: string;
       lecturer: string;
     }> = [];
@@ -82,6 +84,8 @@ export const TimetableView: React.FC = () => {
         courseCode: c.code,
         courseTitle: c.title,
         time: `${slot.start} - ${slot.end}`,
+        startTime: slot.start,
+        endTime: slot.end,
         room,
         lecturer
       });

@@ -41,6 +41,8 @@ export interface UserProfile {
   role: UserRole;
   avatarUrl?: string;
   phone?: string;
+  name?: string;
+  department?: string;
 }
 
 export interface StudentRecord {
@@ -65,6 +67,8 @@ export interface StudentRecord {
   admissionDate: string;
   academicStanding: 'Good Standing' | 'Academic Probation' | 'Dean\'s List' | 'Eligible for Graduation';
   applicantEmail?: string;
+  avatarUrl?: string;
+  enrollmentDate?: string;
 }
 
 export interface Course {
@@ -79,6 +83,7 @@ export interface Course {
   department: string;
   prerequisites?: string[]; // course codes e.g. ['IT201']
   lecturerName?: string;
+  assignedLecturerId?: string;
   capacity?: number;
   enrolledCount?: number;
 }
@@ -231,6 +236,8 @@ export interface StaffMember {
   assignedCourses: string[]; // course codes e.g. ["IT301", "IT201"]
   qualification: string;
   officeLocation: string;
+  title?: string;
+  designation?: string;
 }
 
 // 2. Faculty & Department Management
@@ -482,6 +489,8 @@ export interface StudentProfileExtra {
 // 6. Carryovers & Retake Attempts
 export interface CourseAttempt {
   id: string;
+  studentId?: string;
+  courseId?: string;
   courseCode: string;
   courseTitle: string;
   credits: number;
@@ -489,6 +498,7 @@ export interface CourseAttempt {
   semester: string;
   attemptNumber: number;
   score: number;
+  totalScore?: number;
   grade: string;
   gradePoint: number;
   status: 'passed' | 'failed';

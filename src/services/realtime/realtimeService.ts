@@ -25,6 +25,7 @@ export type RealtimeTable =
   | 'attendance_sessions'
   | 'attendance_records'
   | 'student_ledgers'
+  | 'financial_ledgers'
   | 'financial_transactions'
   | 'graduation_clearances'
   | 'system_documents'
@@ -160,7 +161,7 @@ class RealtimeSyncManager {
   /**
    * Synthesized Web Audio chime for real-time auditory notifications.
    */
-  public playChime(type: 'submission' | 'approval' = 'submission'): void {
+  public playChime(type: 'submission' | 'approval' | 'payment' = 'submission'): void {
     if (typeof window === 'undefined') return;
     try {
       const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
@@ -168,7 +169,21 @@ class RealtimeSyncManager {
       const ctx = new AudioContextClass();
       const now = ctx.currentTime;
 
-      if (type === 'submission') {
+      if (type === 'payment') {
+        // High-pitched cheerful payment chime
+        [587.33, 880, 1174.66].forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + i * 0.07);
+          gain.gain.setValueAtTime(0.15, now + i * 0.07);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.3);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + i * 0.07);
+          osc.stop(now + i * 0.07 + 0.3);
+        });
+      } else if (type === 'submission') {
         // Double pleasant notification beep (Admin receiving applicant)
         const osc1 = ctx.createOscillator();
         const gain1 = ctx.createGain();

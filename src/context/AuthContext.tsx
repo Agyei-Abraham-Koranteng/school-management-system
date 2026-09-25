@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { UserRole, UserProfile, StudentRecord, ApplicantAccount, SystemUser } from '../types';
+import { UserRole, UserProfile, StudentRecord, ApplicantAccount, SystemUser, AdmissionApplication, ApplicationStatus } from '../types';
 import { SAMPLE_STUDENT, SAMPLE_ALL_STUDENTS, SAMPLE_USERS } from '../data/mockData';
 
 export interface LoginResult {
@@ -427,7 +427,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             name: `${s.firstName} ${s.lastName}`,
             email: s.email,
             role: 'student',
-            status: s.status === 'suspended' ? 'suspended' : s.status === 'inactive' ? 'inactive' : 'active',
+            status: s.status === 'suspended' ? 'suspended' : s.status !== 'active' ? 'inactive' : 'active',
             department: s.department || s.programName,
             lastLogin: 'Recently',
             createdAt: s.admissionDate || '2026-01-01',
@@ -441,7 +441,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             name: `${s.firstName} ${s.lastName}`,
             email: s.applicantEmail,
             role: 'student',
-            status: s.status === 'suspended' ? 'suspended' : s.status === 'inactive' ? 'inactive' : 'active',
+            status: s.status === 'suspended' ? 'suspended' : s.status !== 'active' ? 'inactive' : 'active',
             department: s.department || s.programName,
             lastLogin: 'Recently',
             createdAt: s.admissionDate || '2026-01-01',
@@ -585,7 +585,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           name: `${foundStudent.firstName} ${foundStudent.lastName}`,
           email: foundStudent.email,
           role: 'student',
-          status: foundStudent.status === 'suspended' ? 'suspended' : foundStudent.status === 'inactive' ? 'inactive' : 'active',
+          status: foundStudent.status === 'suspended' ? 'suspended' : foundStudent.status !== 'active' ? 'inactive' : 'active',
           department: foundStudent.department || foundStudent.programName,
           lastLogin: 'Today',
           createdAt: foundStudent.admissionDate || '2026-01-01',
