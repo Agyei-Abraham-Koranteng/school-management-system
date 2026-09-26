@@ -885,8 +885,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch {}
     }
 
+    const defaultTab = (userRole === 'super_admin' || userRole === 'admin_registrar')
+      ? 'admin-dashboard'
+      : userRole === 'lecturer'
+      ? 'lecturer-dashboard'
+      : userRole === 'finance_officer'
+      ? 'finance-dashboard'
+      : 'dashboard';
+
     try {
       localStorage.setItem('premier_auth_user', JSON.stringify(userProfile));
+      localStorage.setItem('premier_active_tab', defaultTab);
       localStorage.removeItem('premier_active_applicant');
     } catch {}
 
@@ -1065,6 +1074,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const switchRole = (newRole: UserRole) => {
     if (newRole === role) return;
     setRole(newRole);
+
+    const defaultTab = (newRole === 'super_admin' || newRole === 'admin_registrar')
+      ? 'admin-dashboard'
+      : newRole === 'lecturer'
+      ? 'lecturer-dashboard'
+      : newRole === 'finance_officer'
+      ? 'finance-dashboard'
+      : 'dashboard';
+
+    try {
+      localStorage.setItem('premier_active_tab', defaultTab);
+    } catch {}
 
     if (newRole === 'student') {
       let targetStudent: StudentRecord = SAMPLE_STUDENT;

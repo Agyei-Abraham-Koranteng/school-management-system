@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { UserRole } from '../../types';
+import { getDefaultTabForRole } from '../../App';
 
 interface SidebarProps {
   activeTab: string;
@@ -232,6 +233,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               const targetRole = e.target.value as UserRole;
               if (targetRole !== role) {
                 switchRole(targetRole);
+                onSelectTab(getDefaultTabForRole(targetRole));
               }
             }}
             className="w-full text-xs font-semibold py-1.5 px-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"

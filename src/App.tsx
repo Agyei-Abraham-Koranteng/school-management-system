@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from './context/AuthContext';
 import { useSchool } from './context/SchoolContext';
 import { Sidebar } from './components/layout/Sidebar';
@@ -71,13 +71,11 @@ export const ROLE_ALLOWED_TABS: Record<string, string[]> = {
     'attendance', 'documents', 'notifications'
   ],
   super_admin: [
-    'dashboard', 'student-profile', 'academic-journey', 'registration',
-    'results', 'transcripts', 'timetable', 'finance', 'attendance',
-    'documents', 'notifications', 'lecturer-dashboard', 'finance-dashboard',
     'admin-dashboard', 'admin-public-cms', 'admin-admissions', 'admin-students',
     'admin-academic-structure', 'admin-staff', 'admin-users',
     'admin-progression', 'admin-warnings', 'graduation', 'reports',
-    'transcripts', 'audit-logs', 'system-settings'
+    'transcripts', 'attendance', 'documents', 'notifications',
+    'audit-logs', 'system-settings', 'lecturer-dashboard', 'finance-dashboard'
   ]
 };
 
@@ -133,7 +131,15 @@ export const getDefaultTabForRole = (userRole: string): string => {
 };
 
 export const resolveInitialTab = (userRole: string): string => {
+  const defaultTab = getDefaultTabForRole(userRole);
   const allowed = ROLE_ALLOWED_TABS[userRole] || ROLE_ALLOWED_TABS.student;
+
+  const isValidForRole = (tab: string): boolean => {
+    if (!allowed.includes(tab)) return false;
+    if (userRole !== 'student' && tab === 'dashboard') return false;
+    if (userRole === 'student' && (tab === 'admin-dashboard' || tab === 'lecturer-dashboard' || tab === 'finance-dashboard')) return false;
+    return true;
+  };
 
   // 1. Inspect URL query param ?tab=...
   try {
@@ -141,7 +147,7 @@ export const resolveInitialTab = (userRole: string): string => {
     const rawUrlTab = searchParams.get('tab');
     if (rawUrlTab) {
       const normalized = normalizeTabAlias(rawUrlTab);
-      if (allowed.includes(normalized)) {
+      if (isValidForRole(normalized)) {
         return normalized;
       }
     }
@@ -152,7 +158,7 @@ export const resolveInitialTab = (userRole: string): string => {
     const rawHash = window.location.hash.replace('#', '');
     if (rawHash) {
       const normalized = normalizeTabAlias(rawHash);
-      if (allowed.includes(normalized)) {
+      if (isValidForRole(normalized)) {
         return normalized;
       }
     }
@@ -163,13 +169,13 @@ export const resolveInitialTab = (userRole: string): string => {
     const saved = localStorage.getItem('premier_active_tab');
     if (saved) {
       const normalized = normalizeTabAlias(saved);
-      if (allowed.includes(normalized)) {
+      if (isValidForRole(normalized)) {
         return normalized;
       }
     }
   } catch {}
 
-  return getDefaultTabForRole(userRole);
+  return defaultTab;
 };
 
 export default function App() {
@@ -271,10 +277,22 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // When role changes, only re-route if current activeTab is NOT authorized for the new role!
+  // When role changes, ensure user is immediately transitioned to that role's default workspace
+  const prevRoleRef = useRef<string>(role);
   useEffect(() => {
+    if (prevRoleRef.current !== role) {
+      prevRoleRef.current = role;
+      const defaultTab = getDefaultTabForRole(role);
+      handleSelectTab(defaultTab);
+      return;
+    }
+
     const allowed = ROLE_ALLOWED_TABS[role] || ROLE_ALLOWED_TABS.student;
-    if (!allowed.includes(activeTab)) {
+    if (
+      !allowed.includes(activeTab) || 
+      (role !== 'student' && activeTab === 'dashboard') || 
+      (role === 'student' && (activeTab === 'admin-dashboard' || activeTab === 'lecturer-dashboard' || activeTab === 'finance-dashboard'))
+    ) {
       const defaultTab = getDefaultTabForRole(role);
       handleSelectTab(defaultTab);
     }
@@ -374,56 +392,56 @@ export default function App() {
             </div>
           ) : (
             <>
-              {/* STUDENT VIEWS */}
-              {activeTab === 'dashboard' && effectiveStudent && (
+              {/* STUDENT VIEWS - strictly restricted to student role */}
+              {role === 'student' && activeTab === 'dashboard' && effectiveStudent && (
                 <StudentDashboard student={effectiveStudent} onNavigate={handleSelectTab} />
               )}
 
-          {activeTab === 'student-profile' && (
-            <StudentIDAndProfileView />
-          )}
+              {role === 'student' && activeTab === 'student-profile' && (
+                <StudentIDAndProfileView />
+              )}
 
-          {activeTab === 'academic-journey' && effectiveStudent && (
-            <div className="max-w-4xl mx-auto space-y-6">
-              <AcademicJourney
-                currentLevel={effectiveStudent.currentLevel}
-                cgpa={effectiveStudent.currentCgpa}
-                creditsEarned={effectiveStudent.creditsEarned}
-                requiredCredits={effectiveStudent.requiredCredits}
-              />
-            </div>
-          )}
+              {role === 'student' && activeTab === 'academic-journey' && effectiveStudent && (
+                <div className="max-w-4xl mx-auto space-y-6">
+                  <AcademicJourney
+                    currentLevel={effectiveStudent.currentLevel}
+                    cgpa={effectiveStudent.currentCgpa}
+                    creditsEarned={effectiveStudent.creditsEarned}
+                    requiredCredits={effectiveStudent.requiredCredits}
+                  />
+                </div>
+              )}
 
-          {activeTab === 'registration' && <CourseRegistration />}
+              {role === 'student' && activeTab === 'registration' && <CourseRegistration />}
 
-          {activeTab === 'results' && <ResultsView />}
+              {activeTab === 'results' && <ResultsView />}
 
-          {activeTab === 'transcripts' && <TranscriptsAndSlipsView />}
+              {activeTab === 'transcripts' && <TranscriptsAndSlipsView />}
 
-          {activeTab === 'timetable' && <TimetableView />}
+              {activeTab === 'timetable' && <TimetableView />}
 
-          {activeTab === 'finance' && <FinanceView />}
+              {activeTab === 'finance' && <FinanceView />}
 
-          {activeTab === 'attendance' && <AttendanceView />}
+              {activeTab === 'attendance' && <AttendanceView />}
 
-          {activeTab === 'documents' && <DocumentsView />}
+              {activeTab === 'documents' && <DocumentsView />}
 
-          {activeTab === 'notifications' && <AnnouncementsView />}
+              {activeTab === 'notifications' && <AnnouncementsView />}
 
-          {/* FACULTY / LECTURER VIEWS */}
-          {activeTab === 'lecturer-dashboard' && (
-            <LecturerDashboard onNavigate={handleSelectTab} />
-          )}
+              {/* FACULTY / LECTURER VIEWS */}
+              {activeTab === 'lecturer-dashboard' && (
+                <LecturerDashboard onNavigate={handleSelectTab} />
+              )}
 
-          {/* FINANCE OFFICER VIEWS */}
-          {activeTab === 'finance-dashboard' && (
-            <FinanceDashboard onNavigate={handleSelectTab} />
-          )}
+              {/* FINANCE OFFICER VIEWS */}
+              {activeTab === 'finance-dashboard' && (
+                <FinanceDashboard onNavigate={handleSelectTab} />
+              )}
 
-          {/* ADMIN / REGISTRAR VIEWS */}
-          {activeTab === 'admin-dashboard' && (
-            <AdminDashboard onNavigate={handleSelectTab} />
-          )}
+              {/* ADMIN / REGISTRAR / SUPER ADMIN VIEWS */}
+              {(activeTab === 'admin-dashboard' || (role !== 'student' && activeTab === 'dashboard')) && (
+                <AdminDashboard onNavigate={handleSelectTab} />
+              )}
 
           {activeTab === 'admin-admissions' && (
             <AdmissionsView />
