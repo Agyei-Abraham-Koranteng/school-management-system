@@ -66,9 +66,9 @@ export const ROLE_ALLOWED_TABS: Record<string, string[]> = {
   ],
   admin_registrar: [
     'admin-dashboard', 'admin-public-cms', 'admin-admissions', 'admin-students',
-    'admin-academic-structure', 'admin-staff', 'admin-users', 'admin-progression',
+    'admin-academic-structure', 'admin-staff', 'admin-progression',
     'admin-warnings', 'graduation', 'reports', 'transcripts',
-    'attendance', 'documents', 'notifications', 'audit-logs', 'system-settings'
+    'attendance', 'documents', 'notifications'
   ],
   super_admin: [
     'dashboard', 'student-profile', 'academic-journey', 'registration',

@@ -80,7 +80,38 @@ export const Sidebar: React.FC<SidebarProps> = ({
         ]
       }
     ];
-  } else if (role === 'admin_registrar' || role === 'super_admin') {
+  } else if (role === 'admin_registrar') {
+    sections = [
+      {
+        title: 'Institutional Administration',
+        items: [
+          { id: 'admin-dashboard', label: 'Executive Overview', icon: LayoutDashboard },
+          { id: 'admin-public-cms', label: 'Public Website CMS', icon: Globe, badge: 'Live' },
+          { id: 'admin-admissions', label: 'Admissions Directorate', icon: UserPlus, badge: 'New' },
+          { id: 'admin-students', label: 'Students Directory', icon: Users },
+          { id: 'admin-academic-structure', label: 'Academic Structure', icon: Layers },
+          { id: 'admin-staff', label: 'Staff & Faculty', icon: UserCheck }
+        ]
+      },
+      {
+        title: 'Academic Operations',
+        items: [
+          { id: 'admin-progression', label: 'Progression Engine', icon: TrendingUp, badge: 'Audit' },
+          { id: 'admin-warnings', label: 'Warnings & Carryovers', icon: FileWarning },
+          { id: 'attendance', label: 'Class Attendance', icon: ClipboardCheck },
+          { id: 'graduation', label: 'Graduation Clearance', icon: Award },
+          { id: 'documents', label: 'Document Center', icon: FolderLock }
+        ]
+      },
+      {
+        title: 'Governance & Analytics',
+        items: [
+          { id: 'notifications', label: 'Communications', icon: Bell },
+          { id: 'reports', label: 'Institutional Reports', icon: BarChart3 }
+        ]
+      }
+    ];
+  } else if (role === 'super_admin') {
     sections = [
       {
         title: 'Institutional Administration',

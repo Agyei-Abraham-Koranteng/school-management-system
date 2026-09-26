@@ -15,13 +15,16 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { useSchool } from '../../context/SchoolContext';
+import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { GraduationCandidate } from '../../types';
 import { QrCode } from '../../components/shared/QrCode';
 
 export const GraduationManagementView: React.FC = () => {
   const { graduationCandidates, updateGraduationStatus, settings, logAction } = useSchool();
+  const { role } = useAuth();
   const { showToast } = useToast();
+  const canConfer = role === 'admin_registrar' || role === 'super_admin';
 
   const [selectedCandidate, setSelectedCandidate] = useState<GraduationCandidate | null>(null);
   const [viewCertificateCandidate, setViewCertificateCandidate] = useState<GraduationCandidate | null>(null);
@@ -160,13 +163,19 @@ export const GraduationManagementView: React.FC = () => {
                 ) : (
                   <div className="w-full space-y-2">
                     {cleared ? (
-                      <button
-                        onClick={() => handleApproveGraduation(cand)}
-                        className="w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer"
-                      >
-                        <GraduationCap className="w-4 h-4" />
-                        Confer Degree & Issue Certificate
-                      </button>
+                      canConfer ? (
+                        <button
+                          onClick={() => handleApproveGraduation(cand)}
+                          className="w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer"
+                        >
+                          <GraduationCap className="w-4 h-4" />
+                          Confer Degree & Issue Certificate
+                        </button>
+                      ) : (
+                        <div className="w-full py-2 px-3 rounded-xl text-center text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
+                          Financial Clearance Verified · Pending Registrar Conferral
+                        </div>
+                      )
                     ) : (
                       <button
                         onClick={() => setViewDeficitCandidate(cand)}

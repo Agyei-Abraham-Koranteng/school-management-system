@@ -16,27 +16,37 @@ import {
 } from 'lucide-react';
 import { AnimatedCounter } from '../../components/shared/AnimatedCounter';
 import { useSchool } from '../../context/SchoolContext';
+import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { paymentService, PaymentGatewayType, WebhookEventPayload } from '../../services/payments/paymentService';
 
 export const FinanceView: React.FC = () => {
-  const { settings, addDocument, logAction, activeStudent, recordPayment, financialLedgers } = useSchool();
+  const { settings, addDocument, logAction, activeStudent, recordPayment, financialLedgers, students } = useSchool();
+  const { role } = useAuth();
   const { showToast } = useToast();
+  const isFinanceOfficerOrAdmin = role === 'finance_officer' || role === 'super_admin';
+
+  const [selectedStudentId, setSelectedStudentId] = useState<string>(activeStudent.id || activeStudent.studentId);
+
+  const targetStudent = useMemo(() => {
+    if (!isFinanceOfficerOrAdmin) return activeStudent;
+    return students.find(s => s.id === selectedStudentId || s.studentId === selectedStudentId) || activeStudent;
+  }, [isFinanceOfficerOrAdmin, selectedStudentId, students, activeStudent]);
 
   // Dynamic Ledger State derived directly from SchoolContext single source of truth
   const studentLedger = useMemo(() => {
-    const raw = financialLedgers[activeStudent.studentId] || financialLedgers[activeStudent.id];
+    const raw = financialLedgers[targetStudent.studentId] || financialLedgers[targetStudent.id];
     if (raw) return raw;
-    const billed = activeStudent.currentLevel === '100' ? 4500 : activeStudent.currentLevel === '200' ? 5000 : 5800;
+    const billed = targetStudent.currentLevel === '100' ? 4500 : targetStudent.currentLevel === '200' ? 5000 : 5800;
     return {
-      studentId: activeStudent.studentId,
+      studentId: targetStudent.studentId,
       totalBilled: billed,
       totalPaid: 0,
       balance: billed,
       isCleared: false,
       transactions: []
     };
-  }, [financialLedgers, activeStudent.studentId, activeStudent.id, activeStudent.currentLevel]);
+  }, [financialLedgers, targetStudent.studentId, targetStudent.id, targetStudent.currentLevel]);
 
   const totalBilled = studentLedger.totalBilled;
   const totalPaid = studentLedger.totalPaid;
@@ -69,11 +79,11 @@ export const FinanceView: React.FC = () => {
     setIsProcessing(true);
     try {
       const initResponse = await paymentService.initiatePayment({
-        studentId: activeStudent.id,
-        studentName: `${activeStudent.firstName} ${activeStudent.lastName}`,
-        studentMatric: activeStudent.studentId,
-        email: activeStudent.email,
-        phone: activeStudent.phone,
+        studentId: targetStudent.id,
+        studentName: `${targetStudent.firstName} ${targetStudent.lastName}`,
+        studentMatric: targetStudent.studentId,
+        email: targetStudent.email,
+        phone: targetStudent.phone,
         amount: paymentAmount,
         currency: 'GHS',
         feeDescription: selectedFeeType,
@@ -108,9 +118,9 @@ export const FinanceView: React.FC = () => {
         if (result.success && result.status === 'ledger_updated') {
           // Central institutional state record
           recordPayment({
-            studentId: activeStudent.id,
-            studentName: `${activeStudent.firstName} ${activeStudent.lastName}`,
-            matricNo: activeStudent.studentId,
+            studentId: targetStudent.id,
+            studentName: `${targetStudent.firstName} ${targetStudent.lastName}`,
+            matricNo: targetStudent.studentId,
             amount: paymentAmount,
             description: selectedFeeType,
             gateway: selectedGateway,
@@ -121,7 +131,7 @@ export const FinanceView: React.FC = () => {
             'VERIFIED_ONLINE_PAYMENT',
             'StudentLedger',
             `Reconciled online payment of GHS ${paymentAmount.toLocaleString()} via ${selectedGateway}. Reference: ${initResponse.reference}`,
-            activeStudent.id
+            targetStudent.id
           );
 
           showToast(`Payment Verified! Official receipt generated and archived.`, 'success');
@@ -214,6 +224,36 @@ export const FinanceView: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Bursary Directorate Student Account Selector */}
+      {isFinanceOfficerOrAdmin && (
+        <div className="p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
+              PU
+            </div>
+            <div>
+              <p className="text-xs font-bold text-neutral-900 dark:text-neutral-100">
+                Bursary Directorate · Student Ledger Inspector
+              </p>
+              <p className="text-[11px] text-neutral-500">
+                Viewing ledger for <strong className="text-neutral-900 dark:text-neutral-100">{targetStudent.firstName} {targetStudent.lastName}</strong> ({targetStudent.studentId}).
+              </p>
+            </div>
+          </div>
+          <select
+            value={selectedStudentId}
+            onChange={(e) => setSelectedStudentId(e.target.value)}
+            className="text-xs font-semibold py-2 px-3 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+          >
+            {students.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.firstName} {s.lastName} ({s.studentId}) - Level {s.currentLevel}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Financial Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-5">

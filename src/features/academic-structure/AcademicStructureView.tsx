@@ -21,6 +21,7 @@ import {
   Filter
 } from 'lucide-react';
 import { useSchool } from '../../context/SchoolContext';
+import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { Faculty, Department, AcademicProgram, Course, AcademicLevel, CourseType } from '../../types';
 
@@ -44,6 +45,8 @@ export const AcademicStructureView: React.FC = () => {
     deleteCourse,
     students
   } = useSchool();
+  const { role } = useAuth();
+  const canManage = role === 'admin_registrar' || role === 'super_admin';
 
   const { showToast } = useToast();
 
@@ -390,49 +393,56 @@ export const AcademicStructureView: React.FC = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2">
-          {activeTab === 'faculties' && (
-            <button
-              onClick={() => setIsFacModalOpen(true)}
-              className="inline-flex items-center gap-2 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors"
-            >
-              <Plus className="w-4 h-4" /> Add Faculty
-            </button>
-          )}
-          {activeTab === 'departments' && (
-            <button
-              onClick={() => {
-                setDeptForm(prev => ({ ...prev, facultyId: faculties[0]?.id || '' }));
-                setIsDeptModalOpen(true);
-              }}
-              className="inline-flex items-center gap-2 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors"
-            >
-              <Plus className="w-4 h-4" /> Add Department
-            </button>
-          )}
-          {activeTab === 'programs' && (
-            <button
-              onClick={() => {
-                setProgForm(prev => ({ ...prev, departmentId: departments[0]?.id || '' }));
-                setIsProgModalOpen(true);
-              }}
-              className="inline-flex items-center gap-2 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors"
-            >
-              <Plus className="w-4 h-4" /> Add Degree Program
-            </button>
-          )}
-          {activeTab === 'courses' && (
-            <button
-              onClick={() => {
-                setCourseForm(prev => ({ ...prev, department: departments[0]?.name || '' }));
-                setIsCourseModalOpen(true);
-              }}
-              className="inline-flex items-center gap-2 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors"
-            >
-              <Plus className="w-4 h-4" /> Add Course Unit
-            </button>
-          )}
-        </div>
+        {canManage ? (
+          <div className="flex flex-wrap items-center gap-2">
+            {activeTab === 'faculties' && (
+              <button
+                onClick={() => setIsFacModalOpen(true)}
+                className="inline-flex items-center gap-2 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors"
+              >
+                <Plus className="w-4 h-4" /> Add Faculty
+              </button>
+            )}
+            {activeTab === 'departments' && (
+              <button
+                onClick={() => {
+                  setDeptForm(prev => ({ ...prev, facultyId: faculties[0]?.id || '' }));
+                  setIsDeptModalOpen(true);
+                }}
+                className="inline-flex items-center gap-2 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors"
+              >
+                <Plus className="w-4 h-4" /> Add Department
+              </button>
+            )}
+            {activeTab === 'programs' && (
+              <button
+                onClick={() => {
+                  setProgForm(prev => ({ ...prev, departmentId: departments[0]?.id || '' }));
+                  setIsProgModalOpen(true);
+                }}
+                className="inline-flex items-center gap-2 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors"
+              >
+                <Plus className="w-4 h-4" /> Add Degree Program
+              </button>
+            )}
+            {activeTab === 'courses' && (
+              <button
+                onClick={() => {
+                  setCourseForm(prev => ({ ...prev, department: departments[0]?.name || '' }));
+                  setIsCourseModalOpen(true);
+                }}
+                className="inline-flex items-center gap-2 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors"
+              >
+                <Plus className="w-4 h-4" /> Add Course Unit
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 text-xs font-medium border border-neutral-200/60 dark:border-neutral-700/60">
+            <span className="w-2 h-2 rounded-full bg-indigo-500" />
+            Curriculum Catalog (Read-Only)
+          </div>
+        )}
       </div>
 
       {/* Real-Time Filter & Search Toolbar */}
@@ -536,20 +546,24 @@ export const AcademicStructureView: React.FC = () => {
                       {fac.code}
                     </span>
                     <div className="flex items-center gap-1.5">
-                      <button
-                        onClick={() => setEditingFaculty(fac)}
-                        className="p-1 text-neutral-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                        title="Edit Faculty"
-                      >
-                        <Edit3 className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => triggerDelete('faculty', fac.id, `${fac.name} (${fac.code})`)}
-                        className="p-1 text-neutral-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                        title="Delete Faculty"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      {canManage && (
+                        <>
+                          <button
+                            onClick={() => setEditingFaculty(fac)}
+                            className="p-1 text-neutral-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                            title="Edit Faculty"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => triggerDelete('faculty', fac.id, `${fac.name} (${fac.code})`)}
+                            className="p-1 text-neutral-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                            title="Delete Faculty"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </>
+                      )}
                       <span className="text-[10px] font-bold text-emerald-600 uppercase bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md ml-1">
                         Active
                       </span>
@@ -603,20 +617,24 @@ export const AcademicStructureView: React.FC = () => {
                     </span>
                     <div className="flex items-center gap-2">
                       <span className="text-[11px] font-medium text-neutral-400 truncate max-w-[150px]">{dept.facultyName}</span>
-                      <button
-                        onClick={() => setEditingDepartment(dept)}
-                        className="p-1 text-neutral-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                        title="Edit Department"
-                      >
-                        <Edit3 className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => triggerDelete('department', dept.id, `${dept.name} (${dept.code})`)}
-                        className="p-1 text-neutral-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                        title="Delete Department"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      {canManage && (
+                        <>
+                          <button
+                            onClick={() => setEditingDepartment(dept)}
+                            className="p-1 text-neutral-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                            title="Edit Department"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => triggerDelete('department', dept.id, `${dept.name} (${dept.code})`)}
+                            className="p-1 text-neutral-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                            title="Delete Department"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                   <div>
@@ -664,20 +682,24 @@ export const AcademicStructureView: React.FC = () => {
                   </span>
                   <div className="flex items-center gap-1.5">
                     <span className="text-[11px] font-semibold text-neutral-500">{prog.durationYears} Years</span>
-                    <button
-                      onClick={() => setEditingProgram(prog)}
-                      className="p-1 text-neutral-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                      title="Edit Program"
-                    >
-                      <Edit3 className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => triggerDelete('program', prog.id, `${prog.name} (${prog.code})`)}
-                      className="p-1 text-neutral-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                      title="Delete Program"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    {canManage && (
+                      <>
+                        <button
+                          onClick={() => setEditingProgram(prog)}
+                          className="p-1 text-neutral-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                          title="Edit Program"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => triggerDelete('program', prog.id, `${prog.name} (${prog.code})`)}
+                          className="p-1 text-neutral-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                          title="Delete Program"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
                 <div>
@@ -771,22 +793,26 @@ export const AcademicStructureView: React.FC = () => {
                       {course.lecturerName || "To be assigned"}
                     </td>
                     <td className="py-3 px-4 text-right">
-                      <div className="inline-flex items-center gap-1">
-                        <button
-                          onClick={() => setEditingCourse(course)}
-                          className="p-1.5 text-neutral-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                          title="Edit Course"
-                        >
-                          <Edit3 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => triggerDelete('course', course.id, `${course.code}: ${course.title}`)}
-                          className="p-1.5 text-neutral-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                          title="Delete Course"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
+                      {canManage ? (
+                        <div className="inline-flex items-center gap-1">
+                          <button
+                            onClick={() => setEditingCourse(course)}
+                            className="p-1.5 text-neutral-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                            title="Edit Course"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => triggerDelete('course', course.id, `${course.code}: ${course.title}`)}
+                            className="p-1.5 text-neutral-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                            title="Delete Course"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-[10px] font-semibold text-neutral-400 uppercase">Catalog</span>
+                      )}
                     </td>
                   </tr>
                 ))}
