@@ -32,9 +32,9 @@ export const StudentIDAndProfileView: React.FC = () => {
     emergencyName: studentProfileExtra.emergencyContact?.name || '',
     emergencyPhone: studentProfileExtra.emergencyContact?.phone || '',
     emergencyRelation: studentProfileExtra.emergencyContact?.relationship || '',
-    hall: studentProfileExtra.hallOfResidence || 'Jean Nelson Aka Hall',
-    roomNumber: studentProfileExtra.roomNumber || 'Block B, Rm 204',
-    address: studentProfileExtra.residentialAddress || '14 University Avenue, Legon, Accra'
+    hall: studentProfileExtra.hallOfResidence || 'Non-Resident',
+    roomNumber: studentProfileExtra.roomNumber || 'N/A',
+    address: studentProfileExtra.residentialAddress || ''
   });
 
   React.useEffect(() => {
@@ -46,9 +46,9 @@ export const StudentIDAndProfileView: React.FC = () => {
       emergencyName: studentProfileExtra.emergencyContact?.name || '',
       emergencyPhone: studentProfileExtra.emergencyContact?.phone || '',
       emergencyRelation: studentProfileExtra.emergencyContact?.relationship || '',
-      hall: studentProfileExtra.hallOfResidence || 'Jean Nelson Aka Hall',
-      roomNumber: studentProfileExtra.roomNumber || 'Block B, Rm 204',
-      address: studentProfileExtra.residentialAddress || '14 University Avenue, Legon, Accra'
+      hall: studentProfileExtra.hallOfResidence || 'Non-Resident',
+      roomNumber: studentProfileExtra.roomNumber || 'N/A',
+      address: studentProfileExtra.residentialAddress || ''
     });
   }, [studentProfileExtra, activeStudent.studentId]);
 
@@ -149,7 +149,7 @@ export const StudentIDAndProfileView: React.FC = () => {
                 <div className="relative z-10 flex items-center gap-4 my-2">
                   <div className="relative">
                     <img
-                      src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300"
+                      src={activeStudent.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300"}
                       alt={activeStudent.firstName}
                       className="w-20 h-24 object-cover rounded-xl border-2 border-white/30 shadow-md"
                     />
@@ -189,7 +189,7 @@ export const StudentIDAndProfileView: React.FC = () => {
                     VERIFIED STATUS: ACTIVE
                   </div>
                   <span className="text-amber-300 font-mono">
-                    EXP: 2028-08-31
+                    EXP: {parseInt((activeStudent.admissionDate || '2024').split('-')[0]) + 4}-08-31
                   </span>
                 </div>
               </div>
@@ -217,7 +217,7 @@ export const StudentIDAndProfileView: React.FC = () => {
 
                   <div className="text-right">
                     <p className="text-[8px] uppercase tracking-wider text-neutral-500 font-mono">CHIP SERIAL</p>
-                    <p className="text-[9px] font-mono text-neutral-400">PU-RFID-8921-XG</p>
+                    <p className="text-[9px] font-mono text-neutral-400">PU-RFID-{(activeStudent.studentId || '8921').replace(/[^A-Za-z0-9]/g, '').slice(-4)}-XG</p>
                   </div>
                 </div>
               </div>

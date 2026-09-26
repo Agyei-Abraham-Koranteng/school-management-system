@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
-import { CURRENT_ACADEMIC_SESSION, CURRENT_SEMESTER } from '../../data/mockData';
+import { useSchool } from '../../context/SchoolContext';
 
 interface NavbarProps {
   onOpenMobileMenu: () => void;
@@ -26,6 +26,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const { theme, toggleTheme } = useTheme();
   const { role, user, logout } = useAuth();
+  const { settings } = useSchool();
 
   return (
     <header className="sticky top-0 z-30 h-16 bg-white/85 dark:bg-neutral-900/85 backdrop-blur-md border-b border-neutral-200/80 dark:border-neutral-800 px-4 md:px-8 flex items-center justify-between">
@@ -44,9 +45,9 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Academic Session Pill */}
         <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-100/80 dark:bg-neutral-800/80 text-xs font-semibold text-neutral-700 dark:text-neutral-300 border border-neutral-200/50 dark:border-neutral-700/50">
           <Calendar className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-          <span>{CURRENT_ACADEMIC_SESSION}</span>
+          <span>{settings.currentSession}</span>
           <span className="text-neutral-400">•</span>
-          <span className="text-indigo-600 dark:text-indigo-400">{CURRENT_SEMESTER}</span>
+          <span className="text-indigo-600 dark:text-indigo-400">{settings.currentSemester}</span>
         </div>
 
         {/* Global Search Trigger */}

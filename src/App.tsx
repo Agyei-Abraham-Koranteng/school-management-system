@@ -174,7 +174,7 @@ export const resolveInitialTab = (userRole: string): string => {
 
 export default function App() {
   const { isAuthenticated, role, student, logout } = useAuth();
-  const { activeStudent, setActiveStudent } = useSchool();
+  const { activeStudent, setActiveStudent, students } = useSchool();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<string>(() => resolveInitialTab(role));
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
@@ -318,7 +318,10 @@ export default function App() {
     );
   }
 
-  const effectiveStudent = student || activeStudent;
+  const effectiveStudent = students.find(s => 
+    (activeStudent && (s.id === activeStudent.id || s.studentId === activeStudent.studentId)) ||
+    (student && (s.id === student.id || s.studentId === student.studentId || s.email.toLowerCase() === student.email.toLowerCase()))
+  ) || activeStudent || student;
   const allowedTabs = ROLE_ALLOWED_TABS[role] || ROLE_ALLOWED_TABS.student;
   const isTabAuthorized = allowedTabs.includes(activeTab);
 

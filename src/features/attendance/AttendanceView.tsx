@@ -87,7 +87,7 @@ export const AttendanceView: React.FC = () => {
 
   const studentTotalSessions = studentSessions.length;
   const studentAttendedCount = studentSessions.filter(s => s.status === 'present' || s.status === 'late').length;
-  const studentAttendancePct = studentTotalSessions > 0 ? Math.round((studentAttendedCount / studentTotalSessions) * 100) : 100;
+  const studentAttendancePct = studentTotalSessions > 0 ? Math.round((studentAttendedCount / studentTotalSessions) * 100) : null;
 
   return (
     <div className="space-y-6">
@@ -104,7 +104,7 @@ export const AttendanceView: React.FC = () => {
         </div>
 
         <div className="text-xs font-semibold px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400">
-          Mandatory Exam Threshold: <strong className="text-indigo-600 dark:text-indigo-400">{settings.attendanceThreshold}%</strong>
+          Mandatory Exam Threshold: <strong className="text-indigo-600 dark:text-indigo-400">{settings.attendanceThreshold || 75}%</strong>
         </div>
       </div>
 
@@ -116,17 +116,27 @@ export const AttendanceView: React.FC = () => {
             <div className="space-y-2">
               <span className="text-xs font-bold uppercase tracking-wider text-neutral-400">Personal Attendance Rating</span>
               <div className="flex items-baseline gap-3">
-                <span className="text-4xl font-black font-mono text-neutral-900 dark:text-neutral-100">{studentAttendancePct}%</span>
+                <span className="text-4xl font-black font-mono text-neutral-900 dark:text-neutral-100">
+                  {studentAttendancePct !== null ? `${studentAttendancePct}%` : 'N/A'}
+                </span>
                 <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
-                  studentAttendancePct >= settings.attendanceThreshold
+                  studentAttendancePct === null
+                    ? 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'
+                    : studentAttendancePct >= (settings.attendanceThreshold || 75)
                     ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                     : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
                 }`}>
-                  {studentAttendancePct >= settings.attendanceThreshold ? 'EXAM ELIGIBLE' : 'BELOW 75% BENCHMARK'}
+                  {studentAttendancePct === null 
+                    ? 'NO SESSIONS RECORDED' 
+                    : studentAttendancePct >= (settings.attendanceThreshold || 75) 
+                    ? 'EXAM ELIGIBLE' 
+                    : 'BELOW 75% BENCHMARK'}
                 </span>
               </div>
               <p className="text-xs text-neutral-500">
-                You have attended {studentAttendedCount} of {studentTotalSessions} registered lecture hours this semester.
+                {studentTotalSessions === 0 
+                  ? 'No roll call attendance records logged for your registered courses this semester.'
+                  : `You have attended ${studentAttendedCount} of ${studentTotalSessions} registered lecture hours this semester.`}
               </p>
             </div>
 

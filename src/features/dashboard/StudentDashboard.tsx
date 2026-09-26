@@ -182,7 +182,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   ).length;
   const attendanceRate = studentSessions.length > 0 
     ? Math.round((presentCount / studentSessions.length) * 100) 
-    : 100;
+    : null;
 
   // Dynamic Progression Milestones
   const nextLevelThreshold = student.currentLevel === '100' ? 36 : student.currentLevel === '200' ? 72 : student.currentLevel === '300' ? 108 : (student.requiredCredits || 132);
@@ -589,15 +589,23 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                   Lecture Attendance Rate
                 </h3>
               </div>
-              <span className={`text-xs font-bold ${attendanceRate >= 75 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
-                {attendanceRate}%
+              <span className={`text-xs font-bold ${
+                attendanceRate === null
+                  ? 'text-neutral-500 dark:text-neutral-400 font-medium'
+                  : attendanceRate >= 75
+                  ? 'text-emerald-600 dark:text-emerald-400'
+                  : 'text-amber-600 dark:text-amber-400'
+              }`}>
+                {attendanceRate === null ? 'No records yet' : `${attendanceRate}%`}
               </span>
             </div>
 
             <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {attendanceRate >= (settings.attendanceWarningThresholdPercent || 75) 
-                ? 'Satisfies institutional examination clearance threshold (≥ 75%).'
-                : 'Caution: Attendance is currently below the mandatory 75% exam clearance threshold.'}
+              {attendanceRate === null
+                ? 'No roll call attendance records logged for current semester sessions yet.'
+                : attendanceRate >= (settings.attendanceWarningThresholdPercent || 75) 
+                  ? 'Satisfies institutional examination clearance threshold (≥ 75%).'
+                  : 'Caution: Attendance is currently below the mandatory 75% exam clearance threshold.'}
             </p>
 
             <button

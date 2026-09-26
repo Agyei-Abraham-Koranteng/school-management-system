@@ -21,7 +21,7 @@ import { useAuth } from '../../context/AuthContext';
 export const AcademicProgressionAdmin: React.FC = () => {
   const { success, info } = useToast();
   const { updateStudentLevel } = useAuth();
-  const { students, updateStudent, settings, carryovers, logAction } = useSchool();
+  const { students, updateStudent, settings, carryovers, logAction, activeStudent } = useSchool();
 
   const [selectedSession, setSelectedSession] = useState<string>(settings.currentSession);
   const [selectedLevelFilter, setSelectedLevelFilter] = useState<string>('all');
@@ -94,7 +94,7 @@ export const AcademicProgressionAdmin: React.FC = () => {
       if (res.decision === 'Promote' && res.currentLevel !== '400') {
         updateStudent(res.student.id, { currentLevel: res.nextLevel as any });
         promotedCount++;
-        if (res.student.id === 'std-001') {
+        if (activeStudent && (res.student.id === activeStudent.id || res.student.studentId === activeStudent.studentId)) {
           updateStudentLevel(res.nextLevel as any);
         }
       }

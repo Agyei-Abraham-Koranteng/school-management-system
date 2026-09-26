@@ -63,6 +63,7 @@ import { academicEngine } from '../services/academics/academicEngine';
 import { realtimeSyncManager } from '../services/realtime/realtimeService';
 import { emailService } from '../services/notifications/emailService';
 import { pushService } from '../services/notifications/pushService';
+import { useAuth } from './AuthContext';
 import {
   sanitizeApplicationForStorage,
   sanitizeApplicationsForStorage
@@ -213,6 +214,8 @@ export interface SchoolContextType {
 const SchoolContext = createContext<SchoolContextType | undefined>(undefined);
 
 export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user: authUser, student: authStudent, role } = useAuth();
+
   const [settings, setSettings] = useState<SystemSettings>(() => {
     const saved = localStorage.getItem('premier_system_settings');
     return saved ? JSON.parse(saved) : DEFAULT_SYSTEM_SETTINGS;
@@ -365,6 +368,27 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       return next;
     });
   }, []);
+
+  // Synchronize activeStudent whenever auth user or authStudent changes
+  useEffect(() => {
+    if (role === 'student') {
+      if (authStudent) {
+        setActiveStudentState(authStudent);
+        try { localStorage.setItem('premier_active_student', JSON.stringify(authStudent)); } catch {}
+      } else if (authUser) {
+        const found = students.find(s =>
+          s.email.toLowerCase() === authUser.email.toLowerCase() ||
+          (s.applicantEmail && s.applicantEmail.toLowerCase() === authUser.email.toLowerCase()) ||
+          `${s.firstName} ${s.lastName}`.toLowerCase() === `${authUser.firstName} ${authUser.lastName}`.toLowerCase()
+        );
+        if (found) {
+          setActiveStudentState(found);
+          try { localStorage.setItem('premier_active_student', JSON.stringify(found)); } catch {}
+        }
+      }
+    }
+  }, [authStudent, authUser, role, students]);
+
   const [studentProfileExtra, setStudentProfileExtra] = useState<StudentProfileExtra>(SAMPLE_STUDENT_PROFILE_EXTRA);
 
   // Resilient Admissions Applications state: Merges default samples, bulk storage, and individual applicant backups
@@ -988,6 +1012,14 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     // Cross-tab storage change listener for instant state sync
     const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'premier_active_student' && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (parsed && parsed.firstName) {
+            setActiveStudentState(parsed);
+          }
+        } catch {}
+      }
       if (e.key === 'premier_admission_applications' && e.newValue) {
         try {
           const parsed = JSON.parse(e.newValue);
@@ -2383,18 +2415,27 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const threshold = settings.attendanceWarningThresholdPercent || 75;
 
     if (attendancePercent < threshold) {
-      issueWarning({
-        studentId: SAMPLE_STUDENT.studentId,
-        studentName: `${SAMPLE_STUDENT.firstName} ${SAMPLE_STUDENT.lastName}`,
-        matricNo: SAMPLE_STUDENT.studentId,
-        program: SAMPLE_STUDENT.programName,
-        level: SAMPLE_STUDENT.currentLevel,
-        cgpa: SAMPLE_STUDENT.currentCgpa,
-        failedCoursesCount: 0,
-        severity: 'moderate',
-        reason: `Course attendance for ${newSession.courseCode} is at ${attendancePercent.toFixed(1)}%, which is below the required ${threshold}% institutional threshold.`,
-        remediationPlan: `Meet with course instructor and maintain regular class attendance.`
-      });
+      // Find absent students in this session to issue attendance warnings to
+      const absentRecords = newSession.records?.filter(r => r.status === 'absent') || [];
+      if (absentRecords.length > 0) {
+        absentRecords.forEach(rec => {
+          const targetStudent = students.find(s => s.id === rec.studentId || s.studentId === rec.matricNo || s.studentId === rec.studentId);
+          if (targetStudent) {
+            issueWarning({
+              studentId: targetStudent.studentId,
+              studentName: `${targetStudent.firstName} ${targetStudent.lastName}`,
+              matricNo: targetStudent.studentId,
+              program: targetStudent.programName,
+              level: targetStudent.currentLevel,
+              cgpa: targetStudent.currentCgpa,
+              failedCoursesCount: 0,
+              severity: 'moderate',
+              reason: `Course attendance for ${newSession.courseCode} is below the required ${threshold}% institutional threshold (recorded absent on ${newSession.date}).`,
+              remediationPlan: `Meet with course instructor and maintain regular class attendance.`
+            });
+          }
+        });
+      }
     }
 
     if (isSupabaseConfigured()) {

@@ -36,9 +36,8 @@ export const TimetableView: React.FC = () => {
       });
     }
 
-    // Fallback: curriculum courses for activeStudent.currentLevel
-    const levelCourses = courses.filter(c => c.level === activeStudent.currentLevel);
-    return levelCourses.length > 0 ? levelCourses : courses.slice(0, 6);
+    // No registered courses for current student: return empty array so UI accurately reflects real registration
+    return [];
   }, [currentRole, user, courses, registrations, activeStudent]);
 
   // Dynamically map relevant courses to weekly schedule slots
@@ -116,6 +115,12 @@ export const TimetableView: React.FC = () => {
           Active Modules: <strong className="text-indigo-600 dark:text-indigo-400">{relevantCourses.length} Courses Scheduled</strong>
         </div>
       </div>
+
+      {relevantCourses.length === 0 && currentRole === 'student' && (
+        <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-800 dark:text-amber-300 flex items-center justify-between">
+          <span>No registered courses detected for the current session. Please complete course registration to populate your personalized timetable.</span>
+        </div>
+      )}
 
       {/* Days Matrix */}
       <div className="space-y-6">

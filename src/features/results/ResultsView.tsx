@@ -101,7 +101,7 @@ export const ResultsView: React.FC = () => {
           </span>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-4xl font-extrabold tracking-tight text-indigo-600 dark:text-indigo-400">
-              <AnimatedCounter value={activeStudent.currentCgpa || 3.42} decimals={2} />
+              <AnimatedCounter value={activeStudent.currentCgpa || 0.00} decimals={2} />
             </span>
             <span className="text-xs font-semibold text-neutral-400">/ 4.00</span>
           </div>
@@ -117,12 +117,12 @@ export const ResultsView: React.FC = () => {
           </span>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-4xl font-extrabold tracking-tight text-neutral-900 dark:text-neutral-50">
-              <AnimatedCounter value={selectedSemester.gpa} decimals={2} />
+              <AnimatedCounter value={selectedSemester ? selectedSemester.gpa : 0.00} decimals={2} />
             </span>
             <span className="text-xs font-semibold text-neutral-400">/ 4.00</span>
           </div>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
-            {selectedSemester.semesterName} ({selectedSemester.sessionName})
+            {selectedSemester ? `${selectedSemester.semesterName} (${selectedSemester.sessionName})` : 'Current Academic Session'}
           </p>
         </div>
 
@@ -133,7 +133,7 @@ export const ResultsView: React.FC = () => {
           </span>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-4xl font-extrabold tracking-tight text-neutral-900 dark:text-neutral-50">
-              <AnimatedCounter value={activeStudent.creditsEarned || 78} />
+              <AnimatedCounter value={activeStudent.creditsEarned || 0} />
             </span>
             <span className="text-xs font-semibold text-neutral-400">/ {activeStudent.requiredCredits || 132} Required</span>
           </div>

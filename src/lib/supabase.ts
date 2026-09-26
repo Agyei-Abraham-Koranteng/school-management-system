@@ -40,6 +40,9 @@ export const isSupabaseConfigured = (): boolean => {
     supabaseUrl &&
     supabaseAnonKey &&
     !supabaseUrl.includes('placeholder') &&
+    !supabaseAnonKey.includes('placeholder') &&
+    !supabaseAnonKey.includes('YOUR_') &&
+    supabaseAnonKey.length > 30 &&
     supabaseUrl.startsWith('http')
   );
 };

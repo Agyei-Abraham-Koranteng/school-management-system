@@ -861,6 +861,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         department: appChoice?.departmentName || matchedUser.department || SAMPLE_STUDENT.department,
         faculty: appChoice?.facultyName || SAMPLE_STUDENT.faculty,
         currentLevel: '100',
+        creditsEarned: 0,
+        currentCgpa: 0.00,
         status: 'active',
         academicStanding: 'Good Standing'
       };
@@ -1016,7 +1018,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       lastName: studentData?.lastName || applicantAccount?.lastName || SAMPLE_STUDENT.lastName,
       email: studentData?.email || applicantAccount?.email || SAMPLE_STUDENT.email,
       applicantEmail: applicantAccount?.email || studentData?.email,
-      studentId: studentData?.studentId || SAMPLE_STUDENT.studentId,
+      studentId: studentData?.studentId || (applicantAccount ? `PU/ADM/${new Date().getFullYear()}/${applicantAccount.id.replace(/\D/g, '').slice(-4) || '101'}` : SAMPLE_STUDENT.studentId),
       currentLevel: studentData?.currentLevel || '100',
       creditsEarned: studentData?.creditsEarned ?? 0,
       currentCgpa: studentData?.currentCgpa ?? 0.00,

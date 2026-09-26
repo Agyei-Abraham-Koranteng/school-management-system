@@ -478,17 +478,7 @@ export class AcademicEngine {
             gradePoint: attempt ? attempt.gradePoint : 0.0
           };
         })
-      : courses.filter(c => c.level === student.currentLevel).slice(0, 6).map(c => {
-          const attempt = studentAttempts.find(a => a.courseId === c.id && a.semester === settings.currentSemester);
-          return {
-            code: c.code,
-            title: c.title,
-            credits: c.creditHours,
-            score: attempt ? attempt.totalScore : 0,
-            grade: attempt ? attempt.grade : 'IP',
-            gradePoint: attempt ? attempt.gradePoint : 0.0
-          };
-        });
+      : [];
 
     const activeAttempted = currentCourses.reduce((sum: number, c: any) => sum + c.credits, 0);
     const activeEarned = currentCourses.filter((c: any) => c.grade !== 'IP' && c.grade !== 'F').reduce((sum: number, c: any) => sum + c.credits, 0);
