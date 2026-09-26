@@ -17,12 +17,21 @@ export const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
   suffix = '',
   className = ''
 }) => {
-  const [displayValue, setDisplayValue] = useState<number>(0);
+  const [displayValue, setDisplayValue] = useState<number>(value);
+  const prevValueRef = React.useRef<number>(value);
 
   useEffect(() => {
     let startTimestamp: number | null = null;
-    const startValue = 0;
+    const startValue = prevValueRef.current;
     const endValue = value;
+    prevValueRef.current = value;
+
+    if (startValue === endValue) {
+      setDisplayValue(endValue);
+      return;
+    }
+
+    let animationFrameId: number;
 
     const step = (timestamp: number) => {
       if (!startTimestamp) startTimestamp = timestamp;
@@ -33,11 +42,12 @@ export const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
       setDisplayValue(current);
 
       if (progress < 1) {
-        requestAnimationFrame(step);
+        animationFrameId = requestAnimationFrame(step);
       }
     };
 
-    requestAnimationFrame(step);
+    animationFrameId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(animationFrameId);
   }, [value, duration]);
 
   const formatted = decimals > 0 ? displayValue.toFixed(decimals) : Math.round(displayValue).toString();

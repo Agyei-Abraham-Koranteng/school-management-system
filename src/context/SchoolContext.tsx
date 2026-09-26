@@ -148,6 +148,15 @@ export interface SchoolContextType {
   // Academics, Warnings & Attendance
   carryovers: CarryoverItem[];
   courseAttempts: CourseAttempt[];
+  recordCourseGrade: (payload: {
+    studentId: string;
+    courseCode: string;
+    courseTitle: string;
+    credits: number;
+    score: number;
+    academicSession?: string;
+    semester?: string;
+  }) => void;
   academicWarnings: AcademicWarning[];
   issueWarning: (warning: Omit<AcademicWarning, 'id' | 'issuedDate' | 'status'>) => void;
   resolveWarning: (id: string) => void;
@@ -465,7 +474,20 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   });
 
   const [carryovers, setCarryovers] = useState<CarryoverItem[]>(SAMPLE_CARRYOVERS);
-  const [courseAttempts, setCourseAttempts] = useState<CourseAttempt[]>(SAMPLE_COURSE_ATTEMPTS);
+  const [courseAttempts, setCourseAttempts] = useState<CourseAttempt[]>(() => {
+    try {
+      const saved = localStorage.getItem('premier_course_attempts');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return SAMPLE_COURSE_ATTEMPTS;
+  });
+
+  useEffect(() => {
+    try { localStorage.setItem('premier_course_attempts', JSON.stringify(courseAttempts)); } catch {}
+  }, [courseAttempts]);
 
   const [academicWarnings, setAcademicWarnings] = useState<AcademicWarning[]>(() => {
     try {
@@ -887,6 +909,22 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       }
     });
 
+    // Listen for remote Financial Ledgers updates
+    const unbindFinancialLedgers = realtimeSyncManager.on('financial_ledgers', (event) => {
+      if (event.eventType === 'UPDATE' || event.eventType === 'INSERT') {
+        if (event.newRecord && typeof event.newRecord === 'object') {
+          setFinancialLedgers(event.newRecord);
+        }
+      }
+    });
+
+    // Listen for remote Student Course Grades / Attempts updates
+    const unbindCourseAttempts = realtimeSyncManager.on('student_course_grades', (event) => {
+      if (event.eventType === 'INSERT' || event.eventType === 'UPDATE') {
+        setCourseAttempts(prev => [event.newRecord, ...prev.filter(a => a.id !== event.newRecord.id)]);
+      }
+    });
+
     // Listen for remote Announcements
     const unbindAnnouncements = realtimeSyncManager.on('announcements', (event) => {
       if (event.eventType === 'INSERT') {
@@ -1061,6 +1099,12 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           if (Array.isArray(parsed)) setNotifications(parsed);
         } catch {}
       }
+      if (e.key === 'premier_course_attempts' && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed)) setCourseAttempts(parsed);
+        } catch {}
+      }
       if (e.key === 'premier_audit_logs' && e.newValue) {
         try {
           const parsed = JSON.parse(e.newValue);
@@ -1074,6 +1118,8 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       unbindApplications();
       unbindStudents();
       unbindRegistrations();
+      unbindFinancialLedgers();
+      unbindCourseAttempts();
       unbindAnnouncements();
       unbindSettings();
       unbindFaculties();
@@ -1383,9 +1429,29 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const updateStudent = (id: string, updates: Partial<StudentRecord>) => {
-    setStudents(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
-    if (activeStudent.id === id) {
-      setActiveStudent(prev => ({ ...prev, ...updates }));
+    let updatedRecord: StudentRecord | undefined;
+    setStudents(prev => {
+      const next = prev.map(s => {
+        if (s.id === id || s.studentId === id) {
+          updatedRecord = { ...s, ...updates };
+          return updatedRecord;
+        }
+        return s;
+      });
+      try { localStorage.setItem('premier_students', JSON.stringify(next)); } catch {}
+      return next;
+    });
+
+    if (activeStudent && (activeStudent.id === id || activeStudent.studentId === id)) {
+      setActiveStudent(prev => {
+        const next = { ...prev, ...updates };
+        try { localStorage.setItem('premier_active_student', JSON.stringify(next)); } catch {}
+        return next;
+      });
+    }
+
+    if (updatedRecord) {
+      realtimeSyncManager.broadcast('students', 'UPDATE', updatedRecord);
     }
     if (isSupabaseConfigured()) {
       supabaseDb.updateStudent(id, updates).catch(() => {});
@@ -2338,6 +2404,89 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     logAction('RECORDED_ATTENDANCE', 'AttendanceSession', `Recorded session for ${newSession.courseCode} (${newSession.presentCount}/${newSession.totalStudents} present)`);
   };
 
+  // Student Course Grade & Assessment Engine
+  const recordCourseGrade = (payload: {
+    studentId: string;
+    courseCode: string;
+    courseTitle: string;
+    credits: number;
+    score: number;
+    academicSession?: string;
+    semester?: string;
+  }) => {
+    const scale = settings.gradingScale || DEFAULT_SYSTEM_SETTINGS.gradingScale;
+    const gradeDetails = academicEngine.getGradeDetails(payload.score, scale);
+    const session = payload.academicSession || settings.currentSession;
+    const semester = payload.semester || settings.currentSemester;
+
+    const newAttempt: CourseAttempt = {
+      id: `att-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      studentId: payload.studentId,
+      courseCode: payload.courseCode,
+      courseTitle: payload.courseTitle,
+      credits: payload.credits,
+      academicSession: session,
+      semester: semester,
+      attemptNumber: 1,
+      score: payload.score,
+      totalScore: payload.score,
+      grade: gradeDetails.grade,
+      gradePoint: gradeDetails.gradePoint,
+      status: gradeDetails.isPassing ? 'passed' : 'failed'
+    };
+
+    setCourseAttempts(prev => {
+      const existingIdx = prev.findIndex(a =>
+        (a.studentId === payload.studentId || (!a.studentId && (payload.studentId === activeStudent.studentId || payload.studentId === activeStudent.id))) &&
+        a.courseCode === payload.courseCode &&
+        a.academicSession === session &&
+        a.semester === semester
+      );
+      let next: CourseAttempt[];
+      if (existingIdx >= 0) {
+        next = [...prev];
+        next[existingIdx] = {
+          ...prev[existingIdx],
+          ...newAttempt,
+          attemptNumber: (prev[existingIdx].attemptNumber || 1) + 1
+        };
+      } else {
+        next = [newAttempt, ...prev];
+      }
+      try {
+        localStorage.setItem('premier_course_attempts', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+
+    realtimeSyncManager.broadcast('student_course_grades', 'INSERT', newAttempt);
+
+    // Recalculate and update cumulative CGPA & Credits in real time
+    const studentAttempts = courseAttempts.filter(a =>
+      a.studentId === payload.studentId ||
+      a.studentId === activeStudent.studentId ||
+      a.studentId === activeStudent.id ||
+      (!a.studentId && payload.studentId === activeStudent.studentId)
+    );
+    const updatedAttempts = [newAttempt, ...studentAttempts.filter(a => a.courseCode !== payload.courseCode)];
+    const cum = academicEngine.calculateCumulativeCgpa(updatedAttempts, scale);
+
+    updateStudent(payload.studentId, {
+      currentCgpa: cum.cgpa,
+      creditsEarned: cum.totalCreditsEarned
+    });
+
+    if (activeStudent.studentId === payload.studentId || activeStudent.id === payload.studentId) {
+      setActiveStudent(prev => ({
+        ...prev,
+        currentCgpa: cum.cgpa,
+        creditsEarned: cum.totalCreditsEarned
+      }));
+    }
+
+    logAction('RECORD_COURSE_GRADE', 'AcademicGrade', `Recorded grade ${gradeDetails.grade} (${payload.score}%) for ${payload.studentId} in ${payload.courseCode}`, newAttempt.id);
+  };
+
   // Finance & Bursary Payment Engine
   const recordPayment = (payment: {
     studentId: string;
@@ -2349,7 +2498,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     reference: string;
   }) => {
     setFinancialLedgers(prev => {
-      const current = prev[payment.matricNo] || {
+      const current = prev[payment.matricNo] || prev[payment.studentId] || {
         studentId: payment.matricNo,
         totalBilled: payment.amount,
         totalPaid: 0,
@@ -2372,15 +2521,18 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         status: 'successful' as const
       };
 
+      const updatedLedger = {
+        ...current,
+        totalPaid: newTotalPaid,
+        balance: newBalance,
+        isCleared,
+        transactions: [newTxn, ...current.transactions]
+      };
+
       const nextLedgers = {
         ...prev,
-        [payment.matricNo]: {
-          ...current,
-          totalPaid: newTotalPaid,
-          balance: newBalance,
-          isCleared,
-          transactions: [newTxn, ...current.transactions]
-        }
+        [payment.matricNo]: updatedLedger,
+        ...(payment.studentId && payment.studentId !== payment.matricNo ? { [payment.studentId]: updatedLedger } : {})
       };
 
       try {
@@ -2568,6 +2720,7 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         rejectCourseRegistration,
         carryovers,
         courseAttempts,
+        recordCourseGrade,
         academicWarnings,
         issueWarning,
         resolveWarning,

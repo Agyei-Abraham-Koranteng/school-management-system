@@ -23,6 +23,8 @@ import {
 import { StudentRecord } from '../../types';
 import { AnimatedCounter } from '../../components/shared/AnimatedCounter';
 import { useSchool } from '../../context/SchoolContext';
+import { academicEngine } from '../../services/academics/academicEngine';
+import { DEFAULT_SYSTEM_SETTINGS, SAMPLE_STUDENT } from '../../data/mockData';
 
 interface StudentDashboardProps {
   student: StudentRecord;
@@ -30,21 +32,58 @@ interface StudentDashboardProps {
 }
 
 export const StudentDashboard: React.FC<StudentDashboardProps> = ({
-  student,
+  student: propStudent,
   onNavigate
 }) => {
   const { 
     settings, 
+    activeStudent,
+    students,
     academicWarnings, 
     registrations, 
     financialLedgers, 
     announcements, 
     attendanceSessions,
+    courseAttempts,
     courses,
     staff
   } = useSchool();
 
-  const percentageCompleted = Math.min(100, Math.round(((student.creditsEarned || 0) / (student.requiredCredits || 132)) * 100));
+  // Resolve active live student record dynamically from context
+  const student = React.useMemo(() => {
+    return students.find(s => 
+      s.studentId === propStudent.studentId || 
+      s.id === propStudent.id || 
+      (propStudent.applicantEmail && s.applicantEmail === propStudent.applicantEmail)
+    ) || (activeStudent?.studentId === propStudent.studentId ? activeStudent : propStudent);
+  }, [students, activeStudent, propStudent]);
+
+  // Real-time Academic Calculation for CGPA and Credits Earned
+  const { liveCgpa, liveCreditsEarned } = React.useMemo(() => {
+    const studentAttempts = courseAttempts.filter(ca => 
+      ca.studentId === student.studentId || 
+      ca.studentId === student.id ||
+      (!ca.studentId && (student.studentId === SAMPLE_STUDENT.studentId || student.id === SAMPLE_STUDENT.id))
+    );
+
+    if (studentAttempts.length > 0) {
+      const scale = settings.gradingScale || DEFAULT_SYSTEM_SETTINGS.gradingScale;
+      const cum = academicEngine.calculateCumulativeCgpa(studentAttempts, scale);
+      const creditsEarned = Math.max(cum.totalCreditsEarned, student.creditsEarned || 0);
+      const cgpa = cum.totalCreditsAttempted > 0 ? cum.cgpa : (student.currentCgpa || 0.00);
+      return { liveCgpa: cgpa, liveCreditsEarned: creditsEarned };
+    }
+
+    return {
+      liveCgpa: student.currentCgpa || 0.00,
+      liveCreditsEarned: student.creditsEarned || 0
+    };
+  }, [courseAttempts, student, settings.gradingScale]);
+
+  const percentageCompleted = Math.min(
+    100,
+    Math.round(((liveCreditsEarned || 0) / (student.requiredCredits || 132)) * 100)
+  );
 
   // Dynamic Time-of-Day Greeting
   const greeting = (() => {
@@ -55,15 +94,15 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   })();
 
   // Degree Classification Calculation based on real institutional CGPA rules
-  const degreeClass = (() => {
-    const cgpa = student.currentCgpa || 0;
+  const degreeClass = React.useMemo(() => {
+    const cgpa = liveCgpa;
     if (cgpa >= 3.60) return { label: 'Class: First Class Honours', color: 'text-emerald-700 dark:text-emerald-400' };
     if (cgpa >= 3.00) return { label: 'Class: Second Class Upper', color: 'text-indigo-700 dark:text-indigo-400' };
     if (cgpa >= 2.50) return { label: 'Class: Second Class Lower', color: 'text-sky-700 dark:text-sky-400' };
     if (cgpa >= 2.00) return { label: 'Class: Third Class', color: 'text-amber-700 dark:text-amber-400' };
     if (cgpa >= 1.50) return { label: 'Class: Pass', color: 'text-orange-700 dark:text-orange-400' };
     return { label: 'Academic Remediation Required', color: 'text-rose-700 dark:text-rose-400' };
-  })();
+  }, [liveCgpa]);
 
   // Progression Target Description
   const progressionTarget = (() => {
@@ -79,12 +118,20 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
     }
   })();
 
-  // Real Active Student Course Registration lookup
-  const activeReg = registrations.find(r => 
-    r.studentId === student.studentId || 
-    r.studentId === student.id ||
-    (student.applicantEmail && r.studentId === student.applicantEmail)
-  );
+  // Real Active Student Course Registration lookup with priority for active session & semester
+  const activeReg = React.useMemo(() => {
+    const studentRegs = registrations.filter(r => 
+      r.studentId === student.studentId || 
+      r.studentId === student.id ||
+      (student.applicantEmail && r.studentId === student.applicantEmail)
+    );
+    if (studentRegs.length === 0) return undefined;
+    return studentRegs.find(r => 
+      (r.academicSession === settings.currentSession || !r.academicSession) && 
+      (r.semester === settings.currentSemester || !r.semester)
+    ) || studentRegs[0];
+  }, [registrations, student, settings.currentSession, settings.currentSemester]);
+
   const registeredCoursesCount = activeReg?.items?.length || 0;
   const registeredCreditsCount = activeReg?.totalCredits || 0;
   const regStatus = activeReg?.status || 'unregistered';
@@ -94,16 +141,31 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
     (w.studentId === student.studentId || w.studentId === student.id) && w.status === 'active'
   );
 
-  // Real Financial Ledger lookup with dynamic fallback provisioning
+  // Real Financial Ledger lookup with dynamic multi-key lookup and fallback provisioning
   const defaultTuitionByLevel = student.currentLevel === '100' ? 4500 : student.currentLevel === '200' ? 4800 : student.currentLevel === '300' ? 5200 : 5500;
-  const ledger = financialLedgers[student.studentId] || financialLedgers[student.id] || {
-    studentId: student.studentId,
-    totalBilled: defaultTuitionByLevel,
-    totalPaid: 0,
-    balance: defaultTuitionByLevel,
-    isCleared: false,
-    transactions: []
-  };
+  
+  const ledger = React.useMemo(() => {
+    const found = financialLedgers[student.studentId] || 
+      financialLedgers[student.id] || 
+      (student.applicantEmail ? financialLedgers[student.applicantEmail] : undefined) ||
+      Object.values(financialLedgers).find(l => 
+        l.studentId === student.studentId || 
+        l.studentId === student.id || 
+        (student.applicantEmail && l.studentId === student.applicantEmail)
+      );
+
+    if (found) return found;
+
+    return {
+      studentId: student.studentId,
+      totalBilled: defaultTuitionByLevel,
+      totalPaid: 0,
+      balance: defaultTuitionByLevel,
+      isCleared: false,
+      transactions: []
+    };
+  }, [financialLedgers, student, defaultTuitionByLevel]);
+
   const isFeeCleared = ledger.isCleared || ledger.balance <= 0;
 
   // Real Latest Institutional Announcement for student
@@ -218,7 +280,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
           </div>
           <div className="mt-3 flex items-baseline gap-2">
             <span className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-neutral-50">
-              <AnimatedCounter value={student.currentCgpa} decimals={2} />
+              <AnimatedCounter value={liveCgpa} decimals={2} />
             </span>
             <span className="text-xs font-semibold text-neutral-400">/ 4.00</span>
           </div>
@@ -244,7 +306,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
           </div>
           <div className="mt-3 flex items-baseline gap-2">
             <span className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-neutral-50">
-              <AnimatedCounter value={student.creditsEarned || 0} />
+              <AnimatedCounter value={liveCreditsEarned} />
             </span>
             <span className="text-xs font-semibold text-neutral-400">/ {student.requiredCredits || 132} Total</span>
           </div>
