@@ -18,17 +18,48 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { AttendanceStatus } from '../../types';
 
+import { QrCode, Sparkles } from 'lucide-react';
+
 export const AttendanceView: React.FC = () => {
-  const { courses, students, attendanceSessions, recordAttendance, activeStudent, settings } = useSchool();
+  const { 
+    courseOfferings, 
+    lecturerAssignments, 
+    registrations, 
+    students, 
+    attendanceSessions, 
+    recordAttendance, 
+    activeStudent, 
+    settings 
+  } = useSchool();
   const { currentRole, user } = useAuth();
   const { showToast } = useToast();
 
   const isLecturerOrAdmin = currentRole === 'lecturer' || currentRole === 'admin_registrar' || currentRole === 'super_admin';
 
-  const [selectedCourseCode, setSelectedCourseCode] = useState(courses[0]?.code || 'IT301');
+  // Authoritative assigned course offerings for lecturer
+  const myAssignments = lecturerAssignments.filter(a => 
+    (user?.id && a.lecturerId === user.id) || 
+    (user?.email && a.lecturerEmail?.toLowerCase() === user.email.toLowerCase())
+  );
+  const myOfferings = courseOfferings.filter(o => 
+    (user?.id && o.primaryLecturerId === user.id) || 
+    myAssignments.some(a => a.courseOfferingId === o.id)
+  );
+  const availableOfferings = (myOfferings.length > 0)
+    ? myOfferings
+    : (user?.role === 'super_admin' || user?.role === 'admin_registrar' ? courseOfferings : myOfferings);
+
+  const [selectedOfferingId, setSelectedOfferingId] = useState<string>(() => {
+    return availableOfferings[0]?.id || courseOfferings[0]?.id || '';
+  });
+
+  const currentOffering = courseOfferings.find(o => o.id === selectedOfferingId) || availableOfferings[0] || courseOfferings[0];
+
   const [sessionDate, setSessionDate] = useState(new Date().toISOString().split('T')[0]);
   const [topic, setTopic] = useState('');
-  const [venue, setVenue] = useState('Lab 3, CS Block');
+  const [venue, setVenue] = useState(currentOffering?.venue || 'Lab 3, CS Block');
+  const [showQrModal, setShowQrModal] = useState(false);
+  const [qrToken, setQrToken] = useState('');
   
   // Roster attendance state for the roll-call session (all students default to present)
   const [roster, setRoster] = useState<{ [studentId: string]: AttendanceStatus }>({});
@@ -39,27 +70,46 @@ export const AttendanceView: React.FC = () => {
 
   const lecturerName = user?.firstName 
     ? `${user.role === 'lecturer' ? 'Dr.' : ''} ${user.firstName} ${user.lastName}`.trim() 
-    : 'Dr. Kwesi Mensah';
+    : (currentOffering?.primaryLecturerName || 'Dr. Kwesi Mensah');
+
+  // Filter students strictly enrolled in this specific offering
+  const eligibleRegistrations = registrations.filter(r => 
+    r.status === 'approved' &&
+    r.items.some(i => i.courseOfferingId === currentOffering?.id || i.code === currentOffering?.courseCode)
+  );
+
+  const registeredStudents = eligibleRegistrations.map(reg => {
+    const studentRec = students.find(s => s.id === reg.studentId || s.studentId === reg.studentId || s.studentId === reg.matricNo);
+    return {
+      studentId: reg.studentId,
+      studentName: studentRec ? `${studentRec.firstName} ${studentRec.lastName}` : (reg.studentName || 'Student'),
+      matricNo: studentRec?.studentId || reg.matricNo || reg.studentId,
+      level: studentRec?.currentLevel || reg.level || '300'
+    };
+  });
 
   const handleSaveAttendance = (e: React.FormEvent) => {
     e.preventDefault();
-    const course = courses.find(c => c.code === selectedCourseCode);
-    const studentList = students.map(s => ({
-      studentId: s.id,
-      studentName: `${s.firstName} ${s.lastName}`,
-      matricNo: s.studentId,
-      status: roster[s.id] || 'present'
+    if (!currentOffering) return;
+
+    const studentList = registeredStudents.map(s => ({
+      studentId: s.studentId,
+      studentName: s.studentName,
+      matricNo: s.matricNo,
+      status: roster[s.studentId] || 'present'
     }));
 
     const presentCount = studentList.filter(s => s.status === 'present' || s.status === 'late').length;
 
     recordAttendance({
-      courseCode: selectedCourseCode,
-      courseTitle: course?.title || 'Lecture Session',
+      courseOfferingId: currentOffering.id,
+      courseCode: currentOffering.courseCode,
+      courseTitle: currentOffering.courseTitle,
       date: sessionDate,
-      timeSlot: "10:00 - 12:00",
+      timeSlot: currentOffering.schedule || "10:00 - 12:00",
+      lecturerId: user?.id,
       lecturerName,
-      venue,
+      venue: venue || currentOffering.venue || 'Lecture Theatre 2',
       topic: topic || "Course Lecture & Lab Practical",
       totalStudents: studentList.length,
       presentCount,
@@ -67,8 +117,14 @@ export const AttendanceView: React.FC = () => {
       students: studentList
     });
 
-    showToast(`Attendance recorded for ${selectedCourseCode} (${presentCount}/${studentList.length} present)`, 'success');
+    showToast(`Attendance recorded for ${currentOffering.courseCode} (${presentCount}/${studentList.length} present)`, 'success');
     setTopic('');
+  };
+
+  const generateQrToken = () => {
+    const token = `ATT-${currentOffering?.courseCode || 'COURSE'}-${Date.now().toString(36).toUpperCase()}`;
+    setQrToken(token);
+    setShowQrModal(true);
   };
 
   // Student specific calculations
@@ -222,16 +278,18 @@ export const AttendanceView: React.FC = () => {
                 </span>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="font-semibold block mb-1">Course Unit</label>
+                  <label className="font-semibold block mb-1">Course Offering</label>
                   <select
-                    value={selectedCourseCode}
-                    onChange={(e) => setSelectedCourseCode(e.target.value)}
+                    value={selectedOfferingId}
+                    onChange={(e) => setSelectedOfferingId(e.target.value)}
                     className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 font-mono font-bold"
                   >
-                    {courses.map(c => (
-                      <option key={c.id} value={c.code}>{c.code} - {c.title}</option>
+                    {availableOfferings.map(o => (
+                      <option key={o.id} value={o.id}>
+                        {o.courseCode} - {o.courseTitle} ({o.section})
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -257,58 +315,77 @@ export const AttendanceView: React.FC = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="font-semibold block mb-1">Syllabus Topic / Lecture Module</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Distributed Consensus & Raft Protocol"
-                  value={topic}
-                  onChange={(e) => setTopic(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800"
-                />
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="flex-1 w-full">
+                  <label className="font-semibold block mb-1">Syllabus Topic / Lecture Module</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Relational Calculus & Transaction Isolation"
+                    value={topic}
+                    onChange={(e) => setTopic(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800"
+                  />
+                </div>
+
+                <div className="pt-5 w-full sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={generateQrToken}
+                    className="w-full sm:w-auto px-4 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 rounded-lg font-bold border border-amber-300/40 dark:border-amber-800/40 flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <QrCode className="w-4 h-4 text-amber-600" />
+                    QR Attendance
+                  </button>
+                </div>
               </div>
 
               {/* Student Roster Table */}
               <div className="border border-neutral-200 dark:border-neutral-800 rounded-xl overflow-hidden mt-4">
                 <div className="bg-neutral-50 dark:bg-neutral-800/60 px-4 py-2 flex items-center justify-between font-bold text-neutral-600 dark:text-neutral-300">
-                  <span>Enrolled Student Roster ({students.length})</span>
+                  <span>Enrolled Student Roster ({registeredStudents.length})</span>
                   <span className="text-[10px] uppercase font-mono">Mark Attendance Status</span>
                 </div>
                 <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
-                  {students.map(std => {
-                    const status = roster[std.id] || 'present';
-                    return (
-                      <div key={std.id} className="px-4 py-3 flex items-center justify-between">
-                        <div>
-                          <p className="font-bold text-neutral-900 dark:text-neutral-100">{std.firstName} {std.lastName}</p>
-                          <p className="text-[11px] font-mono text-neutral-400">{std.studentId} • Level {std.currentLevel}</p>
-                        </div>
+                  {registeredStudents.length === 0 ? (
+                    <div className="p-8 text-center text-xs text-neutral-400">
+                      No approved student registrations found for {currentOffering?.courseCode || 'this offering'}.
+                    </div>
+                  ) : (
+                    registeredStudents.map(std => {
+                      const status = roster[std.studentId] || 'present';
+                      return (
+                        <div key={std.studentId} className="px-4 py-3 flex items-center justify-between">
+                          <div>
+                            <p className="font-bold text-neutral-900 dark:text-neutral-100">{std.studentName}</p>
+                            <p className="text-[11px] font-mono text-neutral-400">{std.matricNo} • Level {std.level}</p>
+                          </div>
 
-                        <div className="flex items-center gap-1.5">
-                          {(['present', 'late', 'absent', 'excused'] as AttendanceStatus[]).map(st => (
-                            <button
-                              key={st}
-                              type="button"
-                              onClick={() => handleToggleStudent(std.id, st)}
-                              className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase transition-colors ${
-                                status === st
-                                  ? st === 'present'
-                                    ? 'bg-emerald-600 text-white shadow-xs'
-                                    : st === 'late'
-                                    ? 'bg-amber-600 text-white shadow-xs'
-                                    : st === 'absent'
-                                    ? 'bg-rose-600 text-white shadow-xs'
-                                    : 'bg-blue-600 text-white shadow-xs'
-                                  : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200'
-                              }`}
-                            >
-                              {st}
-                            </button>
-                          ))}
+                          <div className="flex items-center gap-1.5">
+                            {(['present', 'late', 'absent', 'excused'] as AttendanceStatus[]).map(st => (
+                              <button
+                                key={st}
+                                type="button"
+                                onClick={() => handleToggleStudent(std.studentId, st)}
+                                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase transition-colors ${
+                                  status === st
+                                    ? st === 'present'
+                                      ? 'bg-emerald-600 text-white shadow-xs'
+                                      : st === 'late'
+                                      ? 'bg-amber-600 text-white shadow-xs'
+                                      : st === 'absent'
+                                      ? 'bg-rose-600 text-white shadow-xs'
+                                      : 'bg-blue-600 text-white shadow-xs'
+                                    : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200'
+                                }`}
+                              >
+                                {st}
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })
+                  )}
                 </div>
               </div>
 
@@ -346,6 +423,41 @@ export const AttendanceView: React.FC = () => {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* QR Code Modal for Live Attendance Sign-in */}
+      {showQrModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-5 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 mx-auto flex items-center justify-center">
+              <QrCode className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100">Live QR Attendance Session</h3>
+              <p className="text-xs text-neutral-500 mt-1">
+                Display this token on the projector or screen. Registered students scan via their student portal to record attendance.
+              </p>
+            </div>
+
+            <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-2xl border border-neutral-200/60 dark:border-neutral-700/60 space-y-2">
+              <span className="text-[10px] font-mono uppercase text-neutral-400 font-bold">Session Security Token</span>
+              <div className="text-xl font-mono font-black text-indigo-600 dark:text-indigo-400 tracking-wider select-all">
+                {qrToken}
+              </div>
+              <p className="text-[11px] text-neutral-400">
+                Course: <strong>{currentOffering?.courseCode}</strong> • Section: <strong>{currentOffering?.section}</strong> • Valid for 15 mins
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowQrModal(false)}
+              className="w-full py-2.5 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 rounded-xl text-xs font-bold hover:opacity-90 cursor-pointer"
+            >
+              Close QR Window
+            </button>
           </div>
         </div>
       )}

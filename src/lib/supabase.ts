@@ -27,7 +27,14 @@ import {
   CourseRegistrationItem,
   NotificationItem,
   ApplicationStatus,
-  GraduationCandidateStatus
+  GraduationCandidateStatus,
+  AcademicSession,
+  AcademicSemester,
+  CourseOffering,
+  CourseLecturerAssignment,
+  CourseAssessment,
+  StudentAssessmentScore,
+  StudentCourseResult
 } from '../types';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
@@ -841,5 +848,356 @@ export const supabaseDb = {
     } catch {
       return false;
     }
+  },
+
+  // 13. Course Offerings
+  async getCourseOfferings(): Promise<CourseOffering[] | null> {
+    if (!supabase) return null;
+    try {
+      const { data, error } = await supabase
+        .from('course_offerings')
+        .select('*')
+        .order('course_code', { ascending: true });
+      if (error || !data) return null;
+      return data.map(o => ({
+        id: o.id,
+        courseId: o.course_id,
+        courseCode: o.course_code,
+        courseTitle: o.course_title,
+        academicSessionId: o.session_id || 'sess-2026-2027',
+        academicSession: o.academic_session || '2026/2027',
+        semesterId: o.semester_id || 'sem-2026-s1',
+        semester: (o.semester as 'First Semester' | 'Second Semester') || 'First Semester',
+        level: o.level,
+        section: o.section || 'Section A',
+        creditHours: o.credit_hours,
+        capacity: o.capacity || 50,
+        enrolledCount: o.enrolled_count || 0,
+        venue: o.venue || 'TBD',
+        schedule: o.schedule || (o.schedule_day ? `${o.schedule_day} ${o.schedule_time || ''}` : 'TBD'),
+        status: o.status || 'open'
+      }));
+    } catch {
+      return null;
+    }
+  },
+
+  async createCourseOffering(offering: Omit<CourseOffering, 'id'>): Promise<CourseOffering | null> {
+    if (!supabase) return null;
+    try {
+      const { data, error } = await supabase
+        .from('course_offerings')
+        .insert({
+          tenant_id: DEFAULT_TENANT_ID,
+          course_id: offering.courseId,
+          session_id: offering.academicSessionId,
+          academic_session: offering.academicSession,
+          semester_id: offering.semesterId,
+          semester: offering.semester,
+          course_code: offering.courseCode,
+          course_title: offering.courseTitle,
+          credit_hours: offering.creditHours,
+          level: offering.level,
+          section: offering.section,
+          capacity: offering.capacity,
+          enrolled_count: offering.enrolledCount || 0,
+          venue: offering.venue,
+          schedule: offering.schedule,
+          status: offering.status
+        })
+        .select()
+        .single();
+      if (error || !data) return null;
+      return {
+        ...offering,
+        id: data.id
+      };
+    } catch {
+      return null;
+    }
+  },
+
+  async updateCourseOffering(id: string, updates: Partial<CourseOffering>): Promise<boolean> {
+    if (!supabase) return false;
+    try {
+      const payload: Record<string, any> = {};
+      if (updates.courseCode) payload.course_code = updates.courseCode;
+      if (updates.courseTitle) payload.course_title = updates.courseTitle;
+      if (updates.creditHours !== undefined) payload.credit_hours = updates.creditHours;
+      if (updates.level !== undefined) payload.level = updates.level;
+      if (updates.section) payload.section = updates.section;
+      if (updates.capacity !== undefined) payload.capacity = updates.capacity;
+      if (updates.enrolledCount !== undefined) payload.enrolled_count = updates.enrolledCount;
+      if (updates.venue) payload.venue = updates.venue;
+      if (updates.schedule) payload.schedule = updates.schedule;
+      if (updates.status) payload.status = updates.status;
+
+      const { error } = await supabase
+        .from('course_offerings')
+        .update(payload)
+        .eq('id', id);
+      return !error;
+    } catch {
+      return false;
+    }
+  },
+
+  async deleteCourseOffering(id: string): Promise<boolean> {
+    if (!supabase) return false;
+    try {
+      const { error } = await supabase.from('course_offerings').delete().eq('id', id);
+      return !error;
+    } catch {
+      return false;
+    }
+  },
+
+  // 14. Course Lecturer Assignments
+  async getLecturerAssignments(): Promise<CourseLecturerAssignment[] | null> {
+    if (!supabase) return null;
+    try {
+      const { data, error } = await supabase
+        .from('course_lecturer_assignments')
+        .select('*');
+      if (error || !data) return null;
+      return data.map(a => ({
+        id: a.id,
+        courseOfferingId: a.offering_id || a.course_offering_id,
+        courseCode: a.course_code || 'IT301',
+        lecturerId: a.lecturer_id,
+        lecturerName: a.lecturer_name,
+        lecturerEmail: a.lecturer_email || '',
+        role: a.role || 'primary',
+        section: a.section || 'Section A',
+        assignmentStatus: a.assignment_status || a.status || 'active',
+        assignedAt: a.assigned_at || a.created_at || new Date().toISOString()
+      }));
+    } catch {
+      return null;
+    }
+  },
+
+  async createLecturerAssignment(assignment: Omit<CourseLecturerAssignment, 'id' | 'assignedAt'>): Promise<CourseLecturerAssignment | null> {
+    if (!supabase) return null;
+    try {
+      const { data, error } = await supabase
+        .from('course_lecturer_assignments')
+        .insert({
+          offering_id: assignment.courseOfferingId,
+          course_offering_id: assignment.courseOfferingId,
+          course_code: assignment.courseCode,
+          lecturer_id: assignment.lecturerId,
+          lecturer_name: assignment.lecturerName,
+          lecturer_email: assignment.lecturerEmail,
+          role: assignment.role,
+          section: assignment.section,
+          status: assignment.assignmentStatus || 'active'
+        })
+        .select()
+        .single();
+      if (error || !data) return null;
+      return {
+        ...assignment,
+        id: data.id,
+        assignedAt: data.assigned_at || data.created_at || new Date().toISOString()
+      };
+    } catch {
+      return null;
+    }
+  },
+
+  async deleteLecturerAssignment(id: string): Promise<boolean> {
+    if (!supabase) return false;
+    try {
+      const { error } = await supabase.from('course_lecturer_assignments').delete().eq('id', id);
+      return !error;
+    } catch {
+      return false;
+    }
+  },
+
+  // 15. Course Assessments
+  async getCourseAssessments(): Promise<CourseAssessment[] | null> {
+    if (!supabase) return null;
+    try {
+      const { data, error } = await supabase
+        .from('course_assessments')
+        .select('*');
+      if (error || !data) return null;
+      return data.map(ca => ({
+        id: ca.id,
+        courseOfferingId: ca.offering_id || ca.course_offering_id,
+        courseCode: ca.course_code || 'IT301',
+        title: ca.title,
+        assessmentType: ca.assessment_type,
+        weightPercentage: Number(ca.weight_percent || ca.weight_percentage),
+        maxScore: Number(ca.max_raw_score || ca.max_score || 100),
+        dueDate: ca.due_date,
+        isPublished: ca.is_published !== false,
+        createdAt: ca.created_at || new Date().toISOString()
+      }));
+    } catch {
+      return null;
+    }
+  },
+
+  async createCourseAssessment(assessment: Omit<CourseAssessment, 'id' | 'createdAt'>): Promise<CourseAssessment | null> {
+    if (!supabase) return null;
+    try {
+      const { data, error } = await supabase
+        .from('course_assessments')
+        .insert({
+          offering_id: assessment.courseOfferingId,
+          course_offering_id: assessment.courseOfferingId,
+          course_code: assessment.courseCode,
+          title: assessment.title,
+          assessment_type: assessment.assessmentType,
+          weight_percent: assessment.weightPercentage,
+          max_raw_score: assessment.maxScore,
+          due_date: assessment.dueDate,
+          is_published: assessment.isPublished !== false
+        })
+        .select()
+        .single();
+      if (error || !data) return null;
+      return {
+        ...assessment,
+        id: data.id,
+        createdAt: data.created_at || new Date().toISOString()
+      };
+    } catch {
+      return null;
+    }
+  },
+
+  async updateCourseAssessment(id: string, updates: Partial<CourseAssessment>): Promise<boolean> {
+    if (!supabase) return false;
+    try {
+      const payload: Record<string, any> = {};
+      if (updates.title) payload.title = updates.title;
+      if (updates.assessmentType) payload.assessment_type = updates.assessmentType;
+      if (updates.weightPercentage !== undefined) payload.weight_percent = updates.weightPercentage;
+      if (updates.maxScore !== undefined) payload.max_raw_score = updates.maxScore;
+      if (updates.dueDate !== undefined) payload.due_date = updates.dueDate;
+      if (updates.isPublished !== undefined) payload.is_published = updates.isPublished;
+
+      const { error } = await supabase
+        .from('course_assessments')
+        .update(payload)
+        .eq('id', id);
+      return !error;
+    } catch {
+      return false;
+    }
+  },
+
+  // 16. Student Assessment Scores
+  async getStudentAssessmentScores(): Promise<StudentAssessmentScore[] | null> {
+    if (!supabase) return null;
+    try {
+      const { data, error } = await supabase
+        .from('student_assessment_scores')
+        .select('*');
+      if (error || !data) return null;
+      return data.map(s => ({
+        id: s.id,
+        courseOfferingId: s.offering_id || s.course_offering_id,
+        assessmentId: s.assessment_id,
+        studentId: s.student_id,
+        studentName: s.student_name,
+        matricNo: s.matric_no,
+        score: Number(s.score || s.score_obtained),
+        maxScore: Number(s.max_score || 100),
+        lecturerId: s.lecturer_id || 'usr-lec-01',
+        status: (s.status as 'draft' | 'submitted' | 'verified') || 'verified',
+        enteredAt: s.entered_at || s.graded_at || new Date().toISOString(),
+        updatedAt: s.updated_at || s.graded_at || new Date().toISOString()
+      }));
+    } catch {
+      return null;
+    }
+  },
+
+  async saveAssessmentScore(score: Omit<StudentAssessmentScore, 'id' | 'enteredAt' | 'updatedAt'>): Promise<StudentAssessmentScore | null> {
+    if (!supabase) return null;
+    try {
+      const { data, error } = await supabase
+        .from('student_assessment_scores')
+        .upsert({
+          assessment_id: score.assessmentId,
+          offering_id: score.courseOfferingId,
+          course_offering_id: score.courseOfferingId,
+          student_id: score.studentId,
+          student_name: score.studentName,
+          matric_no: score.matricNo,
+          score_obtained: score.score,
+          percentage_score: (score.score / score.maxScore) * 100,
+          score: score.score,
+          max_score: score.maxScore,
+          lecturer_id: score.lecturerId,
+          status: score.status || 'verified',
+          graded_at: new Date().toISOString()
+        }, {
+          onConflict: 'assessment_id,student_id'
+        })
+        .select()
+        .single();
+      if (error || !data) return null;
+      return {
+        ...score,
+        id: data.id,
+        enteredAt: data.created_at || new Date().toISOString(),
+        updatedAt: data.graded_at || new Date().toISOString()
+      };
+    } catch {
+      return null;
+    }
+  },
+
+  // 17. Academic Sessions & Semesters
+  async getAcademicSessions(): Promise<AcademicSession[] | null> {
+    if (!supabase) return null;
+    try {
+      const { data, error } = await supabase
+        .from('academic_sessions')
+        .select('*')
+        .order('start_date', { ascending: false });
+      if (error || !data) return null;
+      return data.map(s => ({
+        id: s.id,
+        name: s.name,
+        startDate: s.start_date,
+        endDate: s.end_date,
+        isCurrent: Boolean(s.is_current),
+        status: s.status || (s.is_current ? 'active' : 'concluded')
+      }));
+    } catch {
+      return null;
+    }
+  },
+
+  async getAcademicSemesters(): Promise<AcademicSemester[] | null> {
+    if (!supabase) return null;
+    try {
+      const { data, error } = await supabase
+        .from('academic_semesters')
+        .select('*')
+        .order('semester_number', { ascending: true });
+      if (error || !data) return null;
+      return data.map(sem => ({
+        id: sem.id,
+        sessionId: sem.session_id,
+        name: (sem.name as 'First Semester' | 'Second Semester') || 'First Semester',
+        startDate: sem.start_date,
+        endDate: sem.end_date,
+        isCurrent: Boolean(sem.is_current),
+        registrationOpen: Boolean(sem.registration_open ?? true),
+        registrationDeadline: sem.registration_deadline || sem.end_date,
+        status: sem.status || (sem.is_current ? 'active' : 'concluded')
+      }));
+    } catch {
+      return null;
+    }
   }
 };
+

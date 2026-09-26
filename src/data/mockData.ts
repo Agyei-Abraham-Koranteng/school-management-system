@@ -24,11 +24,403 @@ import {
   Announcement,
   AuditLogEntry,
   SystemSettings,
-  EmailLogEntry
+  EmailLogEntry,
+  AcademicSession,
+  AcademicSemester,
+  CourseOffering,
+  CourseLecturerAssignment,
+  CourseAssessment,
+  StudentAssessmentScore,
+  StudentCourseResult
 } from '../types';
 
 export const CURRENT_ACADEMIC_SESSION = "2026/2027";
 export const CURRENT_SEMESTER = "First Semester";
+
+export const SAMPLE_ACADEMIC_SESSIONS: AcademicSession[] = [
+  {
+    id: "ses-2026-2027",
+    name: "2026/2027",
+    startDate: "2026-09-01",
+    endDate: "2027-06-30",
+    isCurrent: true,
+    status: "active"
+  },
+  {
+    id: "ses-2025-2026",
+    name: "2025/2026",
+    startDate: "2025-09-01",
+    endDate: "2026-06-30",
+    isCurrent: false,
+    status: "concluded"
+  }
+];
+
+export const SAMPLE_ACADEMIC_SEMESTERS: AcademicSemester[] = [
+  {
+    id: "sem-2026-s1",
+    sessionId: "ses-2026-2027",
+    name: "First Semester",
+    startDate: "2026-09-01",
+    endDate: "2027-01-31",
+    isCurrent: true,
+    registrationOpen: true,
+    registrationDeadline: "2026-10-31T23:59:59Z",
+    status: "active"
+  },
+  {
+    id: "sem-2026-s2",
+    sessionId: "ses-2026-2027",
+    name: "Second Semester",
+    startDate: "2027-02-01",
+    endDate: "2027-06-30",
+    isCurrent: false,
+    registrationOpen: false,
+    registrationDeadline: "2027-02-28T23:59:59Z",
+    status: "upcoming"
+  }
+];
+
+export const SAMPLE_COURSE_OFFERINGS: CourseOffering[] = [
+  {
+    id: "off-it301-2026-sem1",
+    courseId: "crs-it301",
+    courseCode: "IT301",
+    courseTitle: "Database Administration & Architecture",
+    academicSessionId: "ses-2026-2027",
+    academicSession: "2026/2027",
+    semesterId: "sem-2026-s1",
+    semester: "First Semester",
+    programId: "prg-bsc-it",
+    programCode: "BIT",
+    departmentId: "dept-it",
+    department: "Department of Information Technology",
+    level: "300",
+    section: "Section A",
+    creditHours: 3,
+    capacity: 65,
+    enrolledCount: 42,
+    status: "open",
+    venue: "Lab 3, CS Complex",
+    schedule: "Mondays 10:00 - 12:00, Wednesdays 14:00 - 16:00",
+    prerequisites: ["IT201"],
+    primaryLecturerId: "usr-lec-01",
+    primaryLecturerName: "Dr. Kwesi Mensah"
+  },
+  {
+    id: "off-it303-2026-sem1",
+    courseId: "crs-it303",
+    courseCode: "IT303",
+    courseTitle: "Web Technologies & Cloud Services",
+    academicSessionId: "ses-2026-2027",
+    academicSession: "2026/2027",
+    semesterId: "sem-2026-s1",
+    semester: "First Semester",
+    programId: "prg-bsc-it",
+    programCode: "BIT",
+    departmentId: "dept-it",
+    department: "Department of Information Technology",
+    level: "300",
+    section: "Section A",
+    creditHours: 3,
+    capacity: 70,
+    enrolledCount: 58,
+    status: "open",
+    venue: "Lecture Hall B",
+    schedule: "Tuesdays 08:00 - 10:00, Thursdays 10:00 - 12:00",
+    prerequisites: ["IT205"],
+    primaryLecturerId: "usr-lec-02",
+    primaryLecturerName: "Prof. Elena Vance"
+  },
+  {
+    id: "off-it305-2026-sem1",
+    courseId: "crs-it305",
+    courseCode: "IT305",
+    courseTitle: "Network Security & Cryptography",
+    academicSessionId: "ses-2026-2027",
+    academicSession: "2026/2027",
+    semesterId: "sem-2026-s1",
+    semester: "First Semester",
+    programId: "prg-bsc-it",
+    programCode: "BIT",
+    departmentId: "dept-it",
+    department: "Department of Information Technology",
+    level: "300",
+    section: "Section A",
+    creditHours: 3,
+    capacity: 60,
+    enrolledCount: 51,
+    status: "open",
+    venue: "Lab 2, Networking Centre",
+    schedule: "Wednesdays 08:00 - 10:00, Fridays 10:00 - 12:00",
+    prerequisites: ["IT203"],
+    primaryLecturerId: "usr-lec-03",
+    primaryLecturerName: "Eng. Samuel Osei"
+  },
+  {
+    id: "off-it307-2026-sem1",
+    courseId: "crs-it307",
+    courseCode: "IT307",
+    courseTitle: "Operating Systems & Concurrency",
+    academicSessionId: "ses-2026-2027",
+    academicSession: "2026/2027",
+    semesterId: "sem-2026-s1",
+    semester: "First Semester",
+    programId: "prg-bsc-it",
+    programCode: "BIT",
+    departmentId: "dept-it",
+    department: "Department of Information Technology",
+    level: "300",
+    section: "Section A",
+    creditHours: 3,
+    capacity: 60,
+    enrolledCount: 45,
+    status: "open",
+    venue: "Lecture Room 4",
+    schedule: "Tuesdays 14:00 - 16:00, Thursdays 14:00 - 16:00",
+    prerequisites: ["IT201"],
+    primaryLecturerId: "usr-lec-04",
+    primaryLecturerName: "Dr. Angela Hansen"
+  },
+  {
+    id: "off-it309-2026-sem1",
+    courseId: "crs-it309",
+    courseCode: "IT309",
+    courseTitle: "Human-Computer Interaction (HCI)",
+    academicSessionId: "ses-2026-2027",
+    academicSession: "2026/2027",
+    semesterId: "sem-2026-s1",
+    semester: "First Semester",
+    programId: "prg-bsc-it",
+    programCode: "BIT",
+    departmentId: "dept-it",
+    department: "Department of Information Technology",
+    level: "300",
+    section: "Section A",
+    creditHours: 3,
+    capacity: 50,
+    enrolledCount: 38,
+    status: "open",
+    venue: "Design Studio A",
+    schedule: "Mondays 14:00 - 16:00",
+    prerequisites: [],
+    primaryLecturerId: "usr-lec-05",
+    primaryLecturerName: "Dr. David Sterling"
+  },
+  {
+    id: "off-gen301-2026-sem1",
+    courseId: "crs-gen301",
+    courseCode: "GEN301",
+    courseTitle: "Research Methodology & Technical Writing",
+    academicSessionId: "ses-2026-2027",
+    academicSession: "2026/2027",
+    semesterId: "sem-2026-s1",
+    semester: "First Semester",
+    programId: "prg-bsc-it",
+    programCode: "BIT",
+    departmentId: "dept-gen",
+    department: "Department of Information Technology",
+    level: "300",
+    section: "Section A",
+    creditHours: 2,
+    capacity: 120,
+    enrolledCount: 88,
+    status: "open",
+    venue: "Auditorium 1",
+    schedule: "Thursdays 08:00 - 10:00",
+    prerequisites: [],
+    primaryLecturerId: "usr-lec-06",
+    primaryLecturerName: "Prof. Ama Boateng"
+  }
+];
+
+export const SAMPLE_COURSE_LECTURER_ASSIGNMENTS: CourseLecturerAssignment[] = [
+  {
+    id: "cla-01",
+    courseOfferingId: "off-it301-2026-sem1",
+    courseCode: "IT301",
+    lecturerId: "usr-lec-01",
+    lecturerName: "Dr. Kwesi Mensah",
+    lecturerEmail: "kwesi.mensah@premier.edu",
+    role: "primary",
+    section: "Section A",
+    assignmentStatus: "active",
+    assignedAt: "2026-08-15T09:00:00Z",
+    assignedBy: "Registrar Office (Evelyn Ofori-Atta)"
+  },
+  {
+    id: "cla-02",
+    courseOfferingId: "off-it303-2026-sem1",
+    courseCode: "IT303",
+    lecturerId: "usr-lec-02",
+    lecturerName: "Prof. Elena Vance",
+    lecturerEmail: "elena.vance@premier.edu",
+    role: "primary",
+    section: "Section A",
+    assignmentStatus: "active",
+    assignedAt: "2026-08-15T09:30:00Z",
+    assignedBy: "Registrar Office"
+  },
+  {
+    id: "cla-03",
+    courseOfferingId: "off-it305-2026-sem1",
+    courseCode: "IT305",
+    lecturerId: "usr-lec-03",
+    lecturerName: "Eng. Samuel Osei",
+    lecturerEmail: "samuel.osei@premier.edu",
+    role: "primary",
+    section: "Section A",
+    assignmentStatus: "active",
+    assignedAt: "2026-08-15T10:00:00Z",
+    assignedBy: "Registrar Office"
+  }
+];
+
+export const SAMPLE_COURSE_ASSESSMENTS: CourseAssessment[] = [
+  {
+    id: "asmt-it301-1",
+    courseOfferingId: "off-it301-2026-sem1",
+    courseCode: "IT301",
+    title: "SQL Query Optimization Assignment",
+    assessmentType: "assignment",
+    weightPercentage: 10,
+    maxScore: 100,
+    dueDate: "2026-10-15T23:59:59Z",
+    isPublished: true,
+    createdBy: "usr-lec-01",
+    createdAt: "2026-09-10T08:00:00Z"
+  },
+  {
+    id: "asmt-it301-2",
+    courseOfferingId: "off-it301-2026-sem1",
+    courseCode: "IT301",
+    title: "Relational Algebra & Normalization Quiz",
+    assessmentType: "quiz",
+    weightPercentage: 10,
+    maxScore: 100,
+    dueDate: "2026-10-28T23:59:59Z",
+    isPublished: true,
+    createdBy: "usr-lec-01",
+    createdAt: "2026-09-15T08:00:00Z"
+  },
+  {
+    id: "asmt-it301-3",
+    courseOfferingId: "off-it301-2026-sem1",
+    courseCode: "IT301",
+    title: "Mid-Semester Examination",
+    assessmentType: "mid_semester",
+    weightPercentage: 20,
+    maxScore: 100,
+    dueDate: "2026-11-12T12:00:00Z",
+    isPublished: true,
+    createdBy: "usr-lec-01",
+    createdAt: "2026-09-20T08:00:00Z"
+  },
+  {
+    id: "asmt-it301-4",
+    courseOfferingId: "off-it301-2026-sem1",
+    courseCode: "IT301",
+    title: "Comprehensive Final Examination",
+    assessmentType: "final_exam",
+    weightPercentage: 60,
+    maxScore: 100,
+    dueDate: "2027-01-15T16:00:00Z",
+    isPublished: true,
+    createdBy: "usr-lec-01",
+    createdAt: "2026-09-20T08:00:00Z"
+  }
+];
+
+export const SAMPLE_STUDENT_ASSESSMENT_SCORES: StudentAssessmentScore[] = [
+  {
+    id: "score-std1-asmt1",
+    courseOfferingId: "off-it301-2026-sem1",
+    assessmentId: "asmt-it301-1",
+    studentId: "std-001",
+    studentName: "Abraham Koranteng",
+    matricNo: "PU/IT/2024/001",
+    score: 85,
+    maxScore: 100,
+    lecturerId: "usr-lec-01",
+    status: "verified",
+    enteredAt: "2026-10-18T14:30:00Z",
+    updatedAt: "2026-10-18T14:30:00Z"
+  },
+  {
+    id: "score-std1-asmt2",
+    courseOfferingId: "off-it301-2026-sem1",
+    assessmentId: "asmt-it301-2",
+    studentId: "std-001",
+    studentName: "Abraham Koranteng",
+    matricNo: "PU/IT/2024/001",
+    score: 80,
+    maxScore: 100,
+    lecturerId: "usr-lec-01",
+    status: "verified",
+    enteredAt: "2026-10-30T11:00:00Z",
+    updatedAt: "2026-10-30T11:00:00Z"
+  },
+  {
+    id: "score-std1-asmt3",
+    courseOfferingId: "off-it301-2026-sem1",
+    assessmentId: "asmt-it301-3",
+    studentId: "std-001",
+    studentName: "Abraham Koranteng",
+    matricNo: "PU/IT/2024/001",
+    score: 75,
+    maxScore: 100,
+    lecturerId: "usr-lec-01",
+    status: "verified",
+    enteredAt: "2026-11-15T09:20:00Z",
+    updatedAt: "2026-11-15T09:20:00Z"
+  },
+  {
+    id: "score-std1-asmt4",
+    courseOfferingId: "off-it301-2026-sem1",
+    assessmentId: "asmt-it301-4",
+    studentId: "std-001",
+    studentName: "Abraham Koranteng",
+    matricNo: "PU/IT/2024/001",
+    score: 74,
+    maxScore: 100,
+    lecturerId: "usr-lec-01",
+    status: "verified",
+    enteredAt: "2027-01-18T10:00:00Z",
+    updatedAt: "2027-01-18T10:00:00Z"
+  }
+];
+
+export const SAMPLE_STUDENT_COURSE_RESULTS: StudentCourseResult[] = [
+  {
+    id: "res-std1-it301",
+    courseOfferingId: "off-it301-2026-sem1",
+    courseId: "crs-it301",
+    courseCode: "IT301",
+    courseTitle: "Database Administration & Architecture",
+    studentId: "std-001",
+    studentName: "Abraham Koranteng",
+    matricNo: "PU/IT/2024/001",
+    academicSession: "2026/2027",
+    semester: "First Semester",
+    level: "300",
+    caScore: 31.5,
+    examScore: 44.4,
+    totalScore: 76,
+    grade: "B+",
+    gradePoint: 3.5,
+    creditHours: 3,
+    creditsEarned: 3,
+    creditsAttempted: 3,
+    isPass: true,
+    status: "published",
+    lecturerId: "usr-lec-01",
+    lecturerName: "Dr. Kwesi Mensah",
+    submittedAt: "2027-01-20T10:00:00Z",
+    approvedBy: "Registrar (Evelyn Ofori-Atta)",
+    approvedAt: "2027-01-22T14:00:00Z",
+    publishedAt: "2027-01-23T08:00:00Z"
+  }
+];
 
 export const SAMPLE_STUDENT: StudentRecord = {
   id: "std-001",
@@ -266,6 +658,8 @@ export const SAMPLE_PROGRESSION_RECORDS: ProgressionRecord[] = [
 export const SAMPLE_REGISTRATION_SLIP: CourseRegistrationSlip = {
   id: "reg-300-1",
   studentId: "std-001",
+  studentName: "Abraham Koranteng",
+  matricNo: "PU/IT/2024/001",
   semesterId: "sem-2026-s1",
   academicSession: "2026/2027",
   semester: "First Semester",
@@ -276,12 +670,12 @@ export const SAMPLE_REGISTRATION_SLIP: CourseRegistrationSlip = {
   approvedBy: "Registrar Office (Dr. A. Mensah)",
   totalCredits: 17,
   items: [
-    { id: "ri-1", courseId: "crs-it301", code: "IT301", title: "Database Management Systems", creditHours: 3, type: "core", status: "approved" },
-    { id: "ri-2", courseId: "crs-it303", code: "IT303", title: "Web Technologies & Cloud Services", creditHours: 3, type: "core", status: "approved" },
-    { id: "ri-3", courseId: "crs-it305", code: "IT305", title: "Network Security & Cryptography", creditHours: 3, type: "core", status: "approved" },
-    { id: "ri-4", courseId: "crs-it307", code: "IT307", title: "Operating Systems & Concurrency", creditHours: 3, type: "core", status: "approved" },
-    { id: "ri-5", courseId: "crs-it309", code: "IT309", title: "Human-Computer Interaction (HCI)", creditHours: 3, type: "elective", status: "approved" },
-    { id: "ri-6", courseId: "crs-gen301", code: "GEN301", title: "Research Methodology & Technical Writing", creditHours: 2, type: "required", status: "approved" }
+    { id: "ri-1", courseOfferingId: "off-it301-2026-sem1", courseId: "crs-it301", code: "IT301", title: "Database Administration & Architecture", creditHours: 3, type: "core", status: "approved" },
+    { id: "ri-2", courseOfferingId: "off-it303-2026-sem1", courseId: "crs-it303", code: "IT303", title: "Web Technologies & Cloud Services", creditHours: 3, type: "core", status: "approved" },
+    { id: "ri-3", courseOfferingId: "off-it305-2026-sem1", courseId: "crs-it305", code: "IT305", title: "Network Security & Cryptography", creditHours: 3, type: "core", status: "approved" },
+    { id: "ri-4", courseOfferingId: "off-it307-2026-sem1", courseId: "crs-it307", code: "IT307", title: "Operating Systems & Concurrency", creditHours: 3, type: "core", status: "approved" },
+    { id: "ri-5", courseOfferingId: "off-it309-2026-sem1", courseId: "crs-it309", code: "IT309", title: "Human-Computer Interaction (HCI)", creditHours: 3, type: "elective", status: "approved" },
+    { id: "ri-6", courseOfferingId: "off-gen301-2026-sem1", courseId: "crs-gen301", code: "GEN301", title: "Research Methodology & Technical Writing", creditHours: 2, type: "required", status: "approved" }
   ]
 };
 

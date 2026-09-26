@@ -19,6 +19,7 @@ import { useToast } from '../../context/ToastContext';
 export const CourseRegistration: React.FC = () => {
   const { 
     courses, 
+    courseOfferings,
     settings, 
     activeStudent, 
     addDocument, 
@@ -162,21 +163,32 @@ export const CourseRegistration: React.FC = () => {
     const newSlip: CourseRegistrationSlip = {
       id: `reg-${Date.now()}`,
       studentId: activeStudent.studentId,
+      studentName: `${activeStudent.firstName} ${activeStudent.lastName}`,
+      matricNo: activeStudent.studentId,
       semesterId: `sem-${settings.currentSession.replace('/', '-')}-1`,
       academicSession: settings.currentSession,
       semester: settings.currentSemester,
       level: activeStudent.currentLevel,
       status: 'submitted',
       submittedAt: new Date().toISOString().replace('T', ' ').substring(0, 19),
-      items: selectedCourses.map(c => ({
-        id: `it-${c.id}`,
-        courseId: c.id,
-        code: c.code,
-        title: c.title,
-        creditHours: c.creditHours,
-        type: c.type,
-        status: 'pending'
-      })),
+      items: selectedCourses.map(c => {
+        const matchingOffering = courseOfferings.find(o => 
+          (o.courseId === c.id || o.courseCode === c.code) &&
+          (o.academicSession === settings.currentSession || !o.academicSession)
+        );
+        return {
+          id: `it-${c.id}-${Date.now().toString(36)}`,
+          courseOfferingId: matchingOffering?.id || `off-${c.code.toLowerCase()}-2026-sem1`,
+          courseId: c.id,
+          code: c.code,
+          title: c.title,
+          creditHours: c.creditHours,
+          type: c.type,
+          section: matchingOffering?.section || 'Section A',
+          status: 'pending' as const,
+          isPass: false
+        };
+      }),
       totalCredits
     };
 

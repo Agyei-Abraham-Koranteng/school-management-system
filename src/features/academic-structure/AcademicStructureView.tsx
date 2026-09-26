@@ -43,6 +43,17 @@ export const AcademicStructureView: React.FC = () => {
     addCourse,
     updateCourse,
     deleteCourse,
+    courseOfferings,
+    addCourseOffering,
+    updateCourseOffering,
+    deleteCourseOffering,
+    lecturerAssignments,
+    assignLecturerToOffering,
+    removeLecturerAssignment,
+    academicSessions,
+    academicSemesters,
+    staff,
+    registrations,
     students
   } = useSchool();
   const { role } = useAuth();
@@ -50,7 +61,7 @@ export const AcademicStructureView: React.FC = () => {
 
   const { showToast } = useToast();
 
-  const [activeTab, setActiveTab] = useState<'faculties' | 'departments' | 'programs' | 'courses'>('faculties');
+  const [activeTab, setActiveTab] = useState<'faculties' | 'departments' | 'programs' | 'courses' | 'offerings'>('faculties');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Create Modals state
@@ -58,6 +69,9 @@ export const AcademicStructureView: React.FC = () => {
   const [isDeptModalOpen, setIsDeptModalOpen] = useState(false);
   const [isProgModalOpen, setIsProgModalOpen] = useState(false);
   const [isCourseModalOpen, setIsCourseModalOpen] = useState(false);
+  const [isOfferingModalOpen, setIsOfferingModalOpen] = useState(false);
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [selectedOfferingForAssign, setSelectedOfferingForAssign] = useState<string>('');
 
   // Edit Modals state
   const [editingFaculty, setEditingFaculty] = useState<Faculty | null>(null);
@@ -67,7 +81,7 @@ export const AcademicStructureView: React.FC = () => {
 
   // Delete Confirmation state
   const [deletingItem, setDeletingItem] = useState<{
-    type: 'faculty' | 'department' | 'program' | 'course';
+    type: 'faculty' | 'department' | 'program' | 'course' | 'offering';
     id: string;
     name: string;
     warning?: string;
@@ -88,6 +102,23 @@ export const AcademicStructureView: React.FC = () => {
     department: '',
     prerequisites: ''
   });
+  const [offeringForm, setOfferingForm] = useState({
+    courseId: '',
+    academicSessionId: '',
+    academicSemesterId: '',
+    level: '100' as AcademicLevel,
+    section: 'A',
+    capacity: 60,
+    venue: 'Lecture Hall 1',
+    scheduleDays: 'Mon, Wed',
+    scheduleTime: '10:00 - 12:00',
+    primaryLecturerId: ''
+  });
+  const [assignForm, setAssignForm] = useState({
+    lecturerId: '',
+    role: 'co_lecturer' as 'primary' | 'co_lecturer' | 'assistant'
+  });
+
 
   // Dynamic calculations for relationships
   const facultyStats = useMemo(() => {
@@ -164,6 +195,99 @@ export const AcademicStructureView: React.FC = () => {
       (c.description && c.description.toLowerCase().includes(q))
     );
   }, [courses, searchQuery]);
+
+  const filteredOfferings = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return courseOfferings;
+    return courseOfferings.filter(o => 
+      o.courseCode.toLowerCase().includes(q) ||
+      o.courseTitle.toLowerCase().includes(q) ||
+      (o.primaryLecturerName && o.primaryLecturerName.toLowerCase().includes(q)) ||
+      (o.venue && o.venue.toLowerCase().includes(q)) ||
+      o.section.toLowerCase().includes(q) ||
+      o.level.toLowerCase().includes(q)
+    );
+  }, [courseOfferings, searchQuery]);
+
+  const lecturers = useMemo(() => {
+    return staff.filter(s => s.role === 'lecturer' || (s as any).department || s.title?.includes('Dr') || s.title?.includes('Prof'));
+  }, [staff]);
+
+  const handleCreateOffering = (e: React.FormEvent) => {
+    e.preventDefault();
+    const course = courses.find(c => c.id === offeringForm.courseId);
+    if (!course) {
+      showToast('Please select a curriculum course', 'error');
+      return;
+    }
+    const session = academicSessions.find(s => s.id === offeringForm.academicSessionId) || academicSessions[0];
+    const semester = academicSemesters.find(s => s.id === offeringForm.academicSemesterId) || academicSemesters[0];
+    const primaryLec = staff.find(s => s.id === offeringForm.primaryLecturerId);
+
+    addCourseOffering({
+      courseId: course.id,
+      courseCode: course.code,
+      courseTitle: course.title,
+      academicSessionId: session ? session.id : 'sess-2024-2025',
+      academicSession: session ? session.name : '2024/2025',
+      semesterId: semester ? semester.id : 'sem-2024-2025-1',
+      semester: (semester?.name || 'First Semester') as 'First Semester' | 'Second Semester',
+      creditHours: course.creditHours,
+      level: offeringForm.level,
+      section: (offeringForm.section || 'A').toUpperCase(),
+      capacity: Number(offeringForm.capacity) || 60,
+      enrolledCount: 0,
+      venue: offeringForm.venue,
+      schedule: `${offeringForm.scheduleDays} ${offeringForm.scheduleTime}`.trim(),
+      primaryLecturerId: primaryLec ? primaryLec.id : undefined,
+      primaryLecturerName: primaryLec ? `${primaryLec.title || 'Dr.'} ${primaryLec.firstName} ${primaryLec.lastName}` : undefined,
+      status: 'open'
+    });
+
+    if (primaryLec) {
+      showToast(`Course offering for ${course.code} created and assigned to ${primaryLec.firstName} ${primaryLec.lastName}`, 'success');
+    } else {
+      showToast(`Course offering for ${course.code} created successfully`, 'success');
+    }
+
+    setIsOfferingModalOpen(false);
+    setOfferingForm({
+      courseId: '',
+      academicSessionId: '',
+      academicSemesterId: '',
+      level: '100',
+      section: 'A',
+      capacity: 60,
+      venue: 'Lecture Hall 1',
+      scheduleDays: 'Mon, Wed',
+      scheduleTime: '10:00 - 12:00',
+      primaryLecturerId: ''
+    });
+  };
+
+  const handleAssignLecturer = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedOfferingForAssign || !assignForm.lecturerId) return;
+    const offering = courseOfferings.find(o => o.id === selectedOfferingForAssign);
+    const lec = staff.find(s => s.id === assignForm.lecturerId);
+    if (!offering || !lec) return;
+
+    assignLecturerToOffering({
+      courseOfferingId: offering.id,
+      courseCode: offering.courseCode,
+      lecturerId: lec.id,
+      lecturerName: `${lec.title || 'Dr.'} ${lec.firstName} ${lec.lastName}`,
+      lecturerEmail: lec.email,
+      role: assignForm.role,
+      section: offering.section || 'A',
+      assignmentStatus: 'active'
+    });
+
+    showToast(`Assigned ${lec.firstName} ${lec.lastName} to ${offering.courseCode}`, 'success');
+    setIsAssignModalOpen(false);
+    setSelectedOfferingForAssign('');
+    setAssignForm({ lecturerId: '', role: 'co_lecturer' });
+  };
 
   // Handle Faculty Actions
   const handleCreateFaculty = (e: React.FormEvent) => {
@@ -333,7 +457,7 @@ export const AcademicStructureView: React.FC = () => {
   };
 
   // Delete Handlers
-  const triggerDelete = (type: 'faculty' | 'department' | 'program' | 'course', id: string, name: string) => {
+  const triggerDelete = (type: 'faculty' | 'department' | 'program' | 'course' | 'offering', id: string, name: string) => {
     let warning: string | undefined;
     if (type === 'faculty') {
       const childDepts = departments.filter(d => d.facultyId === id);
@@ -364,6 +488,9 @@ export const AcademicStructureView: React.FC = () => {
     } else if (type === 'course') {
       deleteCourse(id);
       showToast(`Curriculum Course ${name} deleted`, 'info');
+    } else if (type === 'offering') {
+      deleteCourseOffering(id);
+      showToast(`Course Offering ${name} removed`, 'info');
     }
     setDeletingItem(null);
   };
@@ -386,7 +513,7 @@ export const AcademicStructureView: React.FC = () => {
                 </span>
               </h2>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                Manage institutional faculties, academic departments, degree program curricula, and syllabus courses in real time.
+                Manage institutional faculties, academic departments, degree program curricula, syllabus courses, and semester offerings in real time.
               </p>
             </div>
           </div>
@@ -436,6 +563,23 @@ export const AcademicStructureView: React.FC = () => {
                 <Plus className="w-4 h-4" /> Add Course Unit
               </button>
             )}
+            {activeTab === 'offerings' && (
+              <button
+                onClick={() => {
+                  setOfferingForm(prev => ({
+                    ...prev,
+                    courseId: courses[0]?.id || '',
+                    academicSessionId: academicSessions[0]?.id || '',
+                    academicSemesterId: academicSemesters[0]?.id || '',
+                    primaryLecturerId: staff[0]?.id || ''
+                  }));
+                  setIsOfferingModalOpen(true);
+                }}
+                className="inline-flex items-center gap-2 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors"
+              >
+                <Plus className="w-4 h-4" /> Create Course Offering
+              </button>
+            )}
           </div>
         ) : (
           <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 text-xs font-medium border border-neutral-200/60 dark:border-neutral-700/60">
@@ -474,6 +618,7 @@ export const AcademicStructureView: React.FC = () => {
               {activeTab === 'departments' && filteredDepartments.length}
               {activeTab === 'programs' && filteredPrograms.length}
               {activeTab === 'courses' && filteredCourses.length}
+              {activeTab === 'offerings' && filteredOfferings.length}
             </strong>
             {' '}of{' '}
             <span className="font-mono">
@@ -481,6 +626,7 @@ export const AcademicStructureView: React.FC = () => {
               {activeTab === 'departments' && departments.length}
               {activeTab === 'programs' && programs.length}
               {activeTab === 'courses' && courses.length}
+              {activeTab === 'offerings' && courseOfferings.length}
             </span>
           </span>
         </div>
@@ -527,6 +673,16 @@ export const AcademicStructureView: React.FC = () => {
           }`}
         >
           <BookOpen className="w-4 h-4" /> Curriculum Courses ({courses.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('offerings')}
+          className={`pb-3 border-b-2 transition-colors flex items-center gap-2 shrink-0 ${
+            activeTab === 'offerings'
+              ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+              : 'border-transparent text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
+          }`}
+        >
+          <Clock className="w-4 h-4" /> Course Offerings & Allocations ({courseOfferings.length})
         </button>
       </div>
 
@@ -820,6 +976,133 @@ export const AcademicStructureView: React.FC = () => {
                   <tr>
                     <td colSpan={7} className="py-12 text-center text-neutral-400 text-xs">
                       No curriculum courses matching your search.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Content for Course Offerings & Lecturer Allocations */}
+      {activeTab === 'offerings' && (
+        <div className="overflow-hidden rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-neutral-50 dark:bg-neutral-800/60 text-neutral-500 font-semibold border-b border-neutral-200/80 dark:border-neutral-800">
+                <tr>
+                  <th className="py-3 px-4">Offering Code & Title</th>
+                  <th className="py-3 px-4">Academic Session & Level</th>
+                  <th className="py-3 px-4">Lecturer Allocation</th>
+                  <th className="py-3 px-4">Schedule & Venue</th>
+                  <th className="py-3 px-4">Enrollment vs Capacity</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800 text-neutral-700 dark:text-neutral-300">
+                {filteredOfferings.map(offering => {
+                  const assignments = lecturerAssignments.filter(a => a.courseOfferingId === offering.id);
+                  const enrolledCount = registrations.filter(r => 
+                    r.status === 'approved' && 
+                    r.items.some(i => i.courseOfferingId === offering.id || i.code === offering.courseCode)
+                  ).length;
+                  const maxCap = offering.capacity || 60;
+                  const pct = Math.min(100, Math.round((enrolledCount / maxCap) * 100));
+
+                  return (
+                    <tr key={offering.id} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/40 transition-colors">
+                      <td className="py-3 px-4">
+                        <div className="font-bold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
+                          <span className="font-mono text-indigo-600 dark:text-indigo-400 font-bold">{offering.courseCode}</span>
+                          <span>{offering.courseTitle}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-[11px] text-neutral-400 mt-0.5">
+                          <span>Sec {offering.section || 'A'}</span>
+                          <span>•</span>
+                          <span className="font-mono">{offering.creditHours} Credits</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="font-semibold text-neutral-800 dark:text-neutral-200">Level {offering.level}</span>
+                        <p className="text-[11px] text-neutral-400">
+                          {offering.academicSession || academicSessions.find(s => s.id === offering.academicSessionId)?.name || 'Current Session'}
+                        </p>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="space-y-1">
+                          {offering.primaryLecturerName ? (
+                            <div className="flex items-center gap-1.5 font-medium text-neutral-800 dark:text-neutral-200">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                              <span>{offering.primaryLecturerName}</span>
+                              <span className="text-[10px] text-neutral-400 font-normal">(Lead)</span>
+                            </div>
+                          ) : (
+                            <span className="text-amber-500 font-semibold text-[11px]">Unassigned</span>
+                          )}
+                          {assignments.filter(a => a.role !== 'primary').map(a => (
+                            <div key={a.id} className="text-[11px] text-neutral-500 dark:text-neutral-400 pl-3">
+                              + {a.lecturerName} <span className="text-[10px] uppercase">({a.role})</span>
+                            </div>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="font-medium text-neutral-800 dark:text-neutral-200">{offering.venue || 'TBA'}</div>
+                        <p className="text-[11px] text-neutral-400">
+                          {offering.schedule || 'Schedule TBA'}
+                        </p>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center justify-between text-[11px] font-mono mb-1">
+                          <span className="font-bold text-neutral-900 dark:text-neutral-100">{enrolledCount} enrolled</span>
+                          <span className="text-neutral-400">{maxCap} max</span>
+                        </div>
+                        <div className="w-28 bg-neutral-200 dark:bg-neutral-700 rounded-full h-1.5 overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${pct >= 100 ? 'bg-rose-500' : pct >= 80 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 capitalize">
+                          {offering.status || 'Active'}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        {canManage ? (
+                          <div className="inline-flex items-center gap-1">
+                            <button
+                              onClick={() => {
+                                setSelectedOfferingForAssign(offering.id);
+                                setIsAssignModalOpen(true);
+                              }}
+                              className="px-2 py-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-lg transition-colors"
+                              title="Allocate Staff"
+                            >
+                              Allocate Staff
+                            </button>
+                            <button
+                              onClick={() => triggerDelete('offering', offering.id, `${offering.courseCode} (${offering.section || 'Sec A'})`)}
+                              className="p-1.5 text-neutral-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                              title="Delete Offering"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-[10px] text-neutral-400">View Only</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+                {filteredOfferings.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="py-12 text-center text-neutral-400 text-xs">
+                      No active course offerings found matching your search.
                     </td>
                   </tr>
                 )}
@@ -1690,7 +1973,213 @@ export const AcademicStructureView: React.FC = () => {
         </div>
       )}
 
-      {/* 9. Delete Confirmation Modal */}
+      {/* 9. Create Course Offering Modal */}
+      {isOfferingModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="w-full max-w-lg bg-white dark:bg-neutral-900 rounded-2xl shadow-xl border border-neutral-200 dark:border-neutral-800 p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
+                <Clock className="w-4 h-4 text-indigo-600" />
+                Launch Semester Course Offering
+              </h3>
+              <button onClick={() => setIsOfferingModalOpen(false)} className="text-neutral-400 hover:text-neutral-600">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <form onSubmit={handleCreateOffering} className="space-y-3 text-xs">
+              <div>
+                <label className="font-semibold block mb-1">Curriculum Course</label>
+                <select
+                  required
+                  value={offeringForm.courseId}
+                  onChange={(e) => setOfferingForm({ ...offeringForm, courseId: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 font-medium"
+                >
+                  <option value="">-- Select Syllabus Course --</option>
+                  {courses.map(c => (
+                    <option key={c.id} value={c.id}>{c.code} - {c.title} ({c.creditHours} Credits)</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-semibold block mb-1">Academic Session</label>
+                  <select
+                    value={offeringForm.academicSessionId}
+                    onChange={(e) => setOfferingForm({ ...offeringForm, academicSessionId: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800"
+                  >
+                    {academicSessions.map(s => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="font-semibold block mb-1">Semester</label>
+                  <select
+                    value={offeringForm.academicSemesterId}
+                    onChange={(e) => setOfferingForm({ ...offeringForm, academicSemesterId: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800"
+                  >
+                    {academicSemesters.map(s => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="font-semibold block mb-1">Level</label>
+                  <select
+                    value={offeringForm.level}
+                    onChange={(e) => setOfferingForm({ ...offeringForm, level: e.target.value as AcademicLevel })}
+                    className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800"
+                  >
+                    <option value="100">Level 100</option>
+                    <option value="200">Level 200</option>
+                    <option value="300">Level 300</option>
+                    <option value="400">Level 400</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="font-semibold block mb-1">Section</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="A"
+                    value={offeringForm.section}
+                    onChange={(e) => setOfferingForm({ ...offeringForm, section: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 uppercase font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="font-semibold block mb-1">Capacity</label>
+                  <input
+                    type="number"
+                    min={10}
+                    max={500}
+                    required
+                    value={offeringForm.capacity}
+                    onChange={(e) => setOfferingForm({ ...offeringForm, capacity: Number(e.target.value) })}
+                    className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-semibold block mb-1">Venue / Lecture Hall</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Science Complex LH-02"
+                    value={offeringForm.venue}
+                    onChange={(e) => setOfferingForm({ ...offeringForm, venue: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800"
+                  />
+                </div>
+                <div>
+                  <label className="font-semibold block mb-1">Schedule Days</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Mon, Wed"
+                    value={offeringForm.scheduleDays}
+                    onChange={(e) => setOfferingForm({ ...offeringForm, scheduleDays: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="font-semibold block mb-1">Schedule Time</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. 10:00 - 12:00"
+                  value={offeringForm.scheduleTime}
+                  onChange={(e) => setOfferingForm({ ...offeringForm, scheduleTime: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="font-semibold block mb-1">Lead / Primary Instructor</label>
+                <select
+                  value={offeringForm.primaryLecturerId}
+                  onChange={(e) => setOfferingForm({ ...offeringForm, primaryLecturerId: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 font-medium"
+                >
+                  <option value="">-- Assign Later --</option>
+                  {lecturers.map(l => (
+                    <option key={l.id} value={l.id}>{l.title || 'Dr.'} {l.firstName} {l.lastName} ({l.department || 'Faculty Staff'})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="pt-3 flex justify-end gap-2 border-t border-neutral-100 dark:border-neutral-800">
+                <button type="button" onClick={() => setIsOfferingModalOpen(false)} className="px-4 py-2 border rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 font-semibold">Cancel</button>
+                <button type="submit" className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-xs">Publish Offering</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 10. Allocate Staff to Offering Modal */}
+      {isAssignModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="w-full max-w-md bg-white dark:bg-neutral-900 rounded-2xl shadow-xl border border-neutral-200 dark:border-neutral-800 p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
+                <Users className="w-4 h-4 text-indigo-600" />
+                Allocate Teaching Staff
+              </h3>
+              <button onClick={() => setIsAssignModalOpen(false)} className="text-neutral-400 hover:text-neutral-600">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <form onSubmit={handleAssignLecturer} className="space-y-3 text-xs">
+              <div>
+                <label className="font-semibold block mb-1">Select Lecturer / Instructor</label>
+                <select
+                  required
+                  value={assignForm.lecturerId}
+                  onChange={(e) => setAssignForm({ ...assignForm, lecturerId: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 font-medium"
+                >
+                  <option value="">-- Select Instructor --</option>
+                  {lecturers.map(l => (
+                    <option key={l.id} value={l.id}>{l.title || 'Dr.'} {l.firstName} {l.lastName} ({l.department || 'Faculty'})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="font-semibold block mb-1">Allocation Role</label>
+                <select
+                  value={assignForm.role}
+                  onChange={(e) => setAssignForm({ ...assignForm, role: e.target.value as 'primary' | 'co_lecturer' | 'assistant' })}
+                  className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 font-medium"
+                >
+                  <option value="primary">Primary / Lead Lecturer</option>
+                  <option value="co_lecturer">Co-Lecturer</option>
+                  <option value="assistant">Teaching Assistant</option>
+                </select>
+              </div>
+
+              <div className="pt-3 flex justify-end gap-2 border-t border-neutral-100 dark:border-neutral-800">
+                <button type="button" onClick={() => setIsAssignModalOpen(false)} className="px-4 py-2 border rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 font-semibold">Cancel</button>
+                <button type="submit" className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-xs">Confirm Allocation</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 11. Delete Confirmation Modal */}
       {deletingItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/60 backdrop-blur-xs animate-in fade-in duration-150">
           <div className="w-full max-w-sm bg-white dark:bg-neutral-900 rounded-2xl shadow-xl border border-neutral-200 dark:border-neutral-800 p-5 space-y-4">

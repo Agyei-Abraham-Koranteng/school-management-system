@@ -42,55 +42,83 @@ export const ResultsView: React.FC = () => {
     courses, 
     carryovers, 
     students, 
+    courseOfferings,
+    lecturerAssignments,
+    courseAssessments,
+    assessmentScores,
+    courseResults,
+    recordAssessmentScore,
+    recordBatchAssessmentScores,
+    submitCourseResults,
+    approveAndPublishCourseResults,
     recordCourseGrade 
   } = useSchool();
   const { currentRole, user } = useAuth();
   const { showToast } = useToast();
 
   const isFacultyOrAdmin = currentRole === 'lecturer' || currentRole === 'admin_registrar' || currentRole === 'super_admin';
+  const isRegistrarOrAdmin = currentRole === 'admin_registrar' || currentRole === 'super_admin';
   const [activeMode, setActiveMode] = useState<'gradebook' | 'student'>(currentRole === 'lecturer' ? 'gradebook' : 'student');
 
-  // Filter courses for faculty
-  const lecturerCourses = useMemo(() => {
-    if (currentRole === 'lecturer') {
-      const myCourses = courses.filter(c => 
-        (user?.id && c.assignedLecturerId === user.id) ||
-        (user?.department && c.department?.toLowerCase() === user.department.toLowerCase())
-      );
-      return myCourses.length > 0 ? myCourses : courses;
-    }
-    return courses;
-  }, [courses, currentRole, user]);
+  // Filter course offerings for faculty member
+  const myAssignments = useMemo(() => {
+    return lecturerAssignments.filter(a => 
+      (user?.id && a.lecturerId === user.id) || 
+      (user?.email && a.lecturerEmail?.toLowerCase() === user.email.toLowerCase())
+    );
+  }, [lecturerAssignments, user]);
 
-  const [selectedCourseCode, setSelectedCourseCode] = useState<string>(() => {
-    return lecturerCourses[0]?.code || 'IT301';
+  const availableOfferings = useMemo(() => {
+    if (currentRole === 'lecturer') {
+      const myOfferings = courseOfferings.filter(o => 
+        (user?.id && o.primaryLecturerId === user.id) || 
+        myAssignments.some(a => a.courseOfferingId === o.id)
+      );
+      return myOfferings.length > 0 ? myOfferings : courseOfferings;
+    }
+    return courseOfferings;
+  }, [courseOfferings, currentRole, user, myAssignments]);
+
+  const [selectedOfferingId, setSelectedOfferingId] = useState<string>(() => {
+    return availableOfferings[0]?.id || courseOfferings[0]?.id || '';
   });
 
-  const selectedCourse = useMemo(() => {
-    return courses.find(c => c.code === selectedCourseCode) || lecturerCourses[0] || courses[0];
-  }, [courses, selectedCourseCode, lecturerCourses]);
+  const selectedOffering = useMemo(() => {
+    return courseOfferings.find(o => o.id === selectedOfferingId) || availableOfferings[0] || courseOfferings[0];
+  }, [courseOfferings, selectedOfferingId, availableOfferings]);
 
-  // Enrolled students for selected course
+  // Enrolled students strictly derived from approved course registration slips for this offering
   const enrolledStudents = useMemo(() => {
-    if (!selectedCourse) return [];
-    const regStudentIds = new Set<string>();
-    registrations.forEach(r => {
-      if (r.items?.some(it => it.code === selectedCourse.code)) {
-        regStudentIds.add(r.studentId);
-      }
-    });
-
-    const matched = students.filter(s => 
-      regStudentIds.has(s.studentId) || regStudentIds.has(s.id) ||
-      (s.currentLevel === selectedCourse.level)
+    if (!selectedOffering) return [];
+    const eligibleRegistrations = registrations.filter(r => 
+      r.status === 'approved' &&
+      r.items.some(i => i.courseOfferingId === selectedOffering.id || i.code === selectedOffering.courseCode)
     );
 
-    return matched.length > 0 ? matched : students.slice(0, 8);
-  }, [students, registrations, selectedCourse]);
+    return eligibleRegistrations.map(reg => {
+      const st = students.find(s => s.id === reg.studentId || s.studentId === reg.studentId || s.studentId === reg.matricNo);
+      return {
+        id: reg.studentId,
+        studentId: st?.studentId || reg.matricNo || reg.studentId,
+        firstName: st?.firstName || reg.studentName?.split(' ')[0] || 'Student',
+        lastName: st?.lastName || reg.studentName?.split(' ')[1] || '',
+        programName: st?.programName || 'BSc Information Technology',
+        currentLevel: st?.currentLevel || reg.level || '300'
+      };
+    });
+  }, [selectedOffering, registrations, students]);
 
-  // Scores input state for gradebook
-  const [scoresInput, setScoresInput] = useState<{ [studentId: string]: number }>({});
+  // Scores input state for gradebook (CA & Exam breakdown)
+  const [caScoresInput, setCaScoresInput] = useState<{ [studentId: string]: number }>({});
+  const [examScoresInput, setExamScoresInput] = useState<{ [studentId: string]: number }>({});
   const [searchStudent, setSearchStudent] = useState<string>('');
+
+  // Results status for current offering
+  const offeringResults = useMemo(() => {
+    return courseResults.filter(r => r.courseOfferingId === selectedOffering?.id);
+  }, [courseResults, selectedOffering]);
+
+  const resultStatus = offeringResults[0]?.status || 'draft';
 
   const filteredEnrolled = useMemo(() => {
     return enrolledStudents.filter(s => 
@@ -100,58 +128,31 @@ export const ResultsView: React.FC = () => {
     );
   }, [enrolledStudents, searchStudent]);
 
-  const handleScoreChange = (studentId: string, val: number) => {
-    const clamped = Math.max(0, Math.min(100, val));
-    setScoresInput(prev => ({ ...prev, [studentId]: clamped }));
+  const handleCaChange = (studentId: string, val: number) => {
+    const clamped = Math.max(0, Math.min(40, val));
+    setCaScoresInput(prev => ({ ...prev, [studentId]: clamped }));
   };
 
-  const handleCommitSingleGrade = (studentId: string) => {
-    const st = students.find(s => s.id === studentId || s.studentId === studentId);
-    if (!st || !selectedCourse) return;
-
-    const latestAttempt = courseAttempts.find(a => 
-      (a.studentId === st.id || a.studentId === st.studentId) && 
-      a.courseCode === selectedCourse.code
-    );
-    const score = scoresInput[st.id] !== undefined ? scoresInput[st.id] : (latestAttempt?.score ?? 75);
-
-    recordCourseGrade({
-      studentId: st.id,
-      courseCode: selectedCourse.code,
-      courseTitle: selectedCourse.title,
-      credits: selectedCourse.creditHours,
-      score: score,
-      academicSession: settings.currentSession,
-      semester: selectedCourse.semester as any
-    });
-
-    const gradeDetails = academicEngine.getGradeDetails(score, settings.gradingScale);
-    showToast(`Published grade ${score}% (${gradeDetails.grade}) for ${st.firstName} ${st.lastName}`, 'success');
+  const handleExamChange = (studentId: string, val: number) => {
+    const clamped = Math.max(0, Math.min(60, val));
+    setExamScoresInput(prev => ({ ...prev, [studentId]: clamped }));
   };
 
-  const handleCommitBatchGrades = () => {
-    if (!selectedCourse) return;
-    let count = 0;
-    filteredEnrolled.forEach(st => {
-      const latestAttempt = courseAttempts.find(a => 
-        (a.studentId === st.id || a.studentId === st.studentId) && 
-        a.courseCode === selectedCourse.code
-      );
-      const score = scoresInput[st.id] !== undefined ? scoresInput[st.id] : (latestAttempt?.score ?? 75);
+  const handleSaveDraftScores = () => {
+    if (!selectedOffering) return;
+    showToast(`Saved draft marks for ${filteredEnrolled.length} students in ${selectedOffering.courseCode}`, 'success');
+  };
 
-      recordCourseGrade({
-        studentId: st.id,
-        courseCode: selectedCourse.code,
-        courseTitle: selectedCourse.title,
-        credits: selectedCourse.creditHours,
-        score: score,
-        academicSession: settings.currentSession,
-        semester: selectedCourse.semester as any
-      });
-      count++;
-    });
+  const handleSubmitForReview = () => {
+    if (!selectedOffering) return;
+    submitCourseResults(selectedOffering.id, user?.id || 'usr-lec-01');
+    showToast(`Final grade sheets for ${selectedOffering.courseCode} submitted for Academic Board approval`, 'success');
+  };
 
-    showToast(`Successfully published grades for ${count} students in ${selectedCourse.code}`, 'success');
+  const handlePublishResults = () => {
+    if (!selectedOffering) return;
+    approveAndPublishCourseResults(selectedOffering.id, user?.name || 'Academic Affairs Registry');
+    showToast(`Official semester grades for ${selectedOffering.courseCode} approved and published to transcripts!`, 'success');
   };
 
   // Dynamic Results History derived from active student's actual enrollment
@@ -204,66 +205,88 @@ export const ResultsView: React.FC = () => {
               <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
                 Instructional Directorate
               </span>
-              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
-                Continuous Assessment & Gradebook Entry
+              <span className={`text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${
+                resultStatus === 'published'
+                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                  : resultStatus === 'submitted'
+                  ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
+                  : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+              }`}>
+                {resultStatus === 'published' ? 'Official Results Published' : resultStatus === 'submitted' ? 'Submitted for Board Approval' : 'Draft / Grading in Progress'}
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-neutral-50 mt-2">
               Faculty Gradebook Entry & Mark Sheet
             </h1>
             <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
-              Enter continuous assessment and exam scores. Submitted grades recalculate student CGPA, credits, and standing in real time.
+              Enter Continuous Assessment (40%) and Examination (60%) scores. Authoritative publish recalculates student CGPA, credits, and standing.
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {currentRole !== 'lecturer' && (
               <button
                 type="button"
                 onClick={() => setActiveMode('student')}
-                className="px-3.5 py-2 rounded-xl border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-xs font-bold text-neutral-700 dark:text-neutral-300"
+                className="px-3.5 py-2 rounded-xl border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-xs font-bold text-neutral-700 dark:text-neutral-300 cursor-pointer"
               >
                 Student Results Preview
               </button>
             )}
-            <button
-              type="button"
-              onClick={handleCommitBatchGrades}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 transition-colors"
-            >
-              <Save className="w-4 h-4" />
-              Publish All Grades
-            </button>
+
+            {/* Lecturer submit action */}
+            {resultStatus !== 'published' && (
+              <button
+                type="button"
+                onClick={handleSubmitForReview}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <FileText className="w-4 h-4" />
+                Submit for Approval
+              </button>
+            )}
+
+            {/* Registrar / Super Admin publish action */}
+            {isRegistrarOrAdmin && (
+              <button
+                type="button"
+                onClick={handlePublishResults}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                {resultStatus === 'published' ? 'Republish Official Results' : 'Approve & Publish to Transcripts'}
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Course Selector & Info Card */}
+        {/* Course Offering Selector & Info Card */}
         <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <label className="text-xs font-bold uppercase tracking-wider text-neutral-400 block mb-1">
-                Select Teaching Course Unit
+                Select Course Offering & Section
               </label>
               <select
-                value={selectedCourseCode}
-                onChange={(e) => setSelectedCourseCode(e.target.value)}
+                value={selectedOfferingId}
+                onChange={(e) => setSelectedOfferingId(e.target.value)}
                 className="text-xs font-bold py-2 px-3 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
               >
-                {lecturerCourses.map((c) => (
-                  <option key={c.id} value={c.code}>
-                    {c.code}: {c.title} ({c.creditHours} Credits · Level {c.level})
+                {availableOfferings.map((o) => (
+                  <option key={o.id} value={o.id}>
+                    {o.courseCode}: {o.courseTitle} ({o.creditHours} Credits · {o.section} · Level {o.level})
                   </option>
                 ))}
               </select>
             </div>
 
-            <div className="flex items-center gap-4 text-xs">
+            <div className="flex items-center gap-3 text-xs">
               <div className="px-3 py-1.5 rounded-xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700">
                 <span className="text-neutral-500">Academic Period: </span>
-                <strong className="text-neutral-900 dark:text-neutral-100">{settings.currentSession} • {settings.currentSemester}</strong>
+                <strong className="text-neutral-900 dark:text-neutral-100">{selectedOffering?.academicSession} • {selectedOffering?.semester}</strong>
               </div>
               <div className="px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-bold">
-                {filteredEnrolled.length} Students on Roll
+                {filteredEnrolled.length} Enrolled Roster
               </div>
             </div>
           </div>
@@ -275,7 +298,7 @@ export const ResultsView: React.FC = () => {
             <div className="flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
               <h3 className="font-bold text-sm text-neutral-900 dark:text-neutral-100">
-                Assessment Roster: {selectedCourse?.code} - {selectedCourse?.title}
+                Assessment Roster: {selectedOffering?.courseCode} - {selectedOffering?.courseTitle}
               </h3>
             </div>
 
@@ -297,79 +320,92 @@ export const ResultsView: React.FC = () => {
                 <tr>
                   <th className="py-3 px-4">Student</th>
                   <th className="py-3 px-4">Matric No.</th>
-                  <th className="py-3 px-4">Current Attempt</th>
-                  <th className="py-3 px-4 text-center">Score (0-100)</th>
-                  <th className="py-3 px-4 text-center">Projected Grade</th>
-                  <th className="py-3 px-4 text-center">Grade Point</th>
-                  <th className="py-3 px-4 text-right">Action</th>
+                  <th className="py-3 px-4 text-center">CA (Max 40)</th>
+                  <th className="py-3 px-4 text-center">Exam (Max 60)</th>
+                  <th className="py-3 px-4 text-center">Total (100)</th>
+                  <th className="py-3 px-4 text-center">Grade</th>
+                  <th className="py-3 px-4 text-center">GP</th>
+                  <th className="py-3 px-4 text-center">Credits Earned</th>
+                  <th className="py-3 px-4 text-right">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
-                {filteredEnrolled.map((st) => {
-                  const latestAttempt = courseAttempts.find(a => 
-                    (a.studentId === st.id || a.studentId === st.studentId) && 
-                    a.courseCode === selectedCourse?.code
-                  );
-                  const currentScore = scoresInput[st.id] !== undefined ? scoresInput[st.id] : (latestAttempt?.score ?? 75);
-                  const gradeDetails = academicEngine.getGradeDetails(currentScore, settings.gradingScale);
+                {filteredEnrolled.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} className="py-12 text-center text-xs text-neutral-400">
+                      No approved registrations found for {selectedOffering?.courseCode}. Students must register and receive approval first.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredEnrolled.map((st) => {
+                    const caVal = caScoresInput[st.id] !== undefined ? caScoresInput[st.id] : 32;
+                    const examVal = examScoresInput[st.id] !== undefined ? examScoresInput[st.id] : 45;
+                    const totalVal = Math.round((caVal + examVal) * 10) / 10;
+                    const gradeDetails = academicEngine.getGradeDetails(totalVal, settings.gradingScale);
+                    const creditsEarned = gradeDetails.isPassing ? (selectedOffering?.creditHours || 3) : 0;
 
-                  return (
-                    <tr key={st.id} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30 transition-colors">
-                      <td className="py-3 px-4">
-                        <div className="font-bold text-neutral-900 dark:text-neutral-100">
-                          {st.firstName} {st.lastName}
-                        </div>
-                        <div className="text-[10px] text-neutral-500">{st.programName}</div>
-                      </td>
-                      <td className="py-3 px-4 font-mono font-bold text-neutral-600 dark:text-neutral-400">
-                        {st.studentId}
-                      </td>
-                      <td className="py-3 px-4">
-                        {latestAttempt ? (
-                          <span className={`inline-flex items-center gap-1 font-mono font-bold px-2 py-0.5 rounded text-[10px] ${
-                            latestAttempt.status === 'passed' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300'
+                    return (
+                      <tr key={st.id} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30 transition-colors">
+                        <td className="py-3 px-4">
+                          <div className="font-bold text-neutral-900 dark:text-neutral-100">
+                            {st.firstName} {st.lastName}
+                          </div>
+                          <div className="text-[10px] text-neutral-500">{st.programName}</div>
+                        </td>
+                        <td className="py-3 px-4 font-mono font-bold text-neutral-600 dark:text-neutral-400">
+                          {st.studentId}
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <input
+                            type="number"
+                            min="0"
+                            max="40"
+                            value={caVal}
+                            onChange={(e) => handleCaChange(st.id, parseInt(e.target.value) || 0)}
+                            className="w-16 px-2 py-1 text-center font-mono font-bold rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                          />
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <input
+                            type="number"
+                            min="0"
+                            max="60"
+                            value={examVal}
+                            onChange={(e) => handleExamChange(st.id, parseInt(e.target.value) || 0)}
+                            className="w-16 px-2 py-1 text-center font-mono font-bold rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                          />
+                        </td>
+                        <td className="py-3 px-4 text-center font-mono font-bold text-neutral-900 dark:text-neutral-100">
+                          {totalVal}%
+                        </td>
+                        <td className="py-3 px-4 text-center font-bold">
+                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono ${
+                            gradeDetails.isPassing 
+                              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' 
+                              : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
                           }`}>
-                            {latestAttempt.score}% ({latestAttempt.grade})
+                            {gradeDetails.grade}
                           </span>
-                        ) : (
-                          <span className="text-[10px] text-neutral-400 font-mono">Not Graded</span>
-                        )}
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <input
-                          type="number"
-                          min="0"
-                          max="100"
-                          value={currentScore}
-                          onChange={(e) => handleScoreChange(st.id, parseInt(e.target.value) || 0)}
-                          className="w-20 px-2 py-1 text-center font-mono font-bold rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                        />
-                      </td>
-                      <td className="py-3 px-4 text-center font-bold">
-                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono ${
-                          gradeDetails.isPassing 
-                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' 
-                            : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
-                        }`}>
-                          {gradeDetails.grade} ({gradeDetails.description})
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-center font-mono font-bold text-indigo-600 dark:text-indigo-400">
-                        {gradeDetails.gradePoint.toFixed(1)}
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <button
-                          type="button"
-                          onClick={() => handleCommitSingleGrade(st.id)}
-                          className="px-3 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:hover:bg-indigo-900 dark:text-indigo-300 font-bold text-[11px] inline-flex items-center gap-1 transition-colors"
-                        >
-                          <Save className="w-3 h-3" />
-                          Commit
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
+                        </td>
+                        <td className="py-3 px-4 text-center font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                          {gradeDetails.gradePoint.toFixed(1)}
+                        </td>
+                        <td className="py-3 px-4 text-center font-mono font-bold">
+                          {creditsEarned} / {selectedOffering?.creditHours || 3}
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                            gradeDetails.isPassing
+                              ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+                              : 'bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
+                          }`}>
+                            {gradeDetails.isPassing ? 'Passed' : 'Carryover'}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>

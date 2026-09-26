@@ -164,6 +164,101 @@ CREATE TABLE IF NOT EXISTS course_prerequisites (
 );
 
 -- ------------------------------------------------------------------------------
+-- 3B. ACADEMIC SESSIONS, SEMESTERS, COURSE OFFERINGS & LECTURER ALLOCATION
+-- ------------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS academic_sessions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    name VARCHAR(32) NOT NULL, -- e.g. "2026/2027"
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    is_current BOOLEAN NOT NULL DEFAULT false,
+    status VARCHAR(32) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'upcoming', 'concluded')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT unique_tenant_session_name UNIQUE(tenant_id, name)
+);
+
+CREATE TABLE IF NOT EXISTS academic_semesters (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    academic_session_id UUID NOT NULL REFERENCES academic_sessions(id) ON DELETE CASCADE,
+    name VARCHAR(32) NOT NULL CHECK (name IN ('First Semester', 'Second Semester')),
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    is_current BOOLEAN NOT NULL DEFAULT false,
+    registration_open BOOLEAN NOT NULL DEFAULT true,
+    registration_deadline TIMESTAMPTZ,
+    status VARCHAR(32) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'upcoming', 'concluded')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT unique_session_semester UNIQUE(academic_session_id, name)
+);
+
+CREATE TABLE IF NOT EXISTS course_offerings (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    course_id UUID NOT NULL REFERENCES courses(id) ON DELETE RESTRICT,
+    academic_session_id UUID REFERENCES academic_sessions(id) ON DELETE RESTRICT,
+    academic_session VARCHAR(32) NOT NULL,
+    semester_id UUID REFERENCES academic_semesters(id) ON DELETE RESTRICT,
+    semester VARCHAR(32) NOT NULL CHECK (semester IN ('First Semester', 'Second Semester')),
+    program_id UUID REFERENCES academic_programs(id) ON DELETE SET NULL,
+    department_id UUID REFERENCES departments(id) ON DELETE SET NULL,
+    level VARCHAR(8) NOT NULL CHECK (level IN ('100', '200', '300', '400', '500')),
+    section VARCHAR(32) NOT NULL DEFAULT 'Section A',
+    credit_hours INT NOT NULL CHECK (credit_hours BETWEEN 1 AND 6),
+    capacity INT NOT NULL DEFAULT 60 CHECK (capacity > 0),
+    enrolled_count INT NOT NULL DEFAULT 0 CHECK (enrolled_count >= 0),
+    status VARCHAR(32) NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'closed', 'cancelled', 'completed')),
+    venue VARCHAR(128),
+    schedule VARCHAR(255),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT unique_course_period_section UNIQUE(course_id, academic_session, semester, section)
+);
+
+CREATE TABLE IF NOT EXISTS course_lecturer_assignments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    course_offering_id UUID NOT NULL REFERENCES course_offerings(id) ON DELETE CASCADE,
+    lecturer_id UUID NOT NULL REFERENCES staff_profiles(id) ON DELETE RESTRICT,
+    role VARCHAR(32) NOT NULL DEFAULT 'primary' CHECK (role IN ('primary', 'assistant', 'co_lecturer')),
+    section VARCHAR(32) NOT NULL DEFAULT 'Section A',
+    assignment_status VARCHAR(32) NOT NULL DEFAULT 'active' CHECK (assignment_status IN ('active', 'concluded', 'revoked')),
+    assigned_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    assigned_by UUID REFERENCES app_users(id),
+    CONSTRAINT unique_offering_lecturer UNIQUE(course_offering_id, lecturer_id)
+);
+
+CREATE TABLE IF NOT EXISTS course_assessments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    course_offering_id UUID NOT NULL REFERENCES course_offerings(id) ON DELETE CASCADE,
+    title VARCHAR(128) NOT NULL,
+    assessment_type VARCHAR(32) NOT NULL CHECK (assessment_type IN ('assignment', 'quiz', 'mid_semester', 'final_exam', 'project', 'practical')),
+    weight_percentage NUMERIC(5,2) NOT NULL CHECK (weight_percentage > 0 AND weight_percentage <= 100),
+    max_score NUMERIC(5,2) NOT NULL DEFAULT 100.00 CHECK (max_score > 0),
+    due_date TIMESTAMPTZ,
+    is_published BOOLEAN NOT NULL DEFAULT true,
+    created_by UUID REFERENCES staff_profiles(id),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS student_assessment_scores (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    course_offering_id UUID NOT NULL REFERENCES course_offerings(id) ON DELETE CASCADE,
+    assessment_id UUID NOT NULL REFERENCES course_assessments(id) ON DELETE CASCADE,
+    student_id UUID NOT NULL REFERENCES students(id) ON DELETE RESTRICT,
+    score NUMERIC(5,2) NOT NULL CHECK (score >= 0),
+    max_score NUMERIC(5,2) NOT NULL CHECK (max_score > 0),
+    lecturer_id UUID REFERENCES staff_profiles(id),
+    status VARCHAR(32) NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'submitted', 'verified')),
+    entered_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT unique_student_assessment_score UNIQUE(assessment_id, student_id)
+);
+
+-- ------------------------------------------------------------------------------
 -- 4. STUDENTS & ADMISSIONS LIFECYCLE
 -- ------------------------------------------------------------------------------
 
@@ -284,9 +379,10 @@ CREATE TABLE IF NOT EXISTS registered_course_items (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     registration_id UUID NOT NULL REFERENCES course_registrations(id) ON DELETE CASCADE,
+    course_offering_id UUID REFERENCES course_offerings(id) ON DELETE RESTRICT,
     course_id UUID NOT NULL REFERENCES courses(id) ON DELETE RESTRICT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    CONSTRAINT unique_registration_course UNIQUE(registration_id, course_id)
+    CONSTRAINT unique_registration_offering UNIQUE(registration_id, course_id)
 );
 
 -- ------------------------------------------------------------------------------
@@ -297,17 +393,24 @@ CREATE TABLE IF NOT EXISTS student_course_grades (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     student_id UUID NOT NULL REFERENCES students(id) ON DELETE RESTRICT,
+    course_offering_id UUID REFERENCES course_offerings(id) ON DELETE RESTRICT,
     course_id UUID NOT NULL REFERENCES courses(id) ON DELETE RESTRICT,
     academic_session VARCHAR(32) NOT NULL,
     semester VARCHAR(32) NOT NULL,
-    ca_score NUMERIC(5,2) NOT NULL DEFAULT 0.00 CHECK (ca_score BETWEEN 0 AND 30),
-    exam_score NUMERIC(5,2) NOT NULL DEFAULT 0.00 CHECK (exam_score BETWEEN 0 AND 70),
+    ca_score NUMERIC(5,2) NOT NULL DEFAULT 0.00 CHECK (ca_score BETWEEN 0 AND 40),
+    exam_score NUMERIC(5,2) NOT NULL DEFAULT 0.00 CHECK (exam_score BETWEEN 0 AND 60),
     total_score NUMERIC(5,2) NOT NULL CHECK (total_score BETWEEN 0 AND 100),
     grade VARCHAR(4) NOT NULL,
     grade_point NUMERIC(3,2) NOT NULL CHECK (grade_point BETWEEN 0.00 AND 4.00),
+    credit_hours INT NOT NULL DEFAULT 3 CHECK (credit_hours BETWEEN 1 AND 6),
+    credits_earned INT NOT NULL DEFAULT 0 CHECK (credits_earned >= 0),
+    credits_attempted INT NOT NULL DEFAULT 3 CHECK (credits_attempted >= 0),
+    is_pass BOOLEAN NOT NULL DEFAULT false,
+    status VARCHAR(32) NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'submitted', 'under_review', 'approved', 'published', 'returned_for_correction')),
     is_published BOOLEAN NOT NULL DEFAULT false,
     lecturer_id UUID REFERENCES staff_profiles(id),
     approved_by UUID REFERENCES app_users(id),
+    correction_notes TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT unique_student_course_sitting UNIQUE(student_id, course_id, academic_session, semester)
@@ -352,12 +455,16 @@ CREATE TABLE IF NOT EXISTS carryover_courses (
 CREATE TABLE IF NOT EXISTS attendance_sessions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    course_offering_id UUID REFERENCES course_offerings(id) ON DELETE RESTRICT,
     course_id UUID NOT NULL REFERENCES courses(id) ON DELETE RESTRICT,
     lecturer_id UUID REFERENCES staff_profiles(id),
     session_date DATE NOT NULL,
     time_slot VARCHAR(64) NOT NULL,
     venue VARCHAR(128) NOT NULL,
     topic TEXT NOT NULL,
+    qr_token VARCHAR(128),
+    qr_expires_at TIMESTAMPTZ,
+    is_active BOOLEAN NOT NULL DEFAULT true,
     total_students INT NOT NULL CHECK (total_students >= 0),
     present_count INT NOT NULL CHECK (present_count >= 0 AND present_count <= total_students),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -367,8 +474,10 @@ CREATE TABLE IF NOT EXISTS attendance_records (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     session_id UUID NOT NULL REFERENCES attendance_sessions(id) ON DELETE CASCADE,
+    course_offering_id UUID REFERENCES course_offerings(id) ON DELETE RESTRICT,
     student_id UUID NOT NULL REFERENCES students(id) ON DELETE RESTRICT,
     status VARCHAR(16) NOT NULL CHECK (status IN ('present', 'absent', 'late', 'excused')),
+    method VARCHAR(16) NOT NULL DEFAULT 'manual' CHECK (method IN ('manual', 'qr')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT unique_session_student_attendance UNIQUE(session_id, student_id)
 );
@@ -578,6 +687,12 @@ ALTER TABLE system_documents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE announcements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE academic_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE academic_semesters ENABLE ROW LEVEL SECURITY;
+ALTER TABLE course_offerings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE course_lecturer_assignments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE course_assessments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE student_assessment_scores ENABLE ROW LEVEL SECURITY;
 
 -- Helper functions for JWT claims
 CREATE OR REPLACE FUNCTION current_tenant_id() RETURNS UUID AS $$
@@ -901,3 +1016,96 @@ CREATE POLICY app_history_insert_policy ON application_status_history
     FOR INSERT WITH CHECK (
         tenant_id = current_tenant_id()
     );
+
+-- ------------------------------------------------------------------------------
+-- 13. ACADEMIC PERIODS, OFFERINGS & ASSESSMENT RLS POLICIES
+-- ------------------------------------------------------------------------------
+
+-- Academic Sessions & Semesters
+CREATE POLICY sessions_select_policy ON academic_sessions
+    FOR SELECT USING (tenant_id = current_tenant_id());
+
+CREATE POLICY sessions_manage_policy ON academic_sessions
+    FOR ALL USING (
+        tenant_id = current_tenant_id() AND current_user_role() IN ('super_admin', 'admin_registrar')
+    );
+
+CREATE POLICY semesters_select_policy ON academic_semesters
+    FOR SELECT USING (tenant_id = current_tenant_id());
+
+CREATE POLICY semesters_manage_policy ON academic_semesters
+    FOR ALL USING (
+        tenant_id = current_tenant_id() AND current_user_role() IN ('super_admin', 'admin_registrar')
+    );
+
+-- Course Offerings: Tenant-wide read; Registrar/Super Admin manage
+CREATE POLICY offerings_select_policy ON course_offerings
+    FOR SELECT USING (tenant_id = current_tenant_id());
+
+CREATE POLICY offerings_manage_policy ON course_offerings
+    FOR ALL USING (
+        tenant_id = current_tenant_id() AND current_user_role() IN ('super_admin', 'admin_registrar')
+    );
+
+-- Course Lecturer Assignments: Lecturers see their assignments; Admin manage
+CREATE POLICY assignments_select_policy ON course_lecturer_assignments
+    FOR SELECT USING (
+        tenant_id = current_tenant_id() AND (
+            current_user_role() IN ('super_admin', 'admin_registrar')
+            OR lecturer_id = (SELECT id FROM staff_profiles WHERE user_id = current_user_id())
+        )
+    );
+
+CREATE POLICY assignments_manage_policy ON course_lecturer_assignments
+    FOR ALL USING (
+        tenant_id = current_tenant_id() AND current_user_role() IN ('super_admin', 'admin_registrar')
+    );
+
+-- Course Assessments: Assigned lecturer manages; Students view published
+CREATE POLICY assessments_select_policy ON course_assessments
+    FOR SELECT USING (
+        tenant_id = current_tenant_id() AND (
+            current_user_role() IN ('super_admin', 'admin_registrar')
+            OR course_offering_id IN (
+                SELECT course_offering_id FROM course_lecturer_assignments 
+                WHERE lecturer_id = (SELECT id FROM staff_profiles WHERE user_id = current_user_id())
+            )
+            OR (current_user_role() = 'student' AND is_published = true)
+        )
+    );
+
+CREATE POLICY assessments_manage_policy ON course_assessments
+    FOR ALL USING (
+        tenant_id = current_tenant_id() AND (
+            current_user_role() IN ('super_admin', 'admin_registrar')
+            OR course_offering_id IN (
+                SELECT course_offering_id FROM course_lecturer_assignments 
+                WHERE lecturer_id = (SELECT id FROM staff_profiles WHERE user_id = current_user_id())
+            )
+        )
+    );
+
+-- Assessment Scores: Assigned lecturer enters; Students view verified
+CREATE POLICY scores_select_policy ON student_assessment_scores
+    FOR SELECT USING (
+        tenant_id = current_tenant_id() AND (
+            current_user_role() IN ('super_admin', 'admin_registrar')
+            OR course_offering_id IN (
+                SELECT course_offering_id FROM course_lecturer_assignments 
+                WHERE lecturer_id = (SELECT id FROM staff_profiles WHERE user_id = current_user_id())
+            )
+            OR (current_user_role() = 'student' AND student_id = (SELECT id FROM students WHERE user_id = current_user_id()))
+        )
+    );
+
+CREATE POLICY scores_manage_policy ON student_assessment_scores
+    FOR ALL USING (
+        tenant_id = current_tenant_id() AND (
+            current_user_role() IN ('super_admin', 'admin_registrar')
+            OR course_offering_id IN (
+                SELECT course_offering_id FROM course_lecturer_assignments 
+                WHERE lecturer_id = (SELECT id FROM staff_profiles WHERE user_id = current_user_id())
+            )
+        )
+    );
+

@@ -28,7 +28,16 @@ import {
   AdmissionOffer,
   DocumentVerificationStatus,
   ApplicationStatusHistory,
-  ApplicantDocument
+  ApplicantDocument,
+  AcademicSession,
+  AcademicSemester,
+  CourseOffering,
+  CourseLecturerAssignment,
+  CourseAssessment,
+  StudentAssessmentScore,
+  StudentCourseResult,
+  AssessmentType,
+  ResultStatus
 } from '../types';
 import {
   DEFAULT_SYSTEM_SETTINGS,
@@ -51,7 +60,14 @@ import {
   SAMPLE_ANNOUNCEMENTS,
   SAMPLE_AUDIT_LOGS,
   SAMPLE_NOTIFICATIONS,
-  SAMPLE_EMAIL_LOGS
+  SAMPLE_EMAIL_LOGS,
+  SAMPLE_ACADEMIC_SESSIONS,
+  SAMPLE_ACADEMIC_SEMESTERS,
+  SAMPLE_COURSE_OFFERINGS,
+  SAMPLE_COURSE_LECTURER_ASSIGNMENTS,
+  SAMPLE_COURSE_ASSESSMENTS,
+  SAMPLE_STUDENT_ASSESSMENT_SCORES,
+  SAMPLE_STUDENT_COURSE_RESULTS
 } from '../data/mockData';
 import {
   isSupabaseConfigured,
@@ -118,6 +134,29 @@ export interface SchoolContextType {
   addCourse: (course: Omit<Course, 'id'>) => void;
   updateCourse: (id: string, updates: Partial<Course>) => void;
   deleteCourse: (id: string) => void;
+
+  // Academic Sessions, Semesters, Course Offerings & Lecturer Allocations
+  academicSessions: AcademicSession[];
+  academicSemesters: AcademicSemester[];
+  courseOfferings: CourseOffering[];
+  addCourseOffering: (offering: Omit<CourseOffering, 'id'>) => CourseOffering;
+  updateCourseOffering: (id: string, updates: Partial<CourseOffering>) => void;
+  deleteCourseOffering: (id: string) => void;
+  lecturerAssignments: CourseLecturerAssignment[];
+  assignLecturerToOffering: (assignment: Omit<CourseLecturerAssignment, 'id' | 'assignedAt'>) => CourseLecturerAssignment;
+  removeLecturerAssignment: (id: string) => void;
+
+  // Assessments, Scores & Results Workflow
+  courseAssessments: CourseAssessment[];
+  addCourseAssessment: (assessment: Omit<CourseAssessment, 'id' | 'createdAt'>) => CourseAssessment;
+  updateCourseAssessment: (id: string, updates: Partial<CourseAssessment>) => void;
+  deleteCourseAssessment: (id: string) => void;
+  assessmentScores: StudentAssessmentScore[];
+  recordAssessmentScore: (scoreData: Omit<StudentAssessmentScore, 'id' | 'enteredAt' | 'updatedAt'>) => void;
+  recordBatchAssessmentScores: (scores: Array<Omit<StudentAssessmentScore, 'id' | 'enteredAt' | 'updatedAt'>>) => void;
+  courseResults: StudentCourseResult[];
+  submitCourseResults: (courseOfferingId: string, lecturerId: string) => void;
+  approveAndPublishCourseResults: (courseOfferingId: string, approvedBy: string) => void;
 
   // Students & Profile
   students: StudentRecord[];
@@ -311,6 +350,117 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     try { localStorage.setItem('premier_courses', JSON.stringify(courses)); } catch {}
   }, [courses]);
+
+  // Academic Sessions & Semesters
+  const [academicSessions, setAcademicSessions] = useState<AcademicSession[]>(() => {
+    try {
+      const saved = localStorage.getItem('premier_academic_sessions');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return SAMPLE_ACADEMIC_SESSIONS;
+  });
+
+  const [academicSemesters, setAcademicSemesters] = useState<AcademicSemester[]>(() => {
+    try {
+      const saved = localStorage.getItem('premier_academic_semesters');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return SAMPLE_ACADEMIC_SEMESTERS;
+  });
+
+  // Course Offerings
+  const [courseOfferings, setCourseOfferings] = useState<CourseOffering[]>(() => {
+    try {
+      const saved = localStorage.getItem('premier_course_offerings');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return SAMPLE_COURSE_OFFERINGS;
+  });
+
+  // Lecturer Allocations
+  const [lecturerAssignments, setLecturerAssignments] = useState<CourseLecturerAssignment[]>(() => {
+    try {
+      const saved = localStorage.getItem('premier_course_lecturer_assignments');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return SAMPLE_COURSE_LECTURER_ASSIGNMENTS;
+  });
+
+  // Course Assessments (Components)
+  const [courseAssessments, setCourseAssessments] = useState<CourseAssessment[]>(() => {
+    try {
+      const saved = localStorage.getItem('premier_course_assessments');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return SAMPLE_COURSE_ASSESSMENTS;
+  });
+
+  // Student Assessment Scores
+  const [assessmentScores, setAssessmentScores] = useState<StudentAssessmentScore[]>(() => {
+    try {
+      const saved = localStorage.getItem('premier_student_assessment_scores');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return SAMPLE_STUDENT_ASSESSMENT_SCORES;
+  });
+
+  // Student Course Results
+  const [courseResults, setCourseResults] = useState<StudentCourseResult[]>(() => {
+    try {
+      const saved = localStorage.getItem('premier_course_results');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return SAMPLE_STUDENT_COURSE_RESULTS;
+  });
+
+  useEffect(() => {
+    try { localStorage.setItem('premier_academic_sessions', JSON.stringify(academicSessions)); } catch {}
+  }, [academicSessions]);
+
+  useEffect(() => {
+    try { localStorage.setItem('premier_academic_semesters', JSON.stringify(academicSemesters)); } catch {}
+  }, [academicSemesters]);
+
+  useEffect(() => {
+    try { localStorage.setItem('premier_course_offerings', JSON.stringify(courseOfferings)); } catch {}
+  }, [courseOfferings]);
+
+  useEffect(() => {
+    try { localStorage.setItem('premier_course_lecturer_assignments', JSON.stringify(lecturerAssignments)); } catch {}
+  }, [lecturerAssignments]);
+
+  useEffect(() => {
+    try { localStorage.setItem('premier_course_assessments', JSON.stringify(courseAssessments)); } catch {}
+  }, [courseAssessments]);
+
+  useEffect(() => {
+    try { localStorage.setItem('premier_student_assessment_scores', JSON.stringify(assessmentScores)); } catch {}
+  }, [assessmentScores]);
+
+  useEffect(() => {
+    try { localStorage.setItem('premier_course_results', JSON.stringify(courseResults)); } catch {}
+  }, [courseResults]);
 
   const [students, setStudents] = useState<StudentRecord[]>(() => {
     try {
@@ -825,7 +975,11 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         remoteStudents,
         remoteApplications,
         remoteAnnouncements,
-        remoteLogs
+        remoteLogs,
+        remoteOfferings,
+        remoteAssignments,
+        remoteAssessments,
+        remoteScores
       ] = await Promise.all([
         supabaseDb.getSettings(),
         supabaseDb.getFaculties(),
@@ -835,7 +989,11 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         supabaseDb.getStudents(),
         supabaseDb.getApplications(),
         supabaseDb.getAnnouncements(),
-        supabaseDb.getAuditLogs()
+        supabaseDb.getAuditLogs(),
+        supabaseDb.getCourseOfferings(),
+        supabaseDb.getLecturerAssignments(),
+        supabaseDb.getCourseAssessments(),
+        supabaseDb.getStudentAssessmentScores()
       ]);
 
       if (remoteSettings) setSettings(prev => ({ ...prev, ...remoteSettings }));
@@ -843,6 +1001,10 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       if (remoteDepartments && remoteDepartments.length > 0) setDepartments(remoteDepartments);
       if (remotePrograms && remotePrograms.length > 0) setPrograms(remotePrograms);
       if (remoteCourses && remoteCourses.length > 0) setCourses(remoteCourses);
+      if (remoteOfferings && remoteOfferings.length > 0) setCourseOfferings(remoteOfferings);
+      if (remoteAssignments && remoteAssignments.length > 0) setLecturerAssignments(remoteAssignments);
+      if (remoteAssessments && remoteAssessments.length > 0) setCourseAssessments(remoteAssessments);
+      if (remoteScores && remoteScores.length > 0) setAssessmentScores(remoteScores);
       if (remoteStudents && remoteStudents.length > 0) {
         setStudents(remoteStudents);
         setActiveStudent(remoteStudents[0]);
@@ -1010,6 +1172,46 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       }
     });
 
+    const unbindOfferings = realtimeSyncManager.on('course_offerings', (event) => {
+      if (event.eventType === 'INSERT') {
+        setCourseOfferings(prev => prev.some(o => o.id === event.newRecord.id) ? prev : [...prev, event.newRecord]);
+      } else if (event.eventType === 'UPDATE') {
+        setCourseOfferings(prev => prev.map(o => o.id === event.newRecord.id ? { ...o, ...event.newRecord } : o));
+      } else if (event.eventType === 'DELETE') {
+        setCourseOfferings(prev => prev.filter(o => o.id !== (event.oldRecord?.id || event.newRecord?.id)));
+      }
+    });
+
+    const unbindAssignments = realtimeSyncManager.on('course_lecturer_assignments', (event) => {
+      if (event.eventType === 'INSERT') {
+        setLecturerAssignments(prev => prev.some(a => a.id === event.newRecord.id) ? prev : [...prev, event.newRecord]);
+      } else if (event.eventType === 'UPDATE') {
+        setLecturerAssignments(prev => prev.map(a => a.id === event.newRecord.id ? { ...a, ...event.newRecord } : a));
+      } else if (event.eventType === 'DELETE') {
+        setLecturerAssignments(prev => prev.filter(a => a.id !== (event.oldRecord?.id || event.newRecord?.id)));
+      }
+    });
+
+    const unbindAssessments = realtimeSyncManager.on('course_assessments', (event) => {
+      if (event.eventType === 'INSERT') {
+        setCourseAssessments(prev => prev.some(ca => ca.id === event.newRecord.id) ? prev : [...prev, event.newRecord]);
+      } else if (event.eventType === 'UPDATE') {
+        setCourseAssessments(prev => prev.map(ca => ca.id === event.newRecord.id ? { ...ca, ...event.newRecord } : ca));
+      } else if (event.eventType === 'DELETE') {
+        setCourseAssessments(prev => prev.filter(ca => ca.id !== (event.oldRecord?.id || event.newRecord?.id)));
+      }
+    });
+
+    const unbindScores = realtimeSyncManager.on('student_assessment_scores', (event) => {
+      if (event.eventType === 'INSERT') {
+        setAssessmentScores(prev => prev.some(s => s.id === event.newRecord.id) ? prev : [...prev, event.newRecord]);
+      } else if (event.eventType === 'UPDATE') {
+        setAssessmentScores(prev => prev.map(s => s.id === event.newRecord.id ? { ...s, ...event.newRecord } : s));
+      } else if (event.eventType === 'DELETE') {
+        setAssessmentScores(prev => prev.filter(s => s.id !== (event.oldRecord?.id || event.newRecord?.id)));
+      }
+    });
+
     // Cross-tab storage change listener for instant state sync
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'premier_active_student' && e.newValue) {
@@ -1063,6 +1265,36 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         try {
           const parsed = JSON.parse(e.newValue);
           if (Array.isArray(parsed)) setCourses(parsed);
+        } catch {}
+      }
+      if (e.key === 'premier_course_offerings' && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed)) setCourseOfferings(parsed);
+        } catch {}
+      }
+      if (e.key === 'premier_course_lecturer_assignments' && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed)) setLecturerAssignments(parsed);
+        } catch {}
+      }
+      if (e.key === 'premier_course_assessments' && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed)) setCourseAssessments(parsed);
+        } catch {}
+      }
+      if (e.key === 'premier_student_assessment_scores' && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed)) setAssessmentScores(parsed);
+        } catch {}
+      }
+      if (e.key === 'premier_course_results' && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed)) setCourseResults(parsed);
         } catch {}
       }
       if (e.key === 'premier_students' && e.newValue) {
@@ -1158,6 +1390,10 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       unbindDepartments();
       unbindPrograms();
       unbindCourses();
+      unbindOfferings();
+      unbindAssignments();
+      unbindAssessments();
+      unbindScores();
       window.removeEventListener('storage', handleStorageChange);
       realtimeSyncManager.cleanup();
     };
@@ -2528,6 +2764,338 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     logAction('RECORD_COURSE_GRADE', 'AcademicGrade', `Recorded grade ${gradeDetails.grade} (${payload.score}%) for ${payload.studentId} in ${payload.courseCode}`, newAttempt.id);
   };
 
+  // Course Offerings & Lecturer Allocations
+  const addCourseOffering = (offeringData: Omit<CourseOffering, 'id'>): CourseOffering => {
+    const newOffering: CourseOffering = {
+      ...offeringData,
+      id: `off-${offeringData.courseCode.toLowerCase()}-${Date.now().toString(36)}`,
+      enrolledCount: offeringData.enrolledCount || 0
+    };
+    setCourseOfferings(prev => [newOffering, ...prev]);
+    realtimeSyncManager.broadcast('course_offerings', 'INSERT', newOffering);
+    if (isSupabaseConfigured()) {
+      supabaseDb.createCourseOffering(newOffering).catch(() => {});
+    }
+    logAction('CREATE_COURSE_OFFERING', 'CourseOffering', `Created offering for ${newOffering.courseCode} (${newOffering.academicSession} ${newOffering.semester})`, newOffering.id);
+    return newOffering;
+  };
+
+  const updateCourseOffering = (id: string, updates: Partial<CourseOffering>) => {
+    setCourseOfferings(prev => prev.map(o => o.id === id ? { ...o, ...updates } : o));
+    realtimeSyncManager.broadcast('course_offerings', 'UPDATE', { id, ...updates });
+    if (isSupabaseConfigured()) {
+      supabaseDb.updateCourseOffering(id, updates).catch(() => {});
+    }
+    logAction('UPDATE_COURSE_OFFERING', 'CourseOffering', `Updated offering ${id}`, id);
+  };
+
+  const deleteCourseOffering = (id: string) => {
+    setCourseOfferings(prev => prev.filter(o => o.id !== id));
+    realtimeSyncManager.broadcast('course_offerings', 'DELETE', { id });
+    if (isSupabaseConfigured()) {
+      supabaseDb.deleteCourseOffering(id).catch(() => {});
+    }
+    logAction('DELETE_COURSE_OFFERING', 'CourseOffering', `Deleted offering ${id}`, id);
+  };
+
+  const assignLecturerToOffering = (assignmentData: Omit<CourseLecturerAssignment, 'id' | 'assignedAt'>): CourseLecturerAssignment => {
+    const newAssignment: CourseLecturerAssignment = {
+      ...assignmentData,
+      id: `cla-${Date.now().toString(36)}`,
+      assignedAt: new Date().toISOString()
+    };
+    setLecturerAssignments(prev => [newAssignment, ...prev]);
+    if (newAssignment.role === 'primary') {
+      updateCourseOffering(newAssignment.courseOfferingId, {
+        primaryLecturerId: newAssignment.lecturerId,
+        primaryLecturerName: newAssignment.lecturerName
+      });
+    }
+    realtimeSyncManager.broadcast('course_lecturer_assignments', 'INSERT', newAssignment);
+    if (isSupabaseConfigured()) {
+      supabaseDb.createLecturerAssignment(newAssignment).catch(() => {});
+    }
+    logAction('ASSIGN_LECTURER', 'CourseLecturerAssignment', `Assigned ${newAssignment.lecturerName} to ${newAssignment.courseCode} as ${newAssignment.role}`, newAssignment.id);
+    return newAssignment;
+  };
+
+  const removeLecturerAssignment = (id: string) => {
+    setLecturerAssignments(prev => prev.filter(a => a.id !== id));
+    realtimeSyncManager.broadcast('course_lecturer_assignments', 'DELETE', { id });
+    if (isSupabaseConfigured()) {
+      supabaseDb.deleteLecturerAssignment(id).catch(() => {});
+    }
+    logAction('REMOVE_LECTURER_ASSIGNMENT', 'CourseLecturerAssignment', `Removed lecturer assignment ${id}`, id);
+  };
+
+  // Assessments, Scores & Results Workflow
+  const addCourseAssessment = (assessmentData: Omit<CourseAssessment, 'id' | 'createdAt'>): CourseAssessment => {
+    const newAssessment: CourseAssessment = {
+      ...assessmentData,
+      id: `asmt-${Date.now().toString(36)}`,
+      createdAt: new Date().toISOString()
+    };
+    setCourseAssessments(prev => [...prev, newAssessment]);
+    realtimeSyncManager.broadcast('course_assessments', 'INSERT', newAssessment);
+    if (isSupabaseConfigured()) {
+      supabaseDb.createCourseAssessment(newAssessment).catch(() => {});
+    }
+    logAction('CREATE_ASSESSMENT', 'CourseAssessment', `Created ${newAssessment.assessmentType} '${newAssessment.title}' for ${newAssessment.courseCode}`, newAssessment.id);
+    return newAssessment;
+  };
+
+  const updateCourseAssessment = (id: string, updates: Partial<CourseAssessment>) => {
+    setCourseAssessments(prev => prev.map(ca => ca.id === id ? { ...ca, ...updates } : ca));
+    realtimeSyncManager.broadcast('course_assessments', 'UPDATE', { id, ...updates });
+    if (isSupabaseConfigured()) {
+      supabaseDb.updateCourseAssessment(id, updates).catch(() => {});
+    }
+    logAction('UPDATE_ASSESSMENT', 'CourseAssessment', `Updated assessment ${id}`, id);
+  };
+
+  const deleteCourseAssessment = (id: string) => {
+    setCourseAssessments(prev => prev.filter(ca => ca.id !== id));
+    realtimeSyncManager.broadcast('course_assessments', 'DELETE', { id });
+    logAction('DELETE_ASSESSMENT', 'CourseAssessment', `Deleted assessment ${id}`, id);
+  };
+
+  const recordAssessmentScore = (scoreData: Omit<StudentAssessmentScore, 'id' | 'enteredAt' | 'updatedAt'>) => {
+    const now = new Date().toISOString();
+    let updatedScore: StudentAssessmentScore;
+    setAssessmentScores(prev => {
+      const existingIdx = prev.findIndex(s => s.assessmentId === scoreData.assessmentId && s.studentId === scoreData.studentId);
+      if (existingIdx >= 0) {
+        updatedScore = {
+          ...prev[existingIdx],
+          ...scoreData,
+          updatedAt: now
+        };
+        const next = [...prev];
+        next[existingIdx] = updatedScore;
+        return next;
+      } else {
+        updatedScore = {
+          ...scoreData,
+          id: `sc-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
+          enteredAt: now,
+          updatedAt: now
+        };
+        return [...prev, updatedScore];
+      }
+    });
+
+    realtimeSyncManager.broadcast('student_assessment_scores', 'INSERT', scoreData);
+    if (isSupabaseConfigured()) {
+      supabaseDb.saveAssessmentScore({
+        assessmentId: scoreData.assessmentId,
+        courseOfferingId: scoreData.courseOfferingId,
+        studentId: scoreData.studentId,
+        studentName: scoreData.studentName || '',
+        matricNo: scoreData.matricNo || '',
+        score: scoreData.score,
+        maxScore: scoreData.maxScore,
+        lecturerId: scoreData.lecturerId,
+        status: scoreData.status
+      }).catch(() => {});
+    }
+    logAction('RECORD_ASSESSMENT_SCORE', 'StudentAssessmentScore', `Recorded score ${scoreData.score}/${scoreData.maxScore} for student ${scoreData.studentId}`);
+  };
+
+  const recordBatchAssessmentScores = (scores: Array<Omit<StudentAssessmentScore, 'id' | 'enteredAt' | 'updatedAt'>>) => {
+    scores.forEach(s => recordAssessmentScore(s));
+  };
+
+  const submitCourseResults = (courseOfferingId: string, lecturerId: string) => {
+    const offering = courseOfferings.find(o => o.id === courseOfferingId);
+    if (!offering) return;
+
+    const assessments = courseAssessments.filter(a => a.courseOfferingId === courseOfferingId);
+    const relevantRegistrations = registrations.filter(r =>
+      r.status === 'approved' &&
+      r.items.some(i => i.courseOfferingId === courseOfferingId || i.code === offering.courseCode)
+    );
+
+    const updatedResults: StudentCourseResult[] = [];
+
+    relevantRegistrations.forEach(reg => {
+      const studentScores = assessmentScores.filter(s =>
+        s.courseOfferingId === courseOfferingId &&
+        (s.studentId === reg.studentId || s.matricNo === reg.matricNo || s.studentId === reg.studentId)
+      );
+
+      let caTotal = 0;
+      let examTotal = 0;
+      assessments.forEach(asmt => {
+        const scoreRec = studentScores.find(s => s.assessmentId === asmt.id);
+        const percent = scoreRec ? (scoreRec.score / scoreRec.maxScore) : 0;
+        const weighted = percent * asmt.weightPercentage;
+        if (asmt.assessmentType === 'final_exam') {
+          examTotal += weighted;
+        } else {
+          caTotal += weighted;
+        }
+      });
+
+      const totalScore = Math.round((caTotal + examTotal) * 10) / 10;
+      const scale = settings.gradingScale || DEFAULT_SYSTEM_SETTINGS.gradingScale;
+      const gradeDetails = academicEngine.getGradeDetails(totalScore, scale);
+      const targetStudent = students.find(s => s.id === reg.studentId || s.studentId === reg.studentId || s.studentId === reg.matricNo);
+
+      const resultRec: StudentCourseResult = {
+        id: `res-${courseOfferingId}-${reg.studentId}`,
+        courseOfferingId,
+        courseId: offering.courseId,
+        courseCode: offering.courseCode,
+        courseTitle: offering.courseTitle,
+        studentId: reg.studentId,
+        studentName: targetStudent ? `${targetStudent.firstName} ${targetStudent.lastName}` : (reg.studentName || 'Student'),
+        matricNo: targetStudent?.studentId || reg.matricNo || reg.studentId,
+        academicSession: offering.academicSession,
+        semester: offering.semester,
+        level: offering.level,
+        caScore: Math.round(caTotal * 10) / 10,
+        examScore: Math.round(examTotal * 10) / 10,
+        totalScore,
+        grade: gradeDetails.grade,
+        gradePoint: gradeDetails.gradePoint,
+        creditHours: offering.creditHours,
+        creditsEarned: gradeDetails.isPassing ? offering.creditHours : 0,
+        creditsAttempted: offering.creditHours,
+        isPass: gradeDetails.isPassing,
+        status: 'submitted',
+        lecturerId,
+        submittedAt: new Date().toISOString()
+      };
+      updatedResults.push(resultRec);
+    });
+
+    setCourseResults(prev => {
+      const filtered = prev.filter(r => r.courseOfferingId !== courseOfferingId);
+      const next = [...updatedResults, ...filtered];
+      try { localStorage.setItem('premier_course_results', JSON.stringify(next)); } catch {}
+      return next;
+    });
+
+    addNotification({
+      title: "Course Results Submitted for Review",
+      message: `Final grades for ${offering.courseCode} (${offering.courseTitle}) have been submitted by the lecturer and are pending Academic Affairs approval.`,
+      category: "academic",
+      isRead: false
+    });
+
+    logAction('SUBMIT_COURSE_RESULTS', 'StudentCourseResult', `Submitted grades for offering ${courseOfferingId} (${updatedResults.length} students)`, courseOfferingId);
+  };
+
+  const approveAndPublishCourseResults = (courseOfferingId: string, approvedBy: string) => {
+    const offering = courseOfferings.find(o => o.id === courseOfferingId);
+    const scale = settings.gradingScale || DEFAULT_SYSTEM_SETTINGS.gradingScale;
+    const now = new Date().toISOString();
+
+    const publishedResultsForOffering: StudentCourseResult[] = [];
+
+    setCourseResults(prev => {
+      const next = prev.map(res => {
+        if (res.courseOfferingId === courseOfferingId) {
+          const published = {
+            ...res,
+            status: 'published' as ResultStatus,
+            approvedBy,
+            approvedAt: now,
+            publishedAt: now
+          };
+          publishedResultsForOffering.push(published);
+          return published;
+        }
+        return res;
+      });
+      try { localStorage.setItem('premier_course_results', JSON.stringify(next)); } catch {}
+      return next;
+    });
+
+    // Update attempts, carryovers, CGPA and credits
+    publishedResultsForOffering.forEach(res => {
+      const newAttempt: CourseAttempt = {
+        id: `att-${res.courseCode}-${res.studentId}-${Date.now().toString(36)}`,
+        studentId: res.studentId,
+        courseCode: res.courseCode,
+        courseTitle: res.courseTitle,
+        credits: res.creditHours,
+        academicSession: res.academicSession,
+        semester: res.semester,
+        attemptNumber: 1,
+        score: res.totalScore,
+        totalScore: res.totalScore,
+        grade: res.grade,
+        gradePoint: res.gradePoint,
+        status: res.isPass ? 'passed' : 'failed'
+      };
+
+      setCourseAttempts(prev => {
+        const filtered = prev.filter(a => !(
+          (a.studentId === res.studentId || a.studentId === res.matricNo) &&
+          a.courseCode === res.courseCode &&
+          a.academicSession === res.academicSession &&
+          a.semester === res.semester
+        ));
+        const next = [newAttempt, ...filtered];
+        try { localStorage.setItem('premier_course_attempts', JSON.stringify(next)); } catch {}
+
+        const studentAttempts = next.filter(a => a.studentId === res.studentId || a.studentId === res.matricNo);
+        const cum = academicEngine.calculateCumulativeCgpa(studentAttempts, scale);
+
+        updateStudent(res.studentId, {
+          currentCgpa: cum.cgpa,
+          creditsEarned: cum.totalCreditsEarned
+        });
+
+        if (activeStudent.id === res.studentId || activeStudent.studentId === res.matricNo || activeStudent.studentId === res.studentId) {
+          setActiveStudent(st => ({
+            ...st,
+            currentCgpa: cum.cgpa,
+            creditsEarned: cum.totalCreditsEarned
+          }));
+        }
+
+        return next;
+      });
+
+      if (!res.isPass) {
+        setCarryovers(prev => {
+          if (prev.some(c => c.courseCode === res.courseCode && (c.studentId === res.studentId || c.studentId === res.matricNo))) {
+            return prev;
+          }
+          const newCo: CarryoverItem = {
+            id: `co-${Date.now()}-${res.courseCode}`,
+            studentId: res.studentId,
+            courseCode: res.courseCode,
+            courseTitle: res.courseTitle,
+            credits: res.creditHours,
+            failedSession: res.academicSession,
+            failedSemester: res.semester,
+            grade: res.grade,
+            score: res.totalScore,
+            eligibleForRetake: true
+          };
+          return [newCo, ...prev];
+        });
+      } else {
+        setCarryovers(prev => prev.filter(c => !(c.courseCode === res.courseCode && (c.studentId === res.studentId || c.studentId === res.matricNo))));
+      }
+    });
+
+    realtimeSyncManager.broadcast('student_course_grades', 'INSERT', { courseOfferingId, status: 'published' });
+    realtimeSyncManager.playChime('approval');
+
+    addNotification({
+      title: "Official Examination Results Published",
+      message: `Final grades for ${offering?.courseCode || 'course'} have been verified and officially published to student transcripts.`,
+      category: "academic",
+      isRead: false
+    });
+
+    logAction('PUBLISH_COURSE_RESULTS', 'StudentCourseResult', `Published official grades for offering ${courseOfferingId} by ${approvedBy}`, courseOfferingId);
+  };
+
   // Finance & Bursary Payment Engine
   const recordPayment = (payment: {
     studentId: string;
@@ -2738,6 +3306,25 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         addCourse,
         updateCourse,
         deleteCourse,
+        academicSessions,
+        academicSemesters,
+        courseOfferings,
+        addCourseOffering,
+        updateCourseOffering,
+        deleteCourseOffering,
+        lecturerAssignments,
+        assignLecturerToOffering,
+        removeLecturerAssignment,
+        courseAssessments,
+        addCourseAssessment,
+        updateCourseAssessment,
+        deleteCourseAssessment,
+        assessmentScores,
+        recordAssessmentScore,
+        recordBatchAssessmentScores,
+        courseResults,
+        submitCourseResults,
+        approveAndPublishCourseResults,
         students,
         activeStudent,
         setActiveStudent,

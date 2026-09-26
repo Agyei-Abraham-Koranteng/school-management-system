@@ -71,6 +71,27 @@ export interface StudentRecord {
   enrollmentDate?: string;
 }
 
+export interface AcademicSession {
+  id: string;
+  name: string; // e.g. "2026/2027"
+  startDate: string;
+  endDate: string;
+  isCurrent: boolean;
+  status: 'active' | 'upcoming' | 'concluded';
+}
+
+export interface AcademicSemester {
+  id: string;
+  sessionId: string;
+  name: 'First Semester' | 'Second Semester';
+  startDate: string;
+  endDate: string;
+  isCurrent: boolean;
+  registrationOpen: boolean;
+  registrationDeadline: string;
+  status: 'active' | 'upcoming' | 'concluded';
+}
+
 export interface Course {
   id: string;
   code: string;
@@ -88,22 +109,70 @@ export interface Course {
   enrolledCount?: number;
 }
 
+export interface CourseOffering {
+  id: string;
+  tenantId?: string;
+  courseId: string;
+  courseCode: string;
+  courseTitle: string;
+  academicSessionId: string;
+  academicSession: string;
+  semesterId: string;
+  semester: 'First Semester' | 'Second Semester';
+  programId?: string;
+  programCode?: string;
+  departmentId?: string;
+  department?: string;
+  level: AcademicLevel;
+  section: string; // e.g. "Section A"
+  creditHours: number;
+  capacity: number;
+  enrolledCount: number;
+  status: 'open' | 'closed' | 'cancelled' | 'completed';
+  venue?: string;
+  schedule?: string;
+  prerequisites?: string[];
+  primaryLecturerId?: string;
+  primaryLecturerName?: string;
+  createdAt?: string;
+}
+
+export interface CourseLecturerAssignment {
+  id: string;
+  tenantId?: string;
+  courseOfferingId: string;
+  courseCode: string;
+  lecturerId: string;
+  lecturerName: string;
+  lecturerEmail?: string;
+  role: 'primary' | 'assistant' | 'co_lecturer';
+  section: string;
+  assignmentStatus: 'active' | 'concluded' | 'revoked';
+  assignedAt: string;
+  assignedBy?: string;
+}
+
 export interface CourseRegistrationItem {
   id: string;
+  courseOfferingId?: string; // Authoritative link to teaching instance
   courseId: string;
   code: string;
   title: string;
   creditHours: number;
   type: CourseType;
-  status: 'registered' | 'pending' | 'approved' | 'dropped';
+  section?: string;
+  status: 'registered' | 'pending' | 'approved' | 'dropped' | 'withdrawn' | 'rejected' | 'completed';
   grade?: string;
   score?: number;
   gradePoint?: number;
+  isPass?: boolean;
 }
 
 export interface CourseRegistrationSlip {
   id: string;
   studentId: string;
+  studentName?: string;
+  matricNo?: string;
   semesterId: string;
   academicSession: string;
   semester: string;
@@ -114,6 +183,73 @@ export interface CourseRegistrationSlip {
   approvedBy?: string;
   items: CourseRegistrationItem[];
   totalCredits: number;
+}
+
+export type AssessmentType = 'assignment' | 'quiz' | 'mid_semester' | 'final_exam' | 'project' | 'practical';
+
+export interface CourseAssessment {
+  id: string;
+  tenantId?: string;
+  courseOfferingId: string;
+  courseCode: string;
+  title: string;
+  assessmentType: AssessmentType;
+  weightPercentage: number; // e.g. 10, 10, 20, 60
+  maxScore: number;
+  dueDate?: string;
+  isPublished: boolean;
+  createdBy?: string;
+  createdAt: string;
+}
+
+export interface StudentAssessmentScore {
+  id: string;
+  tenantId?: string;
+  courseOfferingId: string;
+  assessmentId: string;
+  studentId: string;
+  studentName?: string;
+  matricNo?: string;
+  score: number;
+  maxScore: number;
+  lecturerId: string;
+  status: 'draft' | 'submitted' | 'verified';
+  enteredAt: string;
+  updatedAt: string;
+}
+
+export type ResultStatus = 'draft' | 'submitted' | 'under_review' | 'approved' | 'published' | 'returned_for_correction';
+
+export interface StudentCourseResult {
+  id: string;
+  tenantId?: string;
+  courseOfferingId: string;
+  courseId: string;
+  courseCode: string;
+  courseTitle: string;
+  studentId: string;
+  studentName: string;
+  matricNo: string;
+  academicSession: string;
+  semester: string;
+  level: AcademicLevel;
+  caScore: number; // Continuous Assessment total (out of 40)
+  examScore: number; // Exam total (out of 60)
+  totalScore: number; // Combined score (out of 100)
+  grade: string; // Letter grade e.g. "B+"
+  gradePoint: number; // e.g. 3.5
+  creditHours: number; // Registered credits
+  creditsEarned: number; // Earned if pass, 0 if fail
+  creditsAttempted: number; // Attempted credits
+  isPass: boolean; // Passing status
+  status: ResultStatus;
+  lecturerId: string;
+  lecturerName?: string;
+  submittedAt?: string;
+  approvedBy?: string;
+  approvedAt?: string;
+  publishedAt?: string;
+  correctionNotes?: string;
 }
 
 export interface SemesterResult {
@@ -131,6 +267,8 @@ export interface SemesterResult {
     score: number;
     grade: string;
     gradePoint: number;
+    courseOfferingId?: string;
+    isPass?: boolean;
   }[];
 }
 
@@ -512,6 +650,7 @@ export interface CourseAttempt {
 
 export interface CarryoverItem {
   id: string;
+  studentId?: string;
   courseCode: string;
   courseTitle: string;
   credits: number;
@@ -556,24 +695,33 @@ export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused';
 
 export interface AttendanceRecord {
   id: string;
+  sessionId?: string;
+  courseOfferingId?: string;
   studentId: string;
   studentName: string;
   matricNo: string;
   status: AttendanceStatus;
   notes?: string;
+  markedAt?: string;
+  method?: 'manual' | 'qr';
 }
 
 export interface AttendanceSession {
   id: string;
+  courseOfferingId?: string;
   courseCode: string;
   courseTitle: string;
   date: string;
   timeSlot: string;
+  lecturerId?: string;
   lecturerName: string;
   totalStudents: number;
   presentCount: number;
   venue?: string;
   topic?: string;
+  qrToken?: string;
+  qrExpiresAt?: string;
+  isActive?: boolean;
   students?: any[];
   records: AttendanceRecord[];
 }
