@@ -8,10 +8,13 @@ import {
   FileText, 
   ArrowUpRight,
   ShieldCheck,
-  Building
+  Building,
+  Wallet,
+  PieChart
 } from 'lucide-react';
 import { useSchool } from '../../context/SchoolContext';
 import { useToast } from '../../context/ToastContext';
+import { AnimatedCounter } from '../../components/shared/AnimatedCounter';
 
 interface FinanceDashboardProps {
   onNavigate: (tab: string, meta?: any) => void;
@@ -58,53 +61,87 @@ export const FinanceDashboard: React.FC<FinanceDashboardProps> = ({ onNavigate }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto">
       {/* Banner */}
-      <div className="p-6 rounded-3xl bg-gradient-to-r from-emerald-500/10 via-indigo-500/10 to-transparent border border-emerald-200/60 dark:border-emerald-900/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <span className="text-[10px] font-bold tracking-widest uppercase text-emerald-600 dark:text-emerald-400 font-mono">
-            Bursary & Financial Directorate
-          </span>
-          <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-50 mt-1">
+      <div className="relative overflow-hidden p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-emerald-600/10 via-indigo-600/10 to-transparent border border-emerald-500/20 dark:border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-sm">
+        <div className="space-y-1.5">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[11px] font-bold tracking-wider uppercase text-emerald-700 dark:text-emerald-300 font-mono">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Bursary & Financial Directorate</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-neutral-50 font-display">
             Financial Ledger & Revenue Operations
-          </h2>
-          <p className="text-xs text-neutral-500 mt-1">
-            Live tuition fee tracking, payment reconciliation, student debt audits ({students.length} Total Matriculants).
+          </h1>
+          <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 max-w-2xl leading-relaxed">
+            Live tuition fee tracking, payment reconciliation, and student debt audits across {students.length} active university matriculants.
           </p>
         </div>
 
         <button
           onClick={() => onNavigate('finance')}
-          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-xs flex items-center gap-1.5 cursor-pointer"
+          className="self-start sm:self-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-600/20 flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
         >
           <CreditCard className="w-4 h-4" />
-          Access Bursary Terminal
+          <span>Access Bursary Terminal</span>
         </button>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Total Billed</p>
-          <p className="text-2xl font-black font-mono text-neutral-900 dark:text-neutral-100 mt-1">
-            {settings.currency || 'GHS'} {totalTuitionReceivable.toLocaleString()}
-          </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+        <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-xs hover:border-neutral-300 dark:hover:border-neutral-700 transition-all card-hover">
+          <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Total Billed</span>
+            <span className="p-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300">
+              <Wallet className="w-4 h-4" />
+            </span>
+          </div>
+          <div className="mt-3 flex items-baseline gap-1 text-2xl sm:text-3xl font-black font-mono text-neutral-900 dark:text-neutral-50">
+            <span className="text-sm font-sans font-bold text-neutral-400">{settings.currency || 'GHS'}</span>
+            <AnimatedCounter value={totalTuitionReceivable} />
+          </div>
+          <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-2">Annual gross tuition fees</p>
         </div>
-        <div className="p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-600">Total Collected</p>
-          <p className="text-2xl font-black font-mono text-emerald-600 mt-1">
-            {settings.currency || 'GHS'} {totalCollected.toLocaleString()}
-          </p>
+
+        <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-xs hover:border-emerald-300 dark:hover:border-emerald-800 transition-all card-hover">
+          <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Total Collected</span>
+            <span className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
+              <TrendingUp className="w-4 h-4" />
+            </span>
+          </div>
+          <div className="mt-3 flex items-baseline gap-1 text-2xl sm:text-3xl font-black font-mono text-emerald-600 dark:text-emerald-400">
+            <span className="text-sm font-sans font-bold text-emerald-400/80">{settings.currency || 'GHS'}</span>
+            <AnimatedCounter value={totalCollected} />
+          </div>
+          <p className="text-[11px] text-emerald-600/80 dark:text-emerald-400/80 mt-2 font-medium">Reconciled bank & mobile money</p>
         </div>
-        <div className="p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-600">Collection Rate</p>
-          <p className="text-2xl font-black font-mono text-indigo-600 mt-1">{collectionRate}%</p>
+
+        <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-xs hover:border-indigo-300 dark:hover:border-indigo-800 transition-all card-hover">
+          <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Collection Rate</span>
+            <span className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
+              <PieChart className="w-4 h-4" />
+            </span>
+          </div>
+          <div className="mt-3 flex items-baseline gap-1 text-2xl sm:text-3xl font-black font-mono text-indigo-600 dark:text-indigo-400">
+            <AnimatedCounter value={collectionRate} />
+            <span className="text-lg font-sans font-bold">%</span>
+          </div>
+          <p className="text-[11px] text-indigo-600/80 dark:text-indigo-400/80 mt-2 font-medium">Target threshold: 85%</p>
         </div>
-        <div className="p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-amber-600">Outstanding Receivables</p>
-          <p className="text-2xl font-black font-mono text-amber-600 mt-1">
-            {settings.currency || 'GHS'} {outstandingDebt.toLocaleString()}
-          </p>
+
+        <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-xs hover:border-amber-300 dark:hover:border-amber-800 transition-all card-hover">
+          <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Outstanding Receivables</span>
+            <span className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
+              <AlertCircle className="w-4 h-4" />
+            </span>
+          </div>
+          <div className="mt-3 flex items-baseline gap-1 text-2xl sm:text-3xl font-black font-mono text-amber-600 dark:text-amber-400">
+            <span className="text-sm font-sans font-bold text-amber-400/80">{settings.currency || 'GHS'}</span>
+            <AnimatedCounter value={outstandingDebt} />
+          </div>
+          <p className="text-[11px] text-amber-600/80 dark:text-amber-400/80 mt-2 font-medium">{debtorStudents.length} student debtors</p>
         </div>
       </div>
 

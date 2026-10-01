@@ -344,7 +344,7 @@ export default function App() {
   const isTabAuthorized = allowedTabs.includes(activeTab);
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 flex transition-colors duration-200">
+    <div className="ef-page transition-colors duration-200">
       {/* Global Quick Search Modal */}
       <GlobalSearchModal 
         isOpen={isSearchOpen} 
@@ -364,7 +364,7 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 lg:pl-68">
+      <div className="ef-main">
         {/* Top Navbar */}
         <Navbar
           onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
@@ -373,22 +373,26 @@ export default function App() {
         />
 
         {/* Dynamic Route/View Render */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        <main className="ef-content pb-20 lg:pb-6">
           {!isTabAuthorized ? (
-            <div className="max-w-md mx-auto my-16 p-8 text-center bg-white dark:bg-neutral-900 rounded-3xl border border-red-200 dark:border-red-900/50 shadow-lg space-y-4">
-              <div className="w-12 h-12 rounded-2xl bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 mx-auto flex items-center justify-center">
-                <ShieldAlert className="w-6 h-6" />
+            <div className="max-w-sm mx-auto mt-20 text-center ef-animate-fade-up">
+              <div className="ef-card p-10 space-y-5">
+                <div className="ef-empty-icon mx-auto" style={{ color: 'var(--danger)' }}>
+                  <ShieldAlert className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="ef-h2 mb-2">Access Restricted</h2>
+                  <p className="ef-caption">
+                    Your <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>{role.replace('_', ' ')}</span> account does not have permission to access <span className="font-mono text-xs" style={{ color: 'var(--text-secondary)' }}>{activeTab}</span>.
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleSelectTab(allowedTabs[0])}
+                  className="ef-btn ef-btn-primary ef-btn-sm"
+                >
+                  Return to Workspace
+                </button>
               </div>
-              <h2 className="text-xl font-black text-neutral-900 dark:text-neutral-50">403 · Access Denied</h2>
-              <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
-                Your account role (<span className="font-mono font-bold uppercase">{role}</span>) does not possess institutional clearance to access the requested directorate ({activeTab}). This security violation has been logged to the institutional audit trail.
-              </p>
-              <button
-                onClick={() => handleSelectTab(allowedTabs[0])}
-                className="px-5 py-2.5 rounded-xl bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 text-xs font-bold transition-transform hover:scale-105 shadow-xs"
-              >
-                Return to Authorized Workspace
-              </button>
             </div>
           ) : (
             <>

@@ -130,27 +130,31 @@ export const LoginView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
       </div>
 
       {/* RIGHT PANE: Modern Form Authentication */}
-      <div className="flex-1 p-6 sm:p-12 lg:p-16 flex items-center justify-center bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100">
-        <div className="w-full max-w-md space-y-6">
+      <div className="flex-1 p-6 sm:p-12 lg:p-16 flex items-center justify-center bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 relative">
+        <div className="w-full max-w-md space-y-6 relative z-10">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 text-xs font-semibold mb-3">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Campus Portal Gateway</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-neutral-50 font-display">
               Sign in to your portal
             </h2>
-            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1.5">
+            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1.5 leading-relaxed">
               Select your university role and authenticate with your verified credentials.
             </p>
           </div>
 
           {/* Quick Role Selector Tabs */}
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+              <label className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 font-mono">
                 Institutional Role Profile
               </label>
               <button
                 type="button"
                 onClick={() => setShowCredentialsHint(!showCredentialsHint)}
-                className="text-[11px] text-indigo-500 hover:text-indigo-400 flex items-center gap-1 font-semibold"
+                className="text-[11px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 flex items-center gap-1 font-semibold transition-colors"
               >
                 <Key className="w-3 h-3" />
                 <span>{showCredentialsHint ? 'Hide sample credentials' : 'View sample credentials'}</span>
@@ -169,10 +173,10 @@ export const LoginView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                   key={r}
                   type="button"
                   onClick={() => handleRoleSelect(r as UserRole)}
-                  className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
                     selectedRole === r
-                      ? 'bg-indigo-600 text-white shadow-xs'
-                      : 'border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800'
+                      ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/25 scale-[1.02]'
+                      : 'border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800/80 hover:border-neutral-300 dark:hover:border-neutral-700'
                   }`}
                 >
                   {label}
@@ -183,12 +187,12 @@ export const LoginView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
           {/* DEMO CREDENTIALS HELPER DRAWER */}
           {showCredentialsHint && (
-            <div className="p-3.5 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-xs space-y-2">
-              <div className="flex items-center gap-1.5 font-bold text-indigo-400">
-                <Info className="w-3.5 h-3.5" />
-                <span>Preset Institutional Accounts (Default Password: <code className="bg-indigo-950/60 px-1 py-0.5 rounded text-indigo-200">premier2026</code>)</span>
+            <div className="p-4 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/60 text-xs space-y-2 animate-fade-in shadow-xs">
+              <div className="flex items-center gap-1.5 font-bold text-indigo-700 dark:text-indigo-300">
+                <Info className="w-4 h-4 shrink-0" />
+                <span>Preset Institutional Accounts (Default Password: <code className="bg-indigo-100 dark:bg-indigo-900/60 px-1.5 py-0.5 rounded text-indigo-800 dark:text-indigo-200 font-mono text-[11px]">premier2026</code>)</span>
               </div>
-              <ul className="text-[11px] text-neutral-300 space-y-1">
+              <ul className="text-[11px] text-neutral-600 dark:text-neutral-300 space-y-1.5 pl-1">
                 <li>• <strong>Student:</strong> abraham.koranteng@premier.edu</li>
                 <li>• <strong>Accepted Students:</strong> Sign in with your applicant email or assigned Student ID</li>
                 <li>• <strong>Registrar:</strong> registrar@premier.edu</li>
@@ -202,10 +206,10 @@ export const LoginView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
           {/* ERROR ALERT BANNER */}
           {loginError && (
-            <div className="p-3.5 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-300 text-xs flex items-start gap-2.5 animate-fadeIn">
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
+            <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-rose-800 dark:text-rose-200 text-xs flex items-start gap-3 animate-fade-in shadow-xs">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400 mt-0.5" />
               <div className="leading-relaxed">
-                <strong className="block font-bold text-rose-200 mb-0.5">Authentication Denied</strong>
+                <strong className="block font-bold text-rose-900 dark:text-rose-100 mb-0.5">Authentication Denied</strong>
                 <span>{loginError}</span>
               </div>
             </div>
@@ -214,7 +218,7 @@ export const LoginView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
-                {selectedRole === 'student' ? 'University Email, Applicant Email or Student ID' : 'University Email Address'} <span className="text-rose-400">*</span>
+                {selectedRole === 'student' ? 'University Email, Applicant Email or Student ID' : 'University Email Address'} <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
@@ -227,10 +231,10 @@ export const LoginView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                     setEmail(e.target.value);
                     if (loginError) setLoginError('');
                   }}
-                  className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-xs font-medium focus:outline-none focus:ring-2 ${
+                  className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-xs font-medium focus:outline-none focus:ring-2 transition-all ${
                     loginError 
-                      ? 'border-rose-500 ring-1 ring-rose-500 bg-rose-500/5 dark:bg-rose-950/20' 
-                      : 'border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/60 focus:ring-indigo-500/20'
+                      ? 'border-rose-500 ring-1 ring-rose-500 bg-rose-50/50 dark:bg-rose-950/20' 
+                      : 'border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/70 focus:border-indigo-500 focus:ring-indigo-500/20'
                   }`}
                   placeholder={selectedRole === 'student' ? 'e.g. yourname@premier.edu, applicant email or PU/BIT/2026/...' : 'e.g. yourname@premier.edu'}
                 />
@@ -240,9 +244,9 @@ export const LoginView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-                  Password <span className="text-rose-400">*</span>
+                  Password <span className="text-rose-500">*</span>
                 </label>
-                <span className="text-[11px] text-neutral-400">Demo Pass: <strong className="text-indigo-400 font-mono">premier2026</strong></span>
+                <span className="text-[11px] text-neutral-400">Demo Pass: <strong className="text-indigo-600 dark:text-indigo-400 font-mono">premier2026</strong></span>
               </div>
               <div className="relative">
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
@@ -255,10 +259,10 @@ export const LoginView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                     setPassword(e.target.value);
                     if (loginError) setLoginError('');
                   }}
-                  className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-xs font-medium focus:outline-none focus:ring-2 ${
+                  className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-xs font-medium focus:outline-none focus:ring-2 transition-all ${
                     loginError 
-                      ? 'border-rose-500 ring-1 ring-rose-500 bg-rose-500/5 dark:bg-rose-950/20' 
-                      : 'border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/60 focus:ring-indigo-500/20'
+                      ? 'border-rose-500 ring-1 ring-rose-500 bg-rose-50/50 dark:bg-rose-950/20' 
+                      : 'border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/70 focus:border-indigo-500 focus:ring-indigo-500/20'
                   }`}
                   placeholder="Enter your account password"
                 />
@@ -266,7 +270,7 @@ export const LoginView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
             </div>
 
             <div className="flex items-center justify-between pt-1">
-              <label className="flex items-center gap-2 text-xs text-neutral-600 dark:text-neutral-400 cursor-pointer">
+              <label className="flex items-center gap-2 text-xs text-neutral-600 dark:text-neutral-400 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={rememberMe}
@@ -281,7 +285,7 @@ export const LoginView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
               id="login-submit-button"
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs sm:text-sm tracking-wide shadow-md shadow-indigo-600/20 transition-all flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60"
+              className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs sm:text-sm tracking-wide shadow-lg shadow-indigo-600/25 transition-all flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60 cursor-pointer"
             >
               <span>{isLoading ? 'Verifying Credentials...' : 'Sign In to Portal'}</span>
               <ArrowRight className="w-4 h-4" />
@@ -289,7 +293,7 @@ export const LoginView: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
           </form>
 
           <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800 text-center text-xs text-neutral-400">
-            For academic queries or account assistance, contact the <span className="font-semibold text-neutral-600 dark:text-neutral-300">ICT Directorate Helpdesk</span>.
+            For academic queries or account assistance, contact the <span className="font-semibold text-neutral-700 dark:text-neutral-300">ICT Directorate Helpdesk</span>.
           </div>
         </div>
       </div>

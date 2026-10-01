@@ -1,13 +1,13 @@
 import React from 'react';
-import { 
-  Menu, 
-  Sun, 
-  Moon, 
-  Bell, 
-  Search, 
+import {
+  Menu,
+  Sun,
+  Moon,
+  Bell,
+  Search,
   Calendar,
-  Sparkles,
-  LogOut
+  LogOut,
+  ChevronDown
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
@@ -19,6 +19,15 @@ interface NavbarProps {
   onOpenNotifications?: () => void;
 }
 
+const ROLE_DISPLAY: Record<string, string> = {
+  student: 'Student',
+  lecturer: 'Faculty Member',
+  admin_registrar: 'Registrar',
+  finance_officer: 'Finance Officer',
+  super_admin: 'Administrator',
+  applicant: 'Applicant'
+};
+
 export const Navbar: React.FC<NavbarProps> = ({
   onOpenMobileMenu,
   unreadNotificationsCount = 1,
@@ -28,26 +37,38 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { role, user, logout } = useAuth();
   const { settings } = useSchool();
 
+  const getInitials = (firstName?: string, lastName?: string) => {
+    const f = firstName?.[0] ?? '';
+    const l = lastName?.[0] ?? '';
+    return (f + l).toUpperCase() || 'U';
+  };
+
   return (
-    <header className="sticky top-0 z-30 h-16 bg-white/85 dark:bg-neutral-900/85 backdrop-blur-md border-b border-neutral-200/80 dark:border-neutral-800 px-4 md:px-8 flex items-center justify-between">
-      <div className="flex items-center gap-3 md:gap-4">
-        {/* Mobile menu toggle */}
+    <header className="ef-header">
+      {/* Left Side */}
+      <div className="flex items-center gap-3">
+        {/* Mobile menu */}
         <button
           id="mobile-nav-toggle"
           type="button"
           onClick={onOpenMobileMenu}
-          className="p-2 rounded-xl text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 lg:hidden"
-          aria-label="Open sidebar"
+          className="ef-btn-icon lg:hidden"
+          aria-label="Open navigation"
         >
           <Menu className="w-5 h-5" />
         </button>
 
         {/* Academic Session Pill */}
-        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-100/80 dark:bg-neutral-800/80 text-xs font-semibold text-neutral-700 dark:text-neutral-300 border border-neutral-200/50 dark:border-neutral-700/50">
-          <Calendar className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border"
+          style={{
+            background: 'var(--bg-surface-raised)',
+            borderColor: 'var(--border-default)',
+            color: 'var(--text-secondary)'
+          }}>
+          <Calendar className="w-3 h-3 shrink-0" style={{ color: 'var(--brand)' }} />
           <span>{settings.currentSession}</span>
-          <span className="text-neutral-400">•</span>
-          <span className="text-indigo-600 dark:text-indigo-400">{settings.currentSemester}</span>
+          <span style={{ color: 'var(--text-muted)' }}>·</span>
+          <span style={{ color: 'var(--brand)' }}>{settings.currentSemester}</span>
         </div>
 
         {/* Global Search Trigger */}
@@ -56,56 +77,91 @@ export const Navbar: React.FC<NavbarProps> = ({
           onClick={() => {
             window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }));
           }}
-          className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-neutral-100 dark:bg-neutral-800/80 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 border border-neutral-200/60 dark:border-neutral-700/60 text-xs transition-colors"
+          className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs border transition-colors"
+          style={{
+            background: 'var(--bg-surface-raised)',
+            borderColor: 'var(--border-default)',
+            color: 'var(--text-muted)'
+          }}
+          onMouseEnter={e => {
+            (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-strong)';
+            (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)';
+          }}
+          onMouseLeave={e => {
+            (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-default)';
+            (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)';
+          }}
         >
           <Search className="w-3.5 h-3.5" />
           <span>Quick search...</span>
-          <kbd className="text-[10px] font-mono bg-white dark:bg-neutral-700 px-1.5 py-0.5 rounded border border-neutral-200 dark:border-neutral-600 font-bold">
+          <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded border font-bold"
+            style={{
+              background: 'var(--bg-surface)',
+              borderColor: 'var(--border-default)',
+              color: 'var(--text-muted)'
+            }}>
             ⌘K
           </kbd>
         </button>
       </div>
 
-      {/* Right Controls */}
-      <div className="flex items-center gap-2 md:gap-3">
-        {/* Dark/Light mode toggle */}
+      {/* Right Side */}
+      <div className="flex items-center gap-1.5">
+        {/* Theme Toggle */}
         <button
           id="theme-toggle-button"
           type="button"
           onClick={toggleTheme}
           title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-          className="p-2 rounded-xl text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors border border-transparent hover:border-neutral-200 dark:hover:border-neutral-700"
+          className="ef-btn-icon"
+          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
         >
-          {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+          {theme === 'light'
+            ? <Moon className="w-4 h-4" />
+            : <Sun className="w-4 h-4" />
+          }
         </button>
 
-        {/* Notifications Icon Button */}
+        {/* Notifications */}
         <button
           id="notifications-button"
           type="button"
           onClick={onOpenNotifications}
-          className="relative p-2 rounded-xl text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors border border-transparent hover:border-neutral-200 dark:hover:border-neutral-700"
+          className="ef-btn-icon relative"
           title="Notifications"
+          aria-label="Notifications"
         >
           <Bell className="w-4 h-4" />
           {unreadNotificationsCount > 0 && (
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-indigo-600 ring-2 ring-white dark:ring-neutral-900" />
+            <span
+              className="absolute top-1 right-1 w-2 h-2 rounded-full ring-2 ring-white dark:ring-neutral-900"
+              style={{ background: 'var(--brand)' }}
+            />
           )}
         </button>
 
-        {/* User Mini Avatar Badge */}
-        <div className="flex items-center gap-2 pl-2 border-l border-neutral-200 dark:border-neutral-800">
-          <img
-            src={user?.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100"}
-            alt={user?.firstName || "User"}
-            className="w-8 h-8 rounded-full object-cover border border-neutral-200 dark:border-neutral-700"
-          />
-          <div className="hidden md:block text-left">
-            <p className="text-xs font-bold text-neutral-900 dark:text-neutral-100 leading-tight">
+        {/* Divider */}
+        <div className="w-px h-6 mx-1" style={{ background: 'var(--border-default)' }} />
+
+        {/* User Info */}
+        <div className="flex items-center gap-2.5 cursor-default">
+          {user?.avatarUrl ? (
+            <img
+              src={user.avatarUrl}
+              alt={user.firstName || 'User'}
+              className="ef-avatar w-8 h-8"
+            />
+          ) : (
+            <div className="ef-avatar-initials w-8 h-8 text-xs">
+              {getInitials(user?.firstName, user?.lastName)}
+            </div>
+          )}
+          <div className="hidden md:block">
+            <p className="text-xs font-semibold leading-tight" style={{ color: 'var(--text-primary)' }}>
               {user?.firstName} {user?.lastName}
             </p>
-            <p className="text-[10px] text-neutral-500 dark:text-neutral-400 capitalize">
-              {role.replace('_', ' ')}
+            <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+              {ROLE_DISPLAY[role] || role}
             </p>
           </div>
         </div>
@@ -116,7 +172,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           type="button"
           onClick={logout}
           title="Sign out"
-          className="p-2 rounded-xl text-neutral-500 dark:text-neutral-400 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600 dark:hover:text-red-400 transition-colors border border-transparent hover:border-red-200 dark:hover:border-red-800/50"
+          className="ef-btn-icon ml-0.5"
+          aria-label="Sign out"
         >
           <LogOut className="w-4 h-4" />
         </button>
