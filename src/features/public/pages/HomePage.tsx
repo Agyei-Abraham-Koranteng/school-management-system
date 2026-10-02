@@ -228,107 +228,110 @@ export const HomePage: React.FC = () => {
         ))}
 
         {/* Hero Content Container */}
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-16 sm:pb-20">
-          <div className="max-w-4xl mx-auto text-center space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 xs:pt-28 sm:pt-32 pb-8 sm:pb-16 lg:pb-20">
+          <div className="max-w-4xl mx-auto text-center space-y-4 sm:space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
             {/* Category / Research Frontier Pill */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/40 border border-white/20 text-xs sm:text-sm font-semibold tracking-wider text-rose-300 backdrop-blur-md">
+            <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-black/40 border border-white/20 text-[11px] sm:text-xs md:text-sm font-semibold tracking-wider text-rose-300 backdrop-blur-md">
               <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
               <span>{activeStory.tag}</span>
             </div>
 
-            {/* Large Iconic Harvard Serif Headline (Matches Screenshot) */}
+            {/* Responsive Iconic Headline */}
             <h1
-              className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-normal text-white tracking-tight leading-[1.05] drop-shadow-xl"
+              className="text-2xl xs:text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-normal text-white tracking-tight leading-[1.12] sm:leading-[1.05] drop-shadow-xl"
               style={{ fontFamily: "'Playfair Display', 'Newsreader', 'Libre Baskerville', Georgia, serif" }}
             >
               {activeStory.headline}
             </h1>
 
-            {/* Subhead / Lead Paragraph (Matches Screenshot) */}
+            {/* Subhead / Lead Paragraph */}
             <p
-              className="text-base sm:text-xl md:text-2xl text-neutral-100/95 max-w-3xl mx-auto leading-relaxed sm:leading-relaxed font-light drop-shadow-md"
+              className="text-xs xs:text-sm sm:text-base md:text-xl lg:text-2xl text-neutral-100/90 max-w-3xl mx-auto leading-relaxed font-light drop-shadow-md"
               style={{ fontFamily: "'Inter', sans-serif" }}
             >
               {activeStory.subhead}
             </p>
 
-            {/* Action Buttons: Read Story & Apply */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 sm:gap-4 pt-2">
+            {/* Action Buttons: Responsive for Small Screens */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 sm:gap-4 pt-1 sm:pt-2 w-full max-w-xl mx-auto">
               <button
                 type="button"
                 onClick={() => setModalStory(activeStory)}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-xl bg-white hover:bg-neutral-100 text-neutral-900 font-bold text-sm tracking-wide shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 sm:px-7 sm:py-3.5 rounded-xl bg-white hover:bg-neutral-100 text-neutral-900 font-bold text-xs sm:text-sm tracking-wide shadow-xl active:scale-[0.98] transition-all"
               >
-                <span>Read the Research Story</span>
-                <ArrowRight className="w-4 h-4 text-neutral-700" />
+                <span>Read Story</span>
+                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neutral-700" />
               </button>
 
               <button
                 type="button"
                 onClick={goToAdmissions}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-[#A51C30] hover:bg-[#8f1829] text-white font-bold text-sm tracking-wide shadow-lg shadow-rose-950/40 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 sm:px-6 sm:py-3.5 rounded-xl bg-[#A51C30] hover:bg-[#8f1829] text-white font-bold text-xs sm:text-sm tracking-wide shadow-lg shadow-rose-950/40 active:scale-[0.98] transition-all"
               >
                 <span>Apply for 2026/2027</span>
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
 
               <button
                 type="button"
                 onClick={() => navigate('/login')}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-black/40 hover:bg-black/60 border border-white/25 text-white font-semibold text-sm backdrop-blur-md transition-all"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3.5 rounded-xl bg-black/40 hover:bg-black/60 border border-white/20 text-white font-medium text-xs sm:text-sm backdrop-blur-md transition-all"
               >
-                <span>Sign In to Portal</span>
+                <span>Sign In</span>
               </button>
             </div>
 
-            {/* Story Switcher Tabs & Controls (Harvard Editorial Carousel) */}
-            <div className="pt-8 sm:pt-10 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-white/15">
-              <div className="flex items-center gap-2 text-xs font-semibold text-neutral-300">
+            {/* Story Switcher Tabs & Controls - Compact Single Row on Mobile */}
+            <div className="pt-5 sm:pt-8 flex flex-row items-center justify-between gap-2 border-t border-white/15 w-full">
+              <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-semibold text-neutral-300">
                 <button
                   type="button"
                   onClick={() => setIsPlaying(!isPlaying)}
                   className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
                   aria-label={isPlaying ? 'Pause slideshow' : 'Play slideshow'}
                 >
-                  {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                  {isPlaying ? <Pause className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> : <Play className="w-3 h-3 sm:w-3.5 sm:h-3.5" />}
                 </button>
-                <span>
+                <span className="hidden xs:inline">
                   Story {activeStoryIndex + 1} of {FEATURED_STORIES.length}
+                </span>
+                <span className="xs:hidden">
+                  {activeStoryIndex + 1}/{FEATURED_STORIES.length}
                 </span>
               </div>
 
               {/* Story indicators */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 {FEATURED_STORIES.map((story, i) => (
                   <button
                     key={story.id}
                     type="button"
                     onClick={() => setActiveStoryIndex(i)}
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      i === activeStoryIndex ? 'w-8 bg-[#A51C30]' : 'w-2 bg-white/30 hover:bg-white/60'
+                    className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 ${
+                      i === activeStoryIndex ? 'w-6 sm:w-8 bg-[#A51C30]' : 'w-1.5 sm:w-2 bg-white/30 hover:bg-white/60'
                     }`}
                     aria-label={`Go to slide ${i + 1}: ${story.headline}`}
                   />
                 ))}
               </div>
 
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1 sm:gap-1.5">
                 <button
                   type="button"
                   onClick={() => setActiveStoryIndex((prev) => (prev === 0 ? FEATURED_STORIES.length - 1 : prev - 1))}
-                  className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+                  className="p-1.5 sm:p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
                   aria-label="Previous story"
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveStoryIndex((prev) => (prev + 1) % FEATURED_STORIES.length)}
-                  className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+                  className="p-1.5 sm:p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
                   aria-label="Next story"
                 >
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
               </div>
             </div>

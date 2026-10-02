@@ -118,23 +118,23 @@ export const ContactPage: React.FC = () => {
         ))}
 
         {/* Hero Slideshow Content */}
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-16 sm:pb-20">
-          <div className="max-w-4xl space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-3 duration-700">
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 xs:pt-28 sm:pt-36 pb-8 sm:pb-16 lg:pb-20">
+          <div className="max-w-4xl space-y-4 sm:space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-3 duration-700">
 
             {/* Pill & Badge */}
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/50 border border-white/20 text-xs sm:text-sm font-semibold tracking-wider text-rose-300 backdrop-blur-md">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+              <span className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-black/50 border border-white/20 text-[11px] sm:text-xs md:text-sm font-semibold tracking-wider text-rose-300 backdrop-blur-md">
                 <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
                 <span>{activeSlide.tag}</span>
               </span>
-              <span className="px-3 py-1 rounded-full text-xs font-medium bg-white/10 text-neutral-300 border border-white/10">
+              <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium bg-white/10 text-neutral-300 border border-white/10">
                 {activeSlide.badge}
               </span>
             </div>
 
             {/* Display Serif Headline */}
             <h1
-              className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-normal text-white tracking-tight leading-[1.06] drop-shadow-2xl"
+              className="text-2xl xs:text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-normal text-white tracking-tight leading-[1.12] sm:leading-[1.06] drop-shadow-2xl"
               style={{ fontFamily: "'Playfair Display', 'Newsreader', 'Libre Baskerville', Georgia, serif" }}
             >
               {activeSlide.headline}
@@ -142,24 +142,24 @@ export const ContactPage: React.FC = () => {
 
             {/* Lead Subtitle */}
             <p
-              className="text-lg sm:text-xl md:text-2xl text-neutral-100/95 max-w-3xl leading-relaxed sm:leading-relaxed font-light drop-shadow-md"
+              className="text-xs xs:text-sm sm:text-base md:text-xl lg:text-2xl text-neutral-100/95 max-w-3xl leading-relaxed font-light drop-shadow-md"
               style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
             >
               {activeSlide.subhead}
             </p>
 
             {/* Call to Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 pt-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3.5 pt-1 sm:pt-2 w-full max-w-2xl">
               <a
                 href="#message-form"
                 onClick={(e) => {
                   e.preventDefault();
                   document.getElementById('message-form')?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-white hover:bg-neutral-100 text-neutral-900 font-bold text-sm tracking-wide shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 sm:px-7 sm:py-3.5 rounded-xl bg-white hover:bg-neutral-100 text-neutral-900 font-bold text-xs sm:text-sm tracking-wide shadow-xl active:scale-[0.98] transition-all text-center"
               >
-                <span>Send a Direct Message</span>
-                <ArrowRight className="w-4 h-4 text-neutral-700" />
+                <span>Send Direct Message</span>
+                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neutral-700" />
               </a>
 
               <a
@@ -168,9 +168,9 @@ export const ContactPage: React.FC = () => {
                   e.preventDefault();
                   document.getElementById('offices')?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-[#A51C30] hover:bg-[#8f1829] text-white font-bold text-sm tracking-wide shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all"
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 sm:px-6 sm:py-3.5 rounded-xl bg-[#A51C30] hover:bg-[#8f1829] text-white font-bold text-xs sm:text-sm tracking-wide shadow-lg active:scale-[0.98] transition-all text-center"
               >
-                <span>Departmental Directory</span>
+                <span>Offices & Directory</span>
               </a>
 
               <a
@@ -179,23 +179,23 @@ export const ContactPage: React.FC = () => {
                   e.preventDefault();
                   document.getElementById('campus-visit')?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-black/40 hover:bg-black/60 border border-white/20 text-white font-semibold text-sm backdrop-blur-md transition-all"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3.5 rounded-xl bg-black/40 hover:bg-black/60 border border-white/20 text-white font-medium text-xs sm:text-sm backdrop-blur-md transition-all text-center"
               >
-                <span>Plan a Campus Visit</span>
+                <span>Campus Visit</span>
               </a>
             </div>
 
             {/* Slideshow Selector & Controls */}
-            <div className="pt-8 sm:pt-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-t border-white/15">
+            <div className="pt-5 sm:pt-8 flex flex-row items-center justify-between gap-2 border-t border-white/15 w-full">
               
               {/* Slide indicators / tabs */}
-              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+              <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1">
                 {CONTACT_SLIDES.map((slide, idx) => (
                   <button
                     key={slide.id}
                     type="button"
                     onClick={() => setCurrentSlideIndex(idx)}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all flex items-center gap-2 ${
+                    className={`px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
                       idx === currentSlideIndex
                         ? 'bg-[#A51C30] text-white font-bold shadow-md'
                         : 'bg-white/10 hover:bg-white/20 text-neutral-300 border border-white/10'
@@ -207,14 +207,14 @@ export const ContactPage: React.FC = () => {
               </div>
 
               {/* Play/Pause and Next/Prev */}
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsPlaying(!isPlaying)}
-                  className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors"
+                  className="p-1.5 sm:p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
                   aria-label={isPlaying ? 'Pause slideshow' : 'Play slideshow'}
                 >
-                  {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                  {isPlaying ? <Pause className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                 </button>
                 <button
                   type="button"

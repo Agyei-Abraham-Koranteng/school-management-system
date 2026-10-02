@@ -98,43 +98,43 @@ export const CampusLifePage: React.FC = () => {
         </div>
 
         {/* Hero Content Grid (Left: "Campus", Right: Description) */}
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-16 sm:pb-24">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-end">
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 xs:pt-28 sm:pt-36 pb-8 sm:pb-16 lg:pb-20">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-8 lg:gap-12 items-end">
 
             {/* Left Column: Big Elegant Serif "Campus" */}
-            <div className="lg:col-span-5 space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/40 border border-white/20 text-xs font-semibold tracking-wider text-rose-300 backdrop-blur-md">
+            <div className="lg:col-span-5 space-y-3 sm:space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/40 border border-white/20 text-[11px] sm:text-xs font-semibold tracking-wider text-rose-300 backdrop-blur-md">
                 <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
                 <span>Collegiate Experience & Heritage</span>
               </div>
 
               <h1
-                className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-normal text-white tracking-tight leading-none drop-shadow-2xl"
+                className="text-4xl xs:text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-normal text-white tracking-tight leading-tight sm:leading-none drop-shadow-2xl"
                 style={{ fontFamily: "'Playfair Display', 'Newsreader', 'Libre Baskerville', Georgia, serif" }}
               >
                 Campus
               </h1>
             </div>
 
-            {/* Right Column: Narrative Lead Paragraph (Matches Reference Image) */}
-            <div className="lg:col-span-7 space-y-6">
+            {/* Right Column: Narrative Lead Paragraph */}
+            <div className="lg:col-span-7 space-y-4 sm:space-y-6">
               <p
-                className="text-xl sm:text-2xl md:text-3xl text-neutral-100 font-light leading-relaxed sm:leading-relaxed drop-shadow-xl"
+                className="text-sm xs:text-base sm:text-xl md:text-2xl lg:text-3xl text-neutral-100 font-light leading-relaxed drop-shadow-xl"
                 style={{ fontFamily: "'Playfair Display', 'Newsreader', 'Libre Baskerville', Georgia, serif" }}
               >
                 Our three main campuses—in Legon Hill, Waterfront, and City Innovation Hub—are a home to students and faculty, a hub of research and innovation, and a destination for visitors from all over the world.
               </p>
 
-              <div className="flex flex-wrap items-center gap-3 pt-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 pt-1">
                 <a
                   href="#campuses"
                   onClick={(e) => {
                     e.preventDefault();
                     document.getElementById('campuses')?.scrollIntoView({ behavior: 'smooth' });
                   }}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white hover:bg-neutral-100 text-neutral-900 font-bold text-xs tracking-wide shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-3 sm:px-6 sm:py-3 rounded-xl bg-white hover:bg-neutral-100 text-neutral-900 font-bold text-xs sm:text-sm tracking-wide shadow-xl active:scale-[0.98] transition-all text-center"
                 >
-                  <span>Explore the Three Campuses</span>
+                  <span>Explore Three Campuses</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </a>
 
@@ -144,9 +144,9 @@ export const CampusLifePage: React.FC = () => {
                     navigate('/apply');
                     window.scrollTo({ top: 0 });
                   }}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#A51C30] hover:bg-[#8f1829] text-white font-bold text-xs tracking-wide shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-3 sm:px-6 sm:py-3 rounded-xl bg-[#A51C30] hover:bg-[#8f1829] text-white font-bold text-xs sm:text-sm tracking-wide shadow-lg active:scale-[0.98] transition-all text-center"
                 >
-                  <span>Join Our Student Community</span>
+                  <span>Join Our Community</span>
                   <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </div>
