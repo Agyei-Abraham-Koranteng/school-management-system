@@ -972,35 +972,38 @@ export const ApplyPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-neutral-900 text-neutral-100 flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
         {/* Navigation Bar */}
-        <header className="border-b border-neutral-800 bg-neutral-900/80 backdrop-blur-md sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30 group-hover:scale-105 transition-transform">
-                <GraduationCap className="w-5 h-5" />
+        <header className="border-b border-neutral-800/80 bg-neutral-950/90 backdrop-blur-md sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto px-3.5 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2.5 sm:gap-4">
+            <Link to="/" className="flex items-center gap-2.5 sm:gap-3 min-w-0 group cursor-pointer">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-indigo-600/20 group-hover:scale-105 transition-transform shrink-0">
+                <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              <div>
-                <span className="font-extrabold text-sm sm:text-base tracking-tight text-white block">
+              <div className="min-w-0">
+                <span className="font-bold text-sm sm:text-base tracking-tight text-white block truncate leading-tight">
                   Premier University
                 </span>
-                <span className="text-[10px] font-semibold text-indigo-400 block -mt-0.5">
+                <span className="hidden sm:block text-[11px] font-medium text-neutral-400 truncate -mt-0.5">
                   Admissions & Matriculation Directorate
+                </span>
+                <span className="sm:hidden text-[10px] font-semibold text-indigo-400 block truncate -mt-0.5">
+                  Admissions Portal
                 </span>
               </div>
             </Link>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
               <Link 
                 to="/admissions" 
-                className="text-xs font-semibold text-neutral-400 hover:text-white flex items-center gap-1 transition-colors px-3 py-1.5 rounded-lg hover:bg-neutral-800"
+                className="hidden sm:inline-flex items-center gap-1 text-xs font-medium text-neutral-400 hover:text-white transition-colors px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl hover:bg-neutral-800/80 whitespace-nowrap shrink-0"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
-                Admission Guidelines
+                <span>Admission Guidelines</span>
               </Link>
               <Link 
                 to="/login" 
-                className="text-xs font-bold text-neutral-300 hover:text-white bg-neutral-800 hover:bg-neutral-700 px-3.5 py-1.5 rounded-xl border border-neutral-700 transition-colors"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-200 hover:text-white bg-neutral-800/90 hover:bg-neutral-800 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl border border-neutral-700/80 transition-all shadow-xs whitespace-nowrap shrink-0 cursor-pointer active:scale-95"
               >
-                Staff / Student Login
+                <span>Portal Login</span>
               </Link>
             </div>
           </div>
@@ -1305,35 +1308,40 @@ export const ApplyPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
         {/* Top Header */}
-        <header className="border-b border-neutral-800 bg-neutral-900/90 backdrop-blur-md sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30">
-                <GraduationCap className="w-5 h-5" />
+        <header className="border-b border-neutral-800/80 bg-neutral-950/90 backdrop-blur-md sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto px-3.5 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2.5 sm:gap-4">
+            <Link to="/" className="flex items-center gap-2.5 sm:gap-3 min-w-0 group cursor-pointer">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-indigo-600/20 group-hover:scale-105 transition-transform shrink-0">
+                <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              <div>
-                <span className="font-extrabold text-sm sm:text-base tracking-tight text-white block">
+              <div className="min-w-0">
+                <span className="font-bold text-sm sm:text-base tracking-tight text-white block truncate leading-tight">
                   Premier University
                 </span>
-                <span className="text-[10px] font-semibold text-indigo-400 block -mt-0.5">
+                <span className="hidden sm:block text-[11px] font-medium text-neutral-400 truncate -mt-0.5">
                   Admissions Status & Review Tracking
+                </span>
+                <span className="sm:hidden text-[10px] font-semibold text-indigo-400 block truncate -mt-0.5">
+                  Application Status
                 </span>
               </div>
             </Link>
 
-            <div className="flex items-center gap-4">
-              <div className="hidden sm:flex items-center gap-2 text-xs text-neutral-400 bg-neutral-900 px-3 py-1.5 rounded-xl border border-neutral-800">
-                <User className="w-3.5 h-3.5 text-indigo-400" />
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+              <div className="hidden md:flex items-center gap-2 text-xs text-neutral-300 bg-neutral-900/80 px-3 py-1.5 sm:py-2 rounded-xl border border-neutral-800 shrink-0 whitespace-nowrap">
+                <User className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
                 <span>{applicantAccount?.firstName} {applicantAccount?.lastName}</span>
                 <span className="font-mono text-[10px] text-neutral-500">({applicantAccount?.email})</span>
               </div>
 
               <button
+                type="button"
                 onClick={() => logout()}
-                className="flex items-center gap-1.5 text-xs font-semibold text-neutral-400 hover:text-white bg-neutral-800 hover:bg-neutral-700 px-3 py-1.5 rounded-xl border border-neutral-700 transition-colors"
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-400 hover:text-white bg-neutral-900/80 hover:bg-neutral-800/80 active:scale-95 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl border border-neutral-800 hover:border-neutral-700 transition-all shrink-0 whitespace-nowrap cursor-pointer"
+                title="Sign out of admissions account"
               >
-                <LogOut className="w-3.5 h-3.5" />
-                Sign Out
+                <LogOut className="w-3.5 h-3.5 shrink-0" />
+                <span>Sign Out</span>
               </button>
             </div>
           </div>
@@ -1845,53 +1853,58 @@ export const ApplyPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
       {/* Top Header */}
-      <header className="border-b border-neutral-800 bg-neutral-900/90 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30">
-              <GraduationCap className="w-5 h-5" />
+      <header className="border-b border-neutral-800/80 bg-neutral-950/90 backdrop-blur-md sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-3.5 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2.5 sm:gap-4">
+          <Link to="/" className="flex items-center gap-2.5 sm:gap-3 min-w-0 group cursor-pointer">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-indigo-600/20 group-hover:scale-105 transition-transform shrink-0">
+              <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div>
-              <span className="font-extrabold text-sm sm:text-base tracking-tight text-white block">
+            <div className="min-w-0">
+              <span className="font-bold text-sm sm:text-base tracking-tight text-white block truncate leading-tight">
                 Premier University
               </span>
-              <span className="text-[10px] font-semibold text-indigo-400 block -mt-0.5">
-                Official Admission Application Form · {settings.currentSession || '2026/2027'}
+              <span className="hidden sm:block text-[11px] font-medium text-neutral-400 truncate -mt-0.5">
+                Official Admission Application Form <span className="text-indigo-400 font-mono">· {settings.currentSession || '2026/2027'}</span>
+              </span>
+              <span className="sm:hidden text-[10px] font-semibold text-indigo-400 block truncate -mt-0.5">
+                Admissions Portal · {settings.currentSession || '2026/27'}
               </span>
             </div>
           </Link>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             <button
               type="button"
               onClick={handleSaveDraft}
-              className="flex items-center gap-1.5 text-xs font-bold text-neutral-200 hover:text-white bg-neutral-800 hover:bg-neutral-700 px-3 py-1.5 rounded-xl border border-neutral-700 transition-colors shadow-2xs"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-200 hover:text-white bg-neutral-800/90 hover:bg-neutral-800 active:scale-95 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl border border-neutral-700/80 transition-all shadow-xs shrink-0 whitespace-nowrap cursor-pointer"
               title="Save progress as draft"
             >
-              <Save className="w-3.5 h-3.5 text-indigo-400" />
+              <Save className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
               <span>Save Draft</span>
             </button>
 
-            <div className="hidden sm:flex items-center gap-2 text-xs text-neutral-300 bg-neutral-900 px-3 py-1.5 rounded-xl border border-neutral-800">
-              <User className="w-3.5 h-3.5 text-indigo-400" />
-              <span>Signed in as: <strong className="text-white">{applicantAccount?.firstName} {applicantAccount?.lastName}</strong></span>
+            <div className="hidden lg:flex items-center gap-2 text-xs text-neutral-300 bg-neutral-900/80 px-3 py-1.5 sm:py-2 rounded-xl border border-neutral-800 shrink-0 whitespace-nowrap">
+              <User className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+              <span>Signed in as: <strong className="text-white font-medium">{applicantAccount?.firstName} {applicantAccount?.lastName}</strong></span>
             </div>
 
             <button
+              type="button"
               onClick={() => logout()}
-              className="flex items-center gap-1.5 text-xs font-semibold text-neutral-400 hover:text-white bg-neutral-800 hover:bg-neutral-700 px-3 py-1.5 rounded-xl border border-neutral-700 transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-400 hover:text-white bg-neutral-900/80 hover:bg-neutral-800/80 active:scale-95 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl border border-neutral-800 hover:border-neutral-700 transition-all shrink-0 whitespace-nowrap cursor-pointer"
+              title="Sign out of admissions account"
             >
-              <LogOut className="w-3.5 h-3.5" />
-              Sign Out
+              <LogOut className="w-3.5 h-3.5 shrink-0" />
+              <span>Sign Out</span>
             </button>
           </div>
         </div>
       </header>
 
       {/* Main Multi-Step Form Container */}
-      <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 py-8 sm:py-12 space-y-6">
+      <main className="flex-1 max-w-4xl mx-auto w-full px-3.5 sm:px-6 py-6 sm:py-10 space-y-6">
         {draftRestored && (
-          <div className="px-4 py-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-200 text-xs flex items-center justify-between gap-3 shadow-xs">
+          <div className="px-3.5 sm:px-4 py-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 shadow-xs">
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-indigo-400 shrink-0" />
               <span><strong>Draft Restored:</strong> Your previous inputs and Step {appStep} progress were automatically preserved.</span>
@@ -1899,7 +1912,7 @@ export const ApplyPage: React.FC = () => {
             <button
               type="button"
               onClick={handleClearDraft}
-              className="text-[11px] font-bold text-neutral-400 hover:text-rose-400 underline shrink-0 transition-colors"
+              className="text-[11px] font-bold text-neutral-400 hover:text-rose-400 underline shrink-0 transition-colors self-end sm:self-auto cursor-pointer"
             >
               Reset & Start Over
             </button>
@@ -1907,32 +1920,32 @@ export const ApplyPage: React.FC = () => {
         )}
 
         {/* Banner with Step Tracker */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-neutral-900 border border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="p-4 sm:p-6 rounded-2xl bg-neutral-900 border border-neutral-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
-            <span className="text-xs font-bold text-indigo-400 uppercase tracking-wider">
+            <span className="text-xs font-bold text-indigo-400 uppercase tracking-wider block">
               Step {appStep} of 7 · Progress: {Math.round((appStep / 7) * 100)}%
             </span>
-            <h1 className="text-xl sm:text-2xl font-black text-white">
+            <h1 className="text-lg sm:text-xl md:text-2xl font-black text-white leading-snug">
               Undergraduate & Graduate Admission Application
             </h1>
-            <p className="text-xs text-neutral-400">
+            <p className="text-xs text-neutral-400 leading-relaxed">
               All marked fields (<span className="text-rose-400 font-bold">*</span>) are mandatory. The form cannot be submitted with empty or missing entries.
             </p>
           </div>
 
           {/* Stepper Navigation */}
-          <div className="flex items-center gap-1 overflow-x-auto pb-1">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 shrink-0">
             {[1, 2, 3, 4, 5, 6, 7].map((s) => (
               <button
                 key={s}
                 type="button"
                 onClick={() => handleNextStep(s)}
-                className={`w-8 h-8 rounded-xl text-xs font-bold transition-all ${
+                className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
                   appStep === s
                     ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 scale-105'
                     : appStep > s
                     ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                    : 'bg-neutral-800 text-neutral-500'
+                    : 'bg-neutral-800 text-neutral-500 hover:text-neutral-300'
                 }`}
                 title={`Jump to Step ${s}`}
               >
