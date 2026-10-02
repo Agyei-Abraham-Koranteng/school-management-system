@@ -1013,8 +1013,8 @@ export const ApplyPage: React.FC = () => {
         <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 py-10 sm:py-14 flex flex-col lg:flex-row items-center gap-12">
           {/* Left Hero & Explanatory Context */}
           <div className="flex-1 space-y-6">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-400/20 text-xs font-bold text-indigo-300">
-              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-500/10 border border-red-500/20 text-xs font-bold text-red-300">
+              <Sparkles className="w-3.5 h-3.5 text-[#A51C30]" />
               <span>Admissions Portal · {settings.currentSession || '2026/2027'}</span>
             </div>
 
@@ -1028,6 +1028,26 @@ export const ApplyPage: React.FC = () => {
               verification by the Academic Registry, and receive official admission offers.
             </p>
 
+            {/* Featured Graduate Student Illustration Card */}
+            <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-2xl bg-gradient-to-r from-[#070E1C] via-[#0B1528] to-[#0A1324] border border-blue-900/50 shadow-xl">
+              <img
+                src="/images/auth-student-official.jpg"
+                alt="Premier University Graduate"
+                className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl object-cover shrink-0 border border-white/15 shadow-md"
+              />
+              <div className="space-y-1 text-center sm:text-left">
+                <span className="inline-block px-2.5 py-0.5 rounded-full bg-[#A51C30] text-white text-[10px] font-extrabold uppercase tracking-wider">
+                  Future Leaders
+                </span>
+                <h3 className="text-sm sm:text-base font-bold text-white leading-tight">
+                  Your Journey to Academic Excellence Starts Here
+                </h3>
+                <p className="text-xs text-blue-200/80 leading-relaxed">
+                  Join a community of ambitious scholars, innovative researchers, and global leaders.
+                </p>
+              </div>
+            </div>
+
             {/* Crucial Institutional Safeguard Alert */}
             <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-200 text-xs sm:text-sm space-y-1.5">
               <div className="flex items-center gap-2 font-bold text-amber-300">
@@ -1036,24 +1056,24 @@ export const ApplyPage: React.FC = () => {
               </div>
               <p className="text-neutral-300 text-xs leading-relaxed pl-6">
                 An applicant is <strong className="text-white">NOT a student</strong> until the institution verifies all academic requirements, approves the application, and completes the matriculation process. 
-                The full <strong className="text-indigo-300">Student Information System Dashboard</strong> (course registration, results, student ID) will remain locked until your official matriculation is approved.
+                The full <strong className="text-blue-300">Student Information System Dashboard</strong> (course registration, results, student ID) will remain locked until your official matriculation is approved.
               </p>
             </div>
 
             {/* Application Stages Highlight */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
               <div className="p-3.5 rounded-xl bg-neutral-800/60 border border-neutral-700/60 space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400">Step 1</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-red-400">Step 1</span>
                 <h4 className="text-xs font-bold text-white">Create Portal Account</h4>
                 <p className="text-[11px] text-neutral-400">Establish your secure admissions credentials</p>
               </div>
               <div className="p-3.5 rounded-xl bg-neutral-800/60 border border-neutral-700/60 space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400">Step 2</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-red-400">Step 2</span>
                 <h4 className="text-xs font-bold text-white">Save Draft & Submit</h4>
                 <p className="text-[11px] text-neutral-400">Fill bio-data, academic choices, & upload docs</p>
               </div>
               <div className="p-3.5 rounded-xl bg-neutral-800/60 border border-neutral-700/60 space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400">Step 3</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-red-400">Step 3</span>
                 <h4 className="text-xs font-bold text-white">Offer & Matriculation</h4>
                 <p className="text-[11px] text-neutral-400">Accept offer & unlock your student portal</p>
               </div>
@@ -1061,15 +1081,15 @@ export const ApplyPage: React.FC = () => {
           </div>
 
           {/* Right Card: Account Creation or Sign In */}
-          <div className="w-full max-w-md bg-neutral-900 border border-neutral-800 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/50 space-y-6">
+          <div className="w-full max-w-md bg-gradient-to-b from-[#0B1528] to-[#070E1C] border border-blue-900/60 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/60 space-y-6">
             {/* Form Mode Tabs */}
-            <div className="flex rounded-xl bg-neutral-800 p-1 border border-neutral-700/60">
+            <div className="flex rounded-xl bg-[#060B16] p-1 border border-blue-950">
               <button
                 type="button"
                 onClick={() => { setAuthMode('register'); setAuthError(''); }}
-                className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
+                className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   authMode === 'register' 
-                    ? 'bg-indigo-600 text-white shadow-xs' 
+                    ? 'bg-[#A51C30] text-white shadow-xs' 
                     : 'text-neutral-400 hover:text-white'
                 }`}
               >
@@ -1078,9 +1098,9 @@ export const ApplyPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => { setAuthMode('login'); setAuthError(''); }}
-                className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
+                className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   authMode === 'login' 
-                    ? 'bg-indigo-600 text-white shadow-xs' 
+                    ? 'bg-[#A51C30] text-white shadow-xs' 
                     : 'text-neutral-400 hover:text-white'
                 }`}
               >
@@ -1196,7 +1216,7 @@ export const ApplyPage: React.FC = () => {
 
                 <button
                   type="submit"
-                  className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs sm:text-sm tracking-wide shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center gap-2 mt-2"
+                  className="w-full py-3 px-4 rounded-xl bg-[#A51C30] hover:bg-[#8F1829] active:bg-[#781322] text-white font-bold text-xs sm:text-sm tracking-wide shadow-lg shadow-red-950/30 transition-all flex items-center justify-center gap-2 mt-2 cursor-pointer"
                 >
                   <span>Create Account & Continue to Application</span>
                   <ArrowRight className="w-4 h-4" />
@@ -1214,7 +1234,7 @@ export const ApplyPage: React.FC = () => {
                       placeholder="e.g. emmanuel.tetteh@gmail.com"
                       value={loginEmail}
                       onChange={(e) => setLoginEmail(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-neutral-800 border border-neutral-700 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-neutral-800 border border-neutral-700 text-xs text-white focus:outline-none focus:ring-2 focus:ring-[#A51C30]/40 focus:border-[#A51C30]"
                     />
                   </div>
                 </div>
@@ -1228,7 +1248,7 @@ export const ApplyPage: React.FC = () => {
                       placeholder="••••••••"
                       value={loginPassword}
                       onChange={(e) => setLoginPassword(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-neutral-800 border border-neutral-700 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-neutral-800 border border-neutral-700 text-xs text-white focus:outline-none focus:ring-2 focus:ring-[#A51C30]/40 focus:border-[#A51C30]"
                     />
                   </div>
                 </div>
@@ -1236,14 +1256,14 @@ export const ApplyPage: React.FC = () => {
                 <div className="space-y-2 pt-2">
                   <button
                     type="submit"
-                    className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs sm:text-sm shadow-md shadow-indigo-600/20 transition-all flex items-center justify-center gap-2"
+                    className="w-full py-2.5 px-4 rounded-xl bg-[#A51C30] hover:bg-[#8F1829] active:bg-[#781322] text-white font-bold text-xs sm:text-sm shadow-md shadow-red-950/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <span>Sign In to Admissions Portal</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
 
                   <div className="text-center pt-2">
-                    <span className="text-[11px] text-neutral-400 block mb-1.5">Or test with existing sample applicant (Password: <code className="text-indigo-400">premier2026</code>):</span>
+                    <span className="text-[11px] text-neutral-400 block mb-1.5">Or test with existing sample applicant (Password: <code className="text-red-400 font-mono">premier2026</code>):</span>
                     <div className="flex gap-2">
                       <button
                         type="button"
