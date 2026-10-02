@@ -189,34 +189,36 @@ export const ReportsView: React.FC = () => {
               <h3 className="font-bold text-neutral-900 dark:text-neutral-100">Enrollment Register by Academic Level</h3>
               <span className="text-neutral-400">Showing all {students.length} students</span>
             </div>
-            <table className="w-full text-left text-xs">
-              <thead className="bg-neutral-50 dark:bg-neutral-800/60 text-neutral-500 font-semibold border-b border-neutral-200 dark:border-neutral-800">
-                <tr>
-                  <th className="py-3 px-4">Student</th>
-                  <th className="py-3 px-4">Matric No</th>
-                  <th className="py-3 px-4">Program & Faculty</th>
-                  <th className="py-3 px-4">Level</th>
-                  <th className="py-3 px-4">Session</th>
-                  <th className="py-3 px-4 text-right">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
-                {students.map(s => (
-                  <tr key={s.id} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/40">
-                    <td className="py-3 px-4 font-bold text-neutral-900 dark:text-neutral-100">{s.firstName} {s.lastName}</td>
-                    <td className="py-3 px-4 font-mono text-neutral-600 dark:text-neutral-400">{s.studentId}</td>
-                    <td className="py-3 px-4 text-neutral-600 dark:text-neutral-400">{s.programName}</td>
-                    <td className="py-3 px-4 font-bold">Level {s.currentLevel}</td>
-                    <td className="py-3 px-4 font-mono">{s.admissionSession}</td>
-                    <td className="py-3 px-4 text-right">
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                        {s.status.toUpperCase()}
-                      </span>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-neutral-50 dark:bg-neutral-800/60 text-neutral-500 font-semibold border-b border-neutral-200 dark:border-neutral-800">
+                  <tr>
+                    <th className="py-3 px-4">Student</th>
+                    <th className="py-3 px-4">Matric No</th>
+                    <th className="py-3 px-4">Program & Faculty</th>
+                    <th className="py-3 px-4">Level</th>
+                    <th className="py-3 px-4">Session</th>
+                    <th className="py-3 px-4 text-right">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+                  {students.map(s => (
+                    <tr key={s.id} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/40">
+                      <td className="py-3 px-4 font-bold text-neutral-900 dark:text-neutral-100">{s.firstName} {s.lastName}</td>
+                      <td className="py-3 px-4 font-mono text-neutral-600 dark:text-neutral-400">{s.studentId}</td>
+                      <td className="py-3 px-4 text-neutral-600 dark:text-neutral-400">{s.programName}</td>
+                      <td className="py-3 px-4 font-bold">Level {s.currentLevel}</td>
+                      <td className="py-3 px-4 font-mono">{s.admissionSession}</td>
+                      <td className="py-3 px-4 text-right">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                          {s.status.toUpperCase()}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
@@ -245,40 +247,42 @@ export const ReportsView: React.FC = () => {
 
           {/* Performance Table */}
           <div className="overflow-hidden rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-neutral-50 dark:bg-neutral-800/60 text-neutral-500 font-semibold border-b border-neutral-200 dark:border-neutral-800">
-                <tr>
-                  <th className="py-3 px-4">Student</th>
-                  <th className="py-3 px-4">Matric No</th>
-                  <th className="py-3 px-4">Level</th>
-                  <th className="py-3 px-4">Credits Earned</th>
-                  <th className="py-3 px-4">CGPA</th>
-                  <th className="py-3 px-4 text-right">Academic Standing</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
-                {students.map(s => (
-                  <tr key={s.id} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/40">
-                    <td className="py-3 px-4 font-bold text-neutral-900 dark:text-neutral-100">{s.firstName} {s.lastName}</td>
-                    <td className="py-3 px-4 font-mono text-neutral-600 dark:text-neutral-400">{s.studentId}</td>
-                    <td className="py-3 px-4 font-medium">Level {s.currentLevel}</td>
-                    <td className="py-3 px-4 font-mono">{s.creditsEarned} Cr</td>
-                    <td className="py-3 px-4 font-mono font-bold text-indigo-600 dark:text-indigo-400">{s.currentCgpa.toFixed(2)}</td>
-                    <td className="py-3 px-4 text-right">
-                      <span className={`px-2 py-0.5 rounded font-bold text-[10px] ${
-                        s.currentCgpa >= 3.60 
-                          ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                          : s.currentCgpa >= 1.50
-                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                          : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
-                      }`}>
-                        {s.academicStanding}
-                      </span>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-neutral-50 dark:bg-neutral-800/60 text-neutral-500 font-semibold border-b border-neutral-200 dark:border-neutral-800">
+                  <tr>
+                    <th className="py-3 px-4">Student</th>
+                    <th className="py-3 px-4">Matric No</th>
+                    <th className="py-3 px-4">Level</th>
+                    <th className="py-3 px-4">Credits Earned</th>
+                    <th className="py-3 px-4">CGPA</th>
+                    <th className="py-3 px-4 text-right">Academic Standing</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+                  {students.map(s => (
+                    <tr key={s.id} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/40">
+                      <td className="py-3 px-4 font-bold text-neutral-900 dark:text-neutral-100">{s.firstName} {s.lastName}</td>
+                      <td className="py-3 px-4 font-mono text-neutral-600 dark:text-neutral-400">{s.studentId}</td>
+                      <td className="py-3 px-4 font-medium">Level {s.currentLevel}</td>
+                      <td className="py-3 px-4 font-mono">{s.creditsEarned} Cr</td>
+                      <td className="py-3 px-4 font-mono font-bold text-indigo-600 dark:text-indigo-400">{s.currentCgpa.toFixed(2)}</td>
+                      <td className="py-3 px-4 text-right">
+                        <span className={`px-2 py-0.5 rounded font-bold text-[10px] ${
+                          s.currentCgpa >= 3.60 
+                            ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                            : s.currentCgpa >= 1.50
+                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                            : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
+                        }`}>
+                          {s.academicStanding}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
@@ -286,38 +290,40 @@ export const ReportsView: React.FC = () => {
       {/* REPORT CONTENT: COURSES */}
       {reportType === 'courses' && (
         <div className="overflow-hidden rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-neutral-50 dark:bg-neutral-800/60 text-neutral-500 font-semibold border-b border-neutral-200 dark:border-neutral-800">
-              <tr>
-                <th className="py-3 px-4">Course</th>
-                <th className="py-3 px-4">Level</th>
-                <th className="py-3 px-4">Credit Hours</th>
-                <th className="py-3 px-4">Classification</th>
-                <th className="py-3 px-4">Capacity Utilization</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
-              {courses.map(c => (
-                <tr key={c.id} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/40">
-                  <td className="py-3 px-4 font-bold">
-                    <span className="font-mono text-indigo-600 dark:text-indigo-400 mr-2">{c.code}</span>
-                    <span>{c.title}</span>
-                  </td>
-                  <td className="py-3 px-4">Level {c.level}</td>
-                  <td className="py-3 px-4 font-mono font-bold">{c.creditHours}</td>
-                  <td className="py-3 px-4 uppercase font-bold text-[10px] text-neutral-500">{c.type}</td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-24 h-2 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
-                        <div className="h-full bg-indigo-600 rounded-full" style={{ width: `${Math.min(100, (c.enrolledCount / c.capacity) * 100)}%` }} />
-                      </div>
-                      <span className="font-mono text-[11px] text-neutral-500">{c.enrolledCount} / {c.capacity}</span>
-                    </div>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-neutral-50 dark:bg-neutral-800/60 text-neutral-500 font-semibold border-b border-neutral-200 dark:border-neutral-800">
+                <tr>
+                  <th className="py-3 px-4">Course</th>
+                  <th className="py-3 px-4">Level</th>
+                  <th className="py-3 px-4">Credit Hours</th>
+                  <th className="py-3 px-4">Classification</th>
+                  <th className="py-3 px-4">Capacity Utilization</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+                {courses.map(c => (
+                  <tr key={c.id} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/40">
+                    <td className="py-3 px-4 font-bold">
+                      <span className="font-mono text-indigo-600 dark:text-indigo-400 mr-2">{c.code}</span>
+                      <span>{c.title}</span>
+                    </td>
+                    <td className="py-3 px-4">Level {c.level}</td>
+                    <td className="py-3 px-4 font-mono font-bold">{c.creditHours}</td>
+                    <td className="py-3 px-4 uppercase font-bold text-[10px] text-neutral-500">{c.type}</td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-24 h-2 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+                          <div className="h-full bg-indigo-600 rounded-full" style={{ width: `${Math.min(100, (c.enrolledCount / c.capacity) * 100)}%` }} />
+                        </div>
+                        <span className="font-mono text-[11px] text-neutral-500">{c.enrolledCount} / {c.capacity}</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
@@ -356,42 +362,44 @@ export const ReportsView: React.FC = () => {
               <span className="text-neutral-900 dark:text-neutral-100">Institutional Bursary Student Ledgers Audit</span>
               <span className="text-neutral-400 font-normal">{allLedgers.length} Accounts Monitored</span>
             </div>
-            <table className="w-full text-left text-xs">
-              <thead className="bg-neutral-50 dark:bg-neutral-800/60 text-neutral-500 font-semibold border-b border-neutral-200 dark:border-neutral-800">
-                <tr>
-                  <th className="py-3 px-4">Student</th>
-                  <th className="py-3 px-4">Total Billed</th>
-                  <th className="py-3 px-4">Paid to Date</th>
-                  <th className="py-3 px-4">Balance</th>
-                  <th className="py-3 px-4 text-right">Clearance Standing</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
-                {allLedgers.map(l => {
-                  const student = students.find(s => s.studentId === l.studentId);
-                  return (
-                    <tr key={l.studentId} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/40">
-                      <td className="py-3 px-4 font-bold">
-                        <span className="text-neutral-900 dark:text-neutral-100">{student ? `${student.firstName} ${student.lastName}` : l.studentId}</span>
-                        <span className="text-[11px] font-mono text-neutral-400 block">{l.studentId}</span>
-                      </td>
-                      <td className="py-3 px-4 font-mono font-bold">GHS {l.totalBilled.toLocaleString()}</td>
-                      <td className="py-3 px-4 font-mono font-bold text-emerald-600">GHS {l.totalPaid.toLocaleString()}</td>
-                      <td className="py-3 px-4 font-mono font-bold text-amber-600">GHS {l.balance.toLocaleString()}</td>
-                      <td className="py-3 px-4 text-right">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          l.isCleared || l.balance <= 0
-                            ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
-                            : 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
-                        }`}>
-                          {l.isCleared || l.balance <= 0 ? 'FULLY CLEARED' : 'PENDING SETTLEMENT'}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-neutral-50 dark:bg-neutral-800/60 text-neutral-500 font-semibold border-b border-neutral-200 dark:border-neutral-800">
+                  <tr>
+                    <th className="py-3 px-4">Student</th>
+                    <th className="py-3 px-4">Total Billed</th>
+                    <th className="py-3 px-4">Paid to Date</th>
+                    <th className="py-3 px-4">Balance</th>
+                    <th className="py-3 px-4 text-right">Clearance Standing</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+                  {allLedgers.map(l => {
+                    const student = students.find(s => s.studentId === l.studentId);
+                    return (
+                      <tr key={l.studentId} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/40">
+                        <td className="py-3 px-4 font-bold">
+                          <span className="text-neutral-900 dark:text-neutral-100">{student ? `${student.firstName} ${student.lastName}` : l.studentId}</span>
+                          <span className="text-[11px] font-mono text-neutral-400 block">{l.studentId}</span>
+                        </td>
+                        <td className="py-3 px-4 font-mono font-bold">GHS {l.totalBilled.toLocaleString()}</td>
+                        <td className="py-3 px-4 font-mono font-bold text-emerald-600">GHS {l.totalPaid.toLocaleString()}</td>
+                        <td className="py-3 px-4 font-mono font-bold text-amber-600">GHS {l.balance.toLocaleString()}</td>
+                        <td className="py-3 px-4 text-right">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                            l.isCleared || l.balance <= 0
+                              ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+                              : 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
+                          }`}>
+                            {l.isCleared || l.balance <= 0 ? 'FULLY CLEARED' : 'PENDING SETTLEMENT'}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}

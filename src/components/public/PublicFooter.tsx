@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GraduationCap, MapPin, Phone, Mail, Facebook, Twitter, Linkedin, Youtube, ArrowRight } from 'lucide-react';
+import { UniversityCrest } from './UniversityCrest';
 
 export const PublicFooter: React.FC = () => {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ export const PublicFooter: React.FC = () => {
       links: [
         { label: 'How to Apply', href: '/apply' },
         { label: 'Entry Requirements', href: '/admissions#entry-requirements' },
-        { label: 'Scholarships & Aid', href: '/admissions#scholarships' },
+        { label: 'Tuition & Fees', href: '/admissions#tuition-fees' },
         { label: 'International Students', href: '/admissions#international' },
         { label: 'Transfer Admissions', href: '/admissions#transfer' },
       ],
@@ -76,18 +77,12 @@ export const PublicFooter: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-10 lg:gap-8 pb-12 border-b border-neutral-800">
           {/* Brand Column */}
           <div className="lg:col-span-2 space-y-5">
-            <div className="flex items-center gap-3 cursor-pointer" onClick={() => { navigate('/'); window.scrollTo({ top: 0 }); }}>
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                <GraduationCap className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <p className="font-extrabold text-white tracking-tight">Premier University</p>
-                <p className="text-xs text-indigo-400 font-medium">Est. 1962 · Accra, Ghana</p>
-              </div>
+            <div className="cursor-pointer inline-block" onClick={() => { navigate('/'); window.scrollTo({ top: 0 }); }}>
+              <UniversityCrest size="md" theme="dark" universityName="Premier University" subtext="Est. 1962 · Accra, Ghana" />
             </div>
 
-            <p className="text-sm leading-relaxed text-neutral-500">
-              A premier institution of higher learning dedicated to academic excellence, transformative research, and the holistic development of global citizens.
+            <p className="text-sm leading-relaxed text-neutral-400 font-light">
+              Devoted to excellence in teaching, learning, and research, and to developing leaders who make a global difference across medicine, governance, sciences, and arts.
             </p>
 
             <div className="space-y-2.5 text-xs">

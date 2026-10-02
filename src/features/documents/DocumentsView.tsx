@@ -104,7 +104,7 @@ export const DocumentsView: React.FC = () => {
 
         <button
           onClick={() => setIsUploadModalOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-xs"
+          className="w-full sm:w-auto min-h-[44px] inline-flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-xs ef-tap-area cursor-pointer"
         >
           <Upload className="w-4 h-4" />
           Archive New Document
@@ -112,7 +112,7 @@ export const DocumentsView: React.FC = () => {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 flex flex-col sm:flex-row gap-3 items-center justify-between">
+      <div className="p-3 sm:p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 flex flex-col sm:flex-row gap-3 items-center justify-between">
         <div className="relative w-full sm:w-80">
           <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
@@ -120,7 +120,7 @@ export const DocumentsView: React.FC = () => {
             placeholder="Search documents by title or file..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
+            className="w-full min-h-[42px] pl-9 pr-3 py-2 text-xs rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
           />
         </div>
 
@@ -128,7 +128,7 @@ export const DocumentsView: React.FC = () => {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="text-xs px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
+            className="w-full sm:w-auto min-h-[42px] text-xs px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
           >
             <option value="all">All Document Types</option>
             <option value="admission_letter">Admission Letters</option>
@@ -146,11 +146,11 @@ export const DocumentsView: React.FC = () => {
         {filteredDocs.map(doc => (
           <div 
             key={doc.id}
-            className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs flex flex-col justify-between space-y-4 hover:border-indigo-200 dark:hover:border-indigo-800 transition-colors"
+            className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs flex flex-col justify-between space-y-4 hover:border-indigo-200 dark:hover:border-indigo-800 transition-colors"
           >
             <div>
               <div className="flex items-start justify-between">
-                <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
                   <FileText className="w-5 h-5" />
                 </div>
                 {doc.isVerified && (
@@ -181,18 +181,19 @@ export const DocumentsView: React.FC = () => {
               </div>
             </div>
 
-            <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
+            <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between gap-2">
               <button
                 onClick={() => setPreviewDoc(doc)}
-                className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
+                className="flex-1 sm:flex-initial min-h-[40px] px-3 py-2 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 text-xs font-semibold text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center gap-1.5 ef-tap-area cursor-pointer"
               >
-                <Eye className="w-3.5 h-3.5" /> Preview
+                <Eye className="w-3.5 h-3.5" /> Preview Document
               </button>
               <button
                 onClick={() => showToast(`Downloaded ${doc.fileName}`, 'info')}
-                className="p-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100"
+                className="w-10 h-10 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-center ef-tap-area cursor-pointer shrink-0"
+                title="Download file"
               >
-                <Download className="w-3.5 h-3.5" />
+                <Download className="w-4 h-4" />
               </button>
             </div>
           </div>

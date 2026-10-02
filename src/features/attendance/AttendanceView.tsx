@@ -88,6 +88,22 @@ export const AttendanceView: React.FC = () => {
     };
   });
 
+  const [rosterSearch, setRosterSearch] = useState('');
+
+  const handleMarkAll = (status: AttendanceStatus) => {
+    const updated: { [studentId: string]: AttendanceStatus } = {};
+    registeredStudents.forEach(s => {
+      updated[s.studentId] = status;
+    });
+    setRoster(prev => ({ ...prev, ...updated }));
+    showToast(`Marked all students as ${status}`, 'info');
+  };
+
+  const filteredStudents = registeredStudents.filter(std => 
+    std.studentName.toLowerCase().includes(rosterSearch.toLowerCase()) ||
+    std.matricNo.toLowerCase().includes(rosterSearch.toLowerCase())
+  );
+
   const handleSaveAttendance = (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentOffering) return;
@@ -215,49 +231,89 @@ export const AttendanceView: React.FC = () => {
 
           {/* Student Session History */}
           <div className="overflow-hidden rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
-            <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800 font-bold text-sm">
-              Lecture Attendance History
+            <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
+              <span className="font-bold text-sm text-neutral-900 dark:text-neutral-100">Lecture Attendance History</span>
+              <span className="text-xs text-neutral-400 font-medium">{studentSessions.length} Sessions Logged</span>
             </div>
-            <table className="w-full text-left text-xs">
-              <thead className="bg-neutral-50 dark:bg-neutral-800/60 text-neutral-500 font-semibold border-b border-neutral-200 dark:border-neutral-800">
-                <tr>
-                  <th className="py-3 px-4">Date</th>
-                  <th className="py-3 px-4">Course</th>
-                  <th className="py-3 px-4">Topic / Module</th>
-                  <th className="py-3 px-4">Venue</th>
-                  <th className="py-3 px-4 text-right">Your Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
-                {studentSessions.length === 0 ? (
+
+            {/* Mobile View: Vertical Cards */}
+            <div className="block md:hidden divide-y divide-neutral-100 dark:divide-neutral-800">
+              {studentSessions.length === 0 ? (
+                <div className="p-8 text-center text-xs text-neutral-400">
+                  No classroom lecture attendance sessions recorded yet for your registered courses this semester.
+                </div>
+              ) : (
+                studentSessions.map((s, i) => (
+                  <div key={i} className="p-4 space-y-2 hover:bg-neutral-50/50 dark:hover:bg-neutral-800/40">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-mono font-bold text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-1 rounded-lg">
+                        {s.courseCode}
+                      </span>
+                      <span className={`px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider ${
+                        s.status === 'present'
+                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                          : s.status === 'late'
+                          ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                          : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
+                      }`}>
+                        {s.status}
+                      </span>
+                    </div>
+                    <p className="font-semibold text-xs text-neutral-900 dark:text-neutral-100 leading-snug">
+                      {s.topic}
+                    </p>
+                    <div className="flex items-center justify-between text-[11px] text-neutral-400 pt-1 font-mono">
+                      <span>{s.date}</span>
+                      <span className="truncate max-w-[150px]">{s.venue}</span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Desktop View: Table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-neutral-50 dark:bg-neutral-800/60 text-neutral-500 font-semibold border-b border-neutral-200 dark:border-neutral-800">
                   <tr>
-                    <td colSpan={5} className="py-8 text-center text-xs text-neutral-400">
-                      No classroom lecture attendance sessions recorded yet for your registered courses this semester.
-                    </td>
+                    <th className="py-3 px-4">Date</th>
+                    <th className="py-3 px-4">Course</th>
+                    <th className="py-3 px-4">Topic / Module</th>
+                    <th className="py-3 px-4">Venue</th>
+                    <th className="py-3 px-4 text-right">Your Status</th>
                   </tr>
-                ) : (
-                  studentSessions.map((s, i) => (
-                    <tr key={i} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/40">
-                      <td className="py-3 px-4 font-mono text-neutral-600 dark:text-neutral-400">{s.date}</td>
-                      <td className="py-3 px-4 font-mono font-bold text-indigo-600 dark:text-indigo-400">{s.courseCode}</td>
-                      <td className="py-3 px-4 text-neutral-800 dark:text-neutral-200">{s.topic}</td>
-                      <td className="py-3 px-4 text-neutral-500">{s.venue}</td>
-                      <td className="py-3 px-4 text-right">
-                        <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase ${
-                          s.status === 'present'
-                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                            : s.status === 'late'
-                            ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                            : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
-                        }`}>
-                          {s.status}
-                        </span>
+                </thead>
+                <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+                  {studentSessions.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-xs text-neutral-400">
+                        No classroom lecture attendance sessions recorded yet for your registered courses this semester.
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    studentSessions.map((s, i) => (
+                      <tr key={i} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/40">
+                        <td className="py-3 px-4 font-mono text-neutral-600 dark:text-neutral-400">{s.date}</td>
+                        <td className="py-3 px-4 font-mono font-bold text-indigo-600 dark:text-indigo-400">{s.courseCode}</td>
+                        <td className="py-3 px-4 text-neutral-800 dark:text-neutral-200">{s.topic}</td>
+                        <td className="py-3 px-4 text-neutral-500">{s.venue}</td>
+                        <td className="py-3 px-4 text-right">
+                          <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase ${
+                            s.status === 'present'
+                              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                              : s.status === 'late'
+                              ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                              : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
+                          }`}>
+                            {s.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
@@ -267,7 +323,7 @@ export const AttendanceView: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Roll Call Form */}
           <div className="lg:col-span-8 space-y-6">
-            <form onSubmit={handleSaveAttendance} className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs space-y-4 text-xs">
+            <form onSubmit={handleSaveAttendance} className="p-4 sm:p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs space-y-4 text-xs">
               <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
                 <h3 className="font-bold text-sm text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
                   <Clock className="w-4 h-4 text-indigo-600" />
@@ -284,7 +340,7 @@ export const AttendanceView: React.FC = () => {
                   <select
                     value={selectedOfferingId}
                     onChange={(e) => setSelectedOfferingId(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 font-mono font-bold"
+                    className="w-full px-3 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 font-mono font-bold text-xs"
                   >
                     {availableOfferings.map(o => (
                       <option key={o.id} value={o.id}>
@@ -300,7 +356,7 @@ export const AttendanceView: React.FC = () => {
                     type="date"
                     value={sessionDate}
                     onChange={(e) => setSessionDate(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800"
+                    className="w-full px-3 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-xs"
                   />
                 </div>
 
@@ -310,7 +366,7 @@ export const AttendanceView: React.FC = () => {
                     type="text"
                     value={venue}
                     onChange={(e) => setVenue(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800"
+                    className="w-full px-3 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-xs"
                   />
                 </div>
               </div>
@@ -323,15 +379,15 @@ export const AttendanceView: React.FC = () => {
                     placeholder="e.g. Relational Calculus & Transaction Isolation"
                     value={topic}
                     onChange={(e) => setTopic(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800"
+                    className="w-full px-3 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-xs"
                   />
                 </div>
 
-                <div className="pt-5 w-full sm:w-auto">
+                <div className="pt-2 sm:pt-5 w-full sm:w-auto">
                   <button
                     type="button"
                     onClick={generateQrToken}
-                    className="w-full sm:w-auto px-4 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 rounded-lg font-bold border border-amber-300/40 dark:border-amber-800/40 flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full sm:w-auto px-4 py-2.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 rounded-xl font-bold border border-amber-300/40 dark:border-amber-800/40 flex items-center justify-center gap-2 cursor-pointer ef-tap-area"
                   >
                     <QrCode className="w-4 h-4 text-amber-600" />
                     QR Attendance
@@ -339,43 +395,92 @@ export const AttendanceView: React.FC = () => {
                 </div>
               </div>
 
-              {/* Student Roster Table */}
-              <div className="border border-neutral-200 dark:border-neutral-800 rounded-xl overflow-hidden mt-4">
-                <div className="bg-neutral-50 dark:bg-neutral-800/60 px-4 py-2 flex items-center justify-between font-bold text-neutral-600 dark:text-neutral-300">
-                  <span>Enrolled Student Roster ({registeredStudents.length})</span>
-                  <span className="text-[10px] uppercase font-mono">Mark Attendance Status</span>
+              {/* Student Roster Controls & Bulk Action */}
+              <div className="border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden mt-4">
+                <div className="bg-neutral-50 dark:bg-neutral-800/60 p-3 sm:px-4 sm:py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-neutral-200 dark:border-neutral-800">
+                  <div>
+                    <span className="font-bold text-sm text-neutral-800 dark:text-neutral-200">
+                      Enrolled Student Roster ({registeredStudents.length})
+                    </span>
+                    <p className="text-[11px] text-neutral-400">
+                      Tap individual status or use bulk quick action
+                    </p>
+                  </div>
+
+                  {/* Bulk Actions */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleMarkAll('present')}
+                      className="flex-1 sm:flex-initial px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-2xs ef-tap-area cursor-pointer transition-colors"
+                    >
+                      ✓ Mark All Present
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleMarkAll('absent')}
+                      className="px-3 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl text-xs font-bold ef-tap-area cursor-pointer transition-colors"
+                    >
+                      Clear
+                    </button>
+                  </div>
                 </div>
+
+                {/* Filter input */}
+                {registeredStudents.length > 5 && (
+                  <div className="p-3 bg-white dark:bg-neutral-900 border-b border-neutral-100 dark:border-neutral-800">
+                    <div className="relative">
+                      <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                      <input
+                        type="text"
+                        placeholder="Search student by name or matric..."
+                        value={rosterSearch}
+                        onChange={(e) => setRosterSearch(e.target.value)}
+                        className="w-full pl-9 pr-3 py-2 bg-neutral-50 dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 text-xs"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Student Roster List */}
                 <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
-                  {registeredStudents.length === 0 ? (
+                  {filteredStudents.length === 0 ? (
                     <div className="p-8 text-center text-xs text-neutral-400">
-                      No approved student registrations found for {currentOffering?.courseCode || 'this offering'}.
+                      {registeredStudents.length === 0 
+                        ? `No approved student registrations found for ${currentOffering?.courseCode || 'this offering'}.`
+                        : 'No students matching search filter.'}
                     </div>
                   ) : (
-                    registeredStudents.map(std => {
+                    filteredStudents.map(std => {
                       const status = roster[std.studentId] || 'present';
                       return (
-                        <div key={std.studentId} className="px-4 py-3 flex items-center justify-between">
-                          <div>
-                            <p className="font-bold text-neutral-900 dark:text-neutral-100">{std.studentName}</p>
-                            <p className="text-[11px] font-mono text-neutral-400">{std.matricNo} • Level {std.level}</p>
+                        <div key={std.studentId} className="p-3 sm:px-4 sm:py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30 transition-colors">
+                          <div className="min-w-0">
+                            <p className="font-bold text-xs sm:text-sm text-neutral-900 dark:text-neutral-100 truncate">
+                              {std.studentName}
+                            </p>
+                            <p className="text-[11px] font-mono text-neutral-400">
+                              {std.matricNo} • Level {std.level}
+                            </p>
                           </div>
 
-                          <div className="flex items-center gap-1.5">
+                          {/* Mobile-first Segmented Touch Toggle (Min 44px touch targets on mobile) */}
+                          <div className="grid grid-cols-4 sm:flex items-center gap-1.5 w-full sm:w-auto">
                             {(['present', 'late', 'absent', 'excused'] as AttendanceStatus[]).map(st => (
                               <button
                                 key={st}
                                 type="button"
                                 onClick={() => handleToggleStudent(std.studentId, st)}
-                                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase transition-colors ${
+                                className={`min-h-[42px] sm:min-h-[34px] px-2 sm:px-3 py-2 sm:py-1 rounded-xl text-xs sm:text-[10px] font-bold uppercase transition-all ef-tap-area flex items-center justify-center cursor-pointer ${
                                   status === st
                                     ? st === 'present'
-                                      ? 'bg-emerald-600 text-white shadow-xs'
+                                      ? 'bg-emerald-600 text-white shadow-xs font-black'
                                       : st === 'late'
-                                      ? 'bg-amber-600 text-white shadow-xs'
+                                      ? 'bg-amber-600 text-white shadow-xs font-black'
                                       : st === 'absent'
-                                      ? 'bg-rose-600 text-white shadow-xs'
-                                      : 'bg-blue-600 text-white shadow-xs'
-                                    : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200'
+                                      ? 'bg-rose-600 text-white shadow-xs font-black'
+                                      : 'bg-blue-600 text-white shadow-xs font-black'
+                                    : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                                 }`}
                               >
                                 {st}
@@ -389,10 +494,14 @@ export const AttendanceView: React.FC = () => {
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 flex justify-end">
+              {/* Submit / Save Bar */}
+              <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="text-xs text-neutral-500 font-medium">
+                  {registeredStudents.filter(s => (roster[s.studentId] || 'present') === 'present').length} of {registeredStudents.length} marked present
+                </div>
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-xs transition-colors"
+                  className="w-full sm:w-auto min-h-[44px] inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-xs transition-colors ef-tap-area cursor-pointer"
                 >
                   <Save className="w-4 h-4" />
                   Save & Lock Attendance Session

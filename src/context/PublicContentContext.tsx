@@ -45,14 +45,6 @@ export interface EntryRequirementItem {
   details: string;
 }
 
-export interface ScholarshipItem {
-  id: string;
-  name: string;
-  coverage: string;
-  eligibility: string;
-  deadline: string;
-  description: string;
-}
 
 export interface CampusLifeServiceItem {
   id: string;
@@ -396,7 +388,7 @@ export const DEFAULT_ADMISSION_STEPS: AdmissionStepItem[] = [
 
 export const DEFAULT_KEY_DATES: AdmissionKeyDateItem[] = [
   { id: 'kd-1', date: 'October 1, 2026', event: '2026/2027 Admissions Portal Opens Globally', status: 'Passed', badge: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400' },
-  { id: 'kd-2', date: 'January 15, 2027', event: 'Early Decision & Merit Scholarship Deadline', status: 'Passed', badge: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400' },
+  { id: 'kd-2', date: 'January 15, 2027', event: 'Early Decision Deadline', status: 'Passed', badge: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400' },
   { id: 'kd-3', date: 'April 30, 2027', event: 'Regular Admissions Cycle Deadline', status: 'Open Now', badge: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300' },
   { id: 'kd-4', date: 'May 15 – 30, 2027', event: 'Aptitude Tests & Faculty Selection Interviews', status: 'Upcoming', badge: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300' },
   { id: 'kd-5', date: 'June 20, 2027', event: 'First Batch Offer Letters Dispatched', status: 'Upcoming', badge: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300' },
@@ -412,12 +404,6 @@ export const DEFAULT_ENTRY_REQUIREMENTS: EntryRequirementItem[] = [
   { id: 'er-6', level: 'Transfer Admissions', qualification: 'Accredited University Transcript', minimumGrades: 'Minimum Cumulative GPA of 2.75 from previous accredited tertiary institution', details: 'Up to 50% of relevant credits may be transferred subject to departmental curriculum benchmarking and Dean’s clearance.' },
 ];
 
-export const DEFAULT_SCHOLARSHIPS: ScholarshipItem[] = [
-  { id: 'sch-1', name: 'Chancellor’s Presidential Academic Excellence Award', coverage: '100% Full Tuition + On-Campus Housing + Laptop', eligibility: 'Top 0.5% matriculating freshmen with straight A1s in WASSCE or straight As in A-Levels.', deadline: 'January 15 annually', description: 'Our highest academic honor recognizing exceptional scholastic accomplishment and leadership potential.' },
-  { id: 'sch-2', name: 'Women in STEM & Computing Fellowship', coverage: '75% Tuition Fee Grant for all 4 years', eligibility: 'Female applicants admitted to Computer Science, Cybersecurity, or Engineering disciplines.', deadline: 'March 31 annually', description: 'Funded in partnership with global tech giants to empower the next generation of African female technologists.' },
-  { id: 'sch-3', name: 'Pan-African Regional Mobility Bursary', coverage: '$3,500 Annual Travel & Living Subsidy', eligibility: 'International applicants originating from ECOWAS and African Union member states.', deadline: 'April 30 annually', description: 'Promotes regional diversity and cross-border knowledge exchange among promising African scholars.' },
-  { id: 'sch-4', name: 'Dean’s Need-Based Student Support Grant', coverage: '25% – 50% Tuition Relief', eligibility: 'Demonstrable financial hardship with continuous minimum 3.0 CGPA standing.', deadline: 'Rolling review prior to each semester', description: 'Administered through the Directorate of Student Affairs to ensure no qualified student drops out due to fees.' },
-];
 
 export const DEFAULT_CAMPUS_SERVICES: CampusLifeServiceItem[] = [
   { id: 'srv-1', title: 'Center for Career Development & Corporate Internships', desc: 'One-on-one resume reviews, corporate recruiting fairs with Fortune 500 firms, and alumni career mentorship matching.', contact: 'careers@premier.edu.gh · Ext. 1040', location: 'Student Union Complex, Level 2' },
@@ -535,7 +521,6 @@ interface PublicContentContextType {
   admissionSteps: AdmissionStepItem[];
   keyDates: AdmissionKeyDateItem[];
   entryRequirements: EntryRequirementItem[];
-  scholarships: ScholarshipItem[];
   campusServices: CampusLifeServiceItem[];
   housing: HousingItem[];
   healthWellness: HealthWellnessItem[];
@@ -568,9 +553,6 @@ interface PublicContentContextType {
   addEntryRequirement: (item: Omit<EntryRequirementItem, 'id'>) => void;
   deleteEntryRequirement: (id: string) => void;
 
-  updateScholarship: (item: ScholarshipItem) => void;
-  addScholarship: (item: Omit<ScholarshipItem, 'id'>) => void;
-  deleteScholarship: (id: string) => void;
 
   updateHousingItem: (item: HousingItem) => void;
   addHousingItem: (item: Omit<HousingItem, 'id'>) => void;
@@ -622,7 +604,6 @@ export const PublicContentProvider: React.FC<{ children: React.ReactNode }> = ({
       admissionSteps: DEFAULT_ADMISSION_STEPS,
       keyDates: DEFAULT_KEY_DATES,
       entryRequirements: DEFAULT_ENTRY_REQUIREMENTS,
-      scholarships: DEFAULT_SCHOLARSHIPS,
       campusServices: DEFAULT_CAMPUS_SERVICES,
       housing: DEFAULT_HOUSING,
       healthWellness: DEFAULT_HEALTH_WELLNESS,
@@ -724,19 +705,6 @@ export const PublicContentProvider: React.FC<{ children: React.ReactNode }> = ({
     setData((prev: any) => ({ ...prev, entryRequirements: prev.entryRequirements.filter((er: EntryRequirementItem) => er.id !== id) }));
   };
 
-  const updateScholarship = (item: ScholarshipItem) => {
-    setData((prev: any) => ({
-      ...prev,
-      scholarships: prev.scholarships.map((s: ScholarshipItem) => (s.id === item.id ? item : s)),
-    }));
-  };
-  const addScholarship = (item: Omit<ScholarshipItem, 'id'>) => {
-    const newItem = { ...item, id: 'sch-' + Date.now() };
-    setData((prev: any) => ({ ...prev, scholarships: [newItem, ...prev.scholarships] }));
-  };
-  const deleteScholarship = (id: string) => {
-    setData((prev: any) => ({ ...prev, scholarships: prev.scholarships.filter((s: ScholarshipItem) => s.id !== id) }));
-  };
 
   const updateHousingItem = (item: HousingItem) => {
     setData((prev: any) => ({
@@ -832,7 +800,6 @@ export const PublicContentProvider: React.FC<{ children: React.ReactNode }> = ({
       admissionSteps: DEFAULT_ADMISSION_STEPS,
       keyDates: DEFAULT_KEY_DATES,
       entryRequirements: DEFAULT_ENTRY_REQUIREMENTS,
-      scholarships: DEFAULT_SCHOLARSHIPS,
       campusServices: DEFAULT_CAMPUS_SERVICES,
       housing: DEFAULT_HOUSING,
       healthWellness: DEFAULT_HEALTH_WELLNESS,
@@ -867,9 +834,6 @@ export const PublicContentProvider: React.FC<{ children: React.ReactNode }> = ({
         updateEntryRequirement,
         addEntryRequirement,
         deleteEntryRequirement,
-        updateScholarship,
-        addScholarship,
-        deleteScholarship,
         updateHousingItem,
         addHousingItem,
         deleteHousingItem,

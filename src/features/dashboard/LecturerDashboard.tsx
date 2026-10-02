@@ -89,7 +89,7 @@ export const LecturerDashboard: React.FC<LecturerDashboardProps> = ({ onNavigate
           </div>
           <button
             onClick={() => onNavigate('attendance')}
-            className="ef-btn ef-btn-sm self-start sm:self-auto font-bold"
+            className="ef-btn ef-btn-sm w-full sm:w-auto min-h-[44px] justify-center self-start sm:self-auto font-bold ef-tap-area cursor-pointer"
             style={{
               background: 'rgba(255,255,255,0.15)',
               color: 'white',
@@ -213,16 +213,16 @@ export const LecturerDashboard: React.FC<LecturerDashboardProps> = ({ onNavigate
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="grid grid-cols-2 sm:flex items-center gap-2 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-neutral-100 dark:border-neutral-800 shrink-0">
                       <button
                         onClick={() => onNavigate('attendance', { offeringId: o.id, courseCode: o.courseCode })}
-                        className="ef-btn ef-btn-ghost ef-btn-xs"
+                        className="ef-btn ef-btn-ghost ef-btn-xs min-h-[40px] sm:min-h-[32px] justify-center ef-tap-area cursor-pointer"
                       >
                         <ClipboardCheck className="w-3.5 h-3.5" /> Roll Call
                       </button>
                       <button
                         onClick={() => onNavigate('results', { offeringId: o.id, courseCode: o.courseCode })}
-                        className="ef-btn ef-btn-primary ef-btn-xs"
+                        className="ef-btn ef-btn-primary ef-btn-xs min-h-[40px] sm:min-h-[32px] justify-center ef-tap-area cursor-pointer"
                       >
                         <Award className="w-3.5 h-3.5" /> Gradebook
                       </button>
@@ -283,19 +283,19 @@ export const LecturerDashboard: React.FC<LecturerDashboardProps> = ({ onNavigate
           <div className="ef-card p-4 space-y-2">
             <h4 className="ef-label mb-3">Quick Actions</h4>
             {[
-              { label: 'Gradebook Entry', icon: <Award className="w-3.5 h-3.5" />, tab: 'results' },
-              { label: 'Student Directory', icon: <Users className="w-3.5 h-3.5" />, tab: 'admin-students' },
-              { label: 'Course Curriculum', icon: <BookOpen className="w-3.5 h-3.5" />, tab: 'admin-academic-structure' },
-              { label: 'Attendance Reports', icon: <BarChart3 className="w-3.5 h-3.5" />, tab: 'attendance' }
+              { label: 'Gradebook Entry', icon: <Award className="w-4 h-4 text-indigo-500" />, tab: 'results' },
+              { label: 'Student Directory', icon: <Users className="w-4 h-4 text-emerald-500" />, tab: 'admin-students' },
+              { label: 'Course Curriculum', icon: <BookOpen className="w-4 h-4 text-amber-500" />, tab: 'admin-academic-structure' },
+              { label: 'Attendance Reports', icon: <BarChart3 className="w-4 h-4 text-violet-500" />, tab: 'attendance' }
             ].map(action => (
               <button
                 key={action.tab}
                 onClick={() => onNavigate(action.tab)}
-                className="w-full ef-btn ef-btn-ghost ef-btn-xs justify-start"
+                className="w-full ef-btn ef-btn-ghost ef-btn-sm min-h-[44px] justify-start ef-tap-area cursor-pointer"
               >
                 {action.icon}
-                {action.label}
-                <ChevronRight className="w-3 h-3 ml-auto" />
+                <span className="font-semibold text-xs ml-1">{action.label}</span>
+                <ChevronRight className="w-3.5 h-3.5 ml-auto text-neutral-400" />
               </button>
             ))}
           </div>

@@ -314,7 +314,101 @@ export const ResultsView: React.FC = () => {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* Mobile View: Touch Cards for Grading (Block on Mobile, Hidden on Desktop) */}
+          <div className="block md:hidden divide-y divide-neutral-100 dark:divide-neutral-800">
+            {filteredEnrolled.length === 0 ? (
+              <div className="p-8 text-center text-xs text-neutral-400">
+                No approved registrations found for {selectedOffering?.courseCode}.
+              </div>
+            ) : (
+              filteredEnrolled.map((st) => {
+                const caVal = caScoresInput[st.id] !== undefined ? caScoresInput[st.id] : 32;
+                const examVal = examScoresInput[st.id] !== undefined ? examScoresInput[st.id] : 45;
+                const totalVal = Math.round((caVal + examVal) * 10) / 10;
+                const gradeDetails = academicEngine.getGradeDetails(totalVal, settings.gradingScale);
+                const creditsEarned = gradeDetails.isPassing ? (selectedOffering?.creditHours || 3) : 0;
+
+                return (
+                  <div key={st.id} className="p-4 space-y-3 bg-white dark:bg-neutral-900">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <h4 className="font-bold text-sm text-neutral-900 dark:text-neutral-100">
+                          {st.firstName} {st.lastName}
+                        </h4>
+                        <p className="text-[11px] font-mono text-neutral-400">
+                          {st.studentId} • {st.programName}
+                        </p>
+                      </div>
+                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                        gradeDetails.isPassing
+                          ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+                          : 'bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
+                      }`}>
+                        {gradeDetails.isPassing ? 'Passed' : 'Carryover'}
+                      </span>
+                    </div>
+
+                    {/* Numeric Touch Inputs for CA & Exam */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
+                          CA Score (40%)
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="40"
+                          value={caVal}
+                          onChange={(e) => handleCaChange(st.id, parseInt(e.target.value) || 0)}
+                          className="w-full min-h-[44px] px-3 py-2 text-center font-mono font-bold text-base rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
+                          Exam Score (60%)
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="60"
+                          value={examVal}
+                          onChange={(e) => handleExamChange(st.id, parseInt(e.target.value) || 0)}
+                          className="w-full min-h-[44px] px-3 py-2 text-center font-mono font-bold text-base rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Summary Outcome Strip */}
+                    <div className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/60 flex items-center justify-between text-xs">
+                      <div>
+                        <span className="text-neutral-400 font-medium">Total: </span>
+                        <strong className="font-mono text-sm text-neutral-900 dark:text-neutral-100">{totalVal}%</strong>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 py-0.5 rounded-md font-mono font-bold text-xs ${
+                          gradeDetails.isPassing 
+                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' 
+                            : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
+                        }`}>
+                          Grade: {gradeDetails.grade}
+                        </span>
+                        <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                          GP {gradeDetails.gradePoint.toFixed(1)}
+                        </span>
+                        <span className="text-neutral-400 font-mono text-[11px]">
+                          ({creditsEarned} Cr)
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Desktop View: Table (Hidden on Mobile) */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="bg-neutral-50 dark:bg-neutral-800/50 text-neutral-500 dark:text-neutral-400 uppercase text-[10px] font-bold tracking-wider border-b border-neutral-200/80 dark:border-neutral-800">
                 <tr>
@@ -431,12 +525,12 @@ export const ResultsView: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           {isFacultyOrAdmin && (
             <button
               type="button"
               onClick={() => setActiveMode('gradebook')}
-              className="px-3.5 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-xs font-bold text-neutral-800 dark:text-neutral-200"
+              className="w-full sm:w-auto min-h-[44px] px-3.5 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-xs font-bold text-neutral-800 dark:text-neutral-200 flex items-center justify-center gap-1.5 transition-colors"
             >
               Faculty Gradebook Entry
             </button>
@@ -444,10 +538,11 @@ export const ResultsView: React.FC = () => {
           <button
             type="button"
             onClick={handlePrintTranscript}
-            className="px-4 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-xs font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-2 transition-colors shadow-2xs"
+            className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-xs font-bold text-neutral-800 dark:text-neutral-200 flex items-center justify-center gap-2 transition-colors shadow-2xs"
           >
             <Printer className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-            <span>Print Official Transcript</span>
+            <span className="hidden sm:inline">Print Official Transcript</span>
+            <span className="sm:hidden">Print Transcript</span>
           </button>
         </div>
       </div>
@@ -551,7 +646,7 @@ export const ResultsView: React.FC = () => {
       {/* 3. Semester Selector & Course Marks Breakout */}
       <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/80 dark:border-neutral-800 shadow-xs overflow-hidden">
         {/* Tab Header */}
-        <div className="p-4 bg-neutral-50 dark:bg-neutral-800/40 border-b border-neutral-200/80 dark:border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="p-3 sm:p-4 bg-neutral-50 dark:bg-neutral-800/40 border-b border-neutral-200/80 dark:border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
             <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">
@@ -559,45 +654,45 @@ export const ResultsView: React.FC = () => {
             </span>
           </div>
 
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex items-center overflow-x-auto pb-1 sm:pb-0 gap-1.5 no-scrollbar max-w-full">
             {studentResultsHistory.map((sem, idx) => (
               <button
                 key={idx}
                 type="button"
                 onClick={() => setSelectedSemesterIndex(idx)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ef-tap-area cursor-pointer ${
                   selectedSemesterIndex === idx
-                    ? 'bg-indigo-600 text-white shadow-2xs'
+                    ? 'bg-indigo-600 text-white shadow-2xs font-extrabold'
                     : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100'
                 }`}
               >
-                Level {sem.level} · {sem.semesterName.includes('First') ? 'Sem 1' : 'Sem 2'}
+                L{sem.level} · {sem.semesterName.includes('First') ? 'Sem 1' : 'Sem 2'}
               </button>
             ))}
           </div>
         </div>
 
         {/* Selected Semester Banner */}
-        <div className="p-5 border-b border-neutral-100 dark:border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-neutral-900">
+        <div className="p-4 sm:p-5 border-b border-neutral-100 dark:border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-neutral-900">
           <div>
-            <h4 className="text-base font-extrabold text-neutral-900 dark:text-neutral-100">
+            <h4 className="text-sm sm:text-base font-extrabold text-neutral-900 dark:text-neutral-100">
               {selectedSemester?.semesterName} Statement of Results
             </h4>
             <p className="text-xs text-neutral-500">
-              Academic Session: {selectedSemester?.sessionName} · Level {selectedSemester?.level}
+              Session: {selectedSemester?.sessionName} · Level {selectedSemester?.level}
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="text-right">
-              <span className="text-[10px] uppercase font-bold text-neutral-400">Term GPA</span>
+          <div className="flex items-center gap-4 bg-neutral-50 dark:bg-neutral-800/60 p-2.5 sm:p-0 sm:bg-transparent rounded-xl">
+            <div>
+              <span className="text-[10px] uppercase font-bold text-neutral-400 block">Term GPA</span>
               <p className="text-lg font-black font-mono text-indigo-600 dark:text-indigo-400">
                 {selectedSemester?.gpa.toFixed(2)}
               </p>
             </div>
-            <div className="h-8 w-px bg-neutral-200 dark:border-neutral-800" />
-            <div className="text-right">
-              <span className="text-[10px] uppercase font-bold text-neutral-400">Term CGPA</span>
+            <div className="h-7 w-px bg-neutral-200 dark:bg-neutral-700" />
+            <div>
+              <span className="text-[10px] uppercase font-bold text-neutral-400 block">Term CGPA</span>
               <p className="text-lg font-black font-mono text-neutral-900 dark:text-neutral-100">
                 {selectedSemester?.cgpa.toFixed(2)}
               </p>
@@ -605,12 +700,12 @@ export const ResultsView: React.FC = () => {
           </div>
         </div>
 
-        {/* Courses Table */}
+        {/* Courses Table / Cards */}
         <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
           {selectedSemester?.courses.map((course, cIdx) => (
             <div key={cIdx} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30 transition-colors">
-              <div className="flex items-start gap-4">
-                <div className={`w-11 h-11 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 border ${
+              <div className="flex items-start gap-3 sm:gap-4 min-w-0">
+                <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 border ${
                   course.grade === 'A' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300' :
                   course.grade === 'B+' || course.grade === 'B' ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300' :
                   course.grade === 'C+' || course.grade === 'C' ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300' :
@@ -619,25 +714,25 @@ export const ResultsView: React.FC = () => {
                 }`}>
                   {course.grade}
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100">{course.code}</span>
                     <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
                       {course.credits} Credits
                     </span>
                   </div>
-                  <h5 className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 mt-0.5">
+                  <h5 className="text-xs sm:text-sm font-semibold text-neutral-800 dark:text-neutral-200 mt-0.5 line-clamp-2">
                     {course.title}
                   </h5>
-                  <p className="text-xs text-neutral-400 mt-0.5 font-medium">
+                  <p className="text-[11px] text-neutral-400 mt-0.5 font-medium">
                     Score: {course.score !== undefined ? `${course.score}%` : 'Pending Examination'}
                   </p>
                 </div>
               </div>
 
-              <div className="flex sm:flex-col items-end justify-between sm:justify-center text-xs">
-                <span>Credit Hours: {course.credits}</span>
-                <span className="font-mono font-bold">
+              <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center text-xs pt-2 sm:pt-0 border-t sm:border-t-0 border-neutral-100 dark:border-neutral-800">
+                <span className="text-neutral-500 font-mono text-[11px]">Weight: {course.credits} Cr</span>
+                <span className="font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100">
                   {course.grade === 'IP' ? 'Exams Pending' : `GP: ${course.gradePoint.toFixed(1)}`}
                 </span>
               </div>

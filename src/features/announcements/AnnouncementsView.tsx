@@ -191,17 +191,17 @@ export const AnnouncementsView: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="grid grid-cols-1 sm:flex items-center gap-2 w-full sm:w-auto">
           <button
             onClick={() => setActiveTab('provider_diagnostics')}
-            className="inline-flex items-center gap-1.5 px-3 py-2 border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-xl text-xs font-semibold"
+            className="w-full sm:w-auto min-h-[42px] inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-xl text-xs font-semibold ef-tap-area cursor-pointer"
           >
             <Radio className="w-3.5 h-3.5 text-emerald-600 animate-pulse" />
             Gateway Diagnostics
           </button>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-xs"
+            className="w-full sm:w-auto min-h-[42px] inline-flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-xs ef-tap-area cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             Broadcast Bulletin
@@ -210,7 +210,7 @@ export const AnnouncementsView: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-neutral-200 dark:border-neutral-800 space-x-6 text-xs font-semibold overflow-x-auto">
+      <div className="flex border-b border-neutral-200 dark:border-neutral-800 space-x-4 sm:space-x-6 text-xs font-semibold overflow-x-auto pb-1 no-scrollbar">
         <button
           onClick={() => setActiveTab('announcements')}
           className={`pb-3 border-b-2 transition-colors flex items-center gap-2 shrink-0 ${

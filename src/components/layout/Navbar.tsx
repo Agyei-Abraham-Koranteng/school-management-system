@@ -7,7 +7,7 @@ import {
   Search,
   Calendar,
   LogOut,
-  ChevronDown
+  GraduationCap
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
@@ -44,19 +44,32 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="ef-header">
+    <header className="ef-header px-3 sm:px-5">
       {/* Left Side */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         {/* Mobile menu */}
         <button
           id="mobile-nav-toggle"
           type="button"
           onClick={onOpenMobileMenu}
-          className="ef-btn-icon lg:hidden"
+          className="ef-btn-icon lg:hidden w-10 h-10 flex items-center justify-center shrink-0 cursor-pointer"
           aria-label="Open navigation"
         >
           <Menu className="w-5 h-5" />
         </button>
+
+        {/* Mobile Brand Identity */}
+        <div className="flex items-center gap-2 lg:hidden min-w-0">
+          <div
+            className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 shadow-xs"
+            style={{ background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)' }}
+          >
+            <GraduationCap className="w-4 h-4 text-white" />
+          </div>
+          <span className="font-extrabold text-sm tracking-tight truncate font-display" style={{ color: 'var(--text-primary)' }}>
+            EduFlow
+          </span>
+        </div>
 
         {/* Academic Session Pill */}
         <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border"
@@ -106,20 +119,30 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
 
       {/* Right Side */}
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+        {/* Mobile Search Button */}
+        <button
+          type="button"
+          onClick={() => {
+            window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }));
+          }}
+          className="ef-btn-icon md:hidden w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center cursor-pointer"
+          title="Search"
+          aria-label="Search"
+        >
+          <Search className="w-4 h-4" />
+        </button>
+
         {/* Theme Toggle */}
         <button
           id="theme-toggle-button"
           type="button"
           onClick={toggleTheme}
           title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-          className="ef-btn-icon"
+          className="ef-btn-icon w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center cursor-pointer"
           aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
         >
-          {theme === 'light'
-            ? <Moon className="w-4 h-4" />
-            : <Sun className="w-4 h-4" />
-          }
+          {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
         </button>
 
         {/* Notifications */}
@@ -127,52 +150,56 @@ export const Navbar: React.FC<NavbarProps> = ({
           id="notifications-button"
           type="button"
           onClick={onOpenNotifications}
-          className="ef-btn-icon relative"
+          className="ef-btn-icon relative w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center cursor-pointer"
           title="Notifications"
           aria-label="Notifications"
         >
           <Bell className="w-4 h-4" />
           {unreadNotificationsCount > 0 && (
             <span
-              className="absolute top-1 right-1 w-2 h-2 rounded-full ring-2 ring-white dark:ring-neutral-900"
+              className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full ring-2 ring-white dark:ring-neutral-900"
               style={{ background: 'var(--brand)' }}
             />
           )}
         </button>
 
         {/* Divider */}
-        <div className="w-px h-6 mx-1" style={{ background: 'var(--border-default)' }} />
+        <div className="w-px h-5 sm:h-6 mx-0.5 sm:mx-1" style={{ background: 'var(--border-default)' }} />
 
-        {/* User Info */}
-        <div className="flex items-center gap-2.5 cursor-default">
+        {/* User Info Avatar (Clickable on mobile to open drawer) */}
+        <div
+          onClick={onOpenMobileMenu}
+          className="flex items-center gap-2 cursor-pointer p-0.5 rounded-full hover:ring-2 hover:ring-indigo-500/30 transition-all"
+          title="View Profile & Navigation"
+        >
           {user?.avatarUrl ? (
             <img
               src={user.avatarUrl}
               alt={user.firstName || 'User'}
-              className="ef-avatar w-8 h-8"
+              className="ef-avatar w-8 h-8 rounded-full object-cover"
             />
           ) : (
-            <div className="ef-avatar-initials w-8 h-8 text-xs">
+            <div className="ef-avatar-initials w-8 h-8 text-xs font-bold rounded-full flex items-center justify-center">
               {getInitials(user?.firstName, user?.lastName)}
             </div>
           )}
-          <div className="hidden md:block">
-            <p className="text-xs font-semibold leading-tight" style={{ color: 'var(--text-primary)' }}>
+          <div className="hidden md:block text-left">
+            <p className="text-xs font-semibold leading-tight truncate max-w-[120px]" style={{ color: 'var(--text-primary)' }}>
               {user?.firstName} {user?.lastName}
             </p>
-            <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-[10px] truncate" style={{ color: 'var(--text-muted)' }}>
               {ROLE_DISPLAY[role] || role}
             </p>
           </div>
         </div>
 
-        {/* Logout */}
+        {/* Desktop Logout Button */}
         <button
           id="logout-button"
           type="button"
           onClick={logout}
           title="Sign out"
-          className="ef-btn-icon ml-0.5"
+          className="hidden md:flex ef-btn-icon ml-0.5 cursor-pointer"
           aria-label="Sign out"
         >
           <LogOut className="w-4 h-4" />

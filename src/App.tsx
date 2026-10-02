@@ -373,7 +373,7 @@ export default function App() {
         />
 
         {/* Dynamic Route/View Render */}
-        <main className="ef-content pb-20 lg:pb-6">
+        <main className="ef-content pb-[calc(var(--mobile-nav-h)+var(--safe-bottom)+1.5rem)] lg:pb-8">
           {!isTabAuthorized ? (
             <div className="max-w-sm mx-auto mt-20 text-center ef-animate-fade-up">
               <div className="ef-card p-10 space-y-5">

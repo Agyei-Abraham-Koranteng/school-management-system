@@ -121,14 +121,14 @@ export const TranscriptsAndSlipsView: React.FC = () => {
     <div className="space-y-6">
       {/* Control Ribbon (Hidden during printing) */}
       <div className="print:hidden flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
           {/* Document Type Selector */}
-          <div className="flex bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl text-xs font-semibold">
+          <div className="flex bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl text-xs font-semibold w-full sm:w-auto">
             <button
               onClick={() => setDocumentType('full_transcript')}
-              className={`px-3 py-1.5 rounded-lg transition-colors ${
+              className={`flex-1 sm:flex-initial min-h-[38px] px-3 py-1.5 rounded-lg transition-colors text-center ef-tap-area cursor-pointer ${
                 documentType === 'full_transcript'
-                  ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 shadow-xs'
+                  ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 shadow-xs font-bold'
                   : 'text-neutral-500 hover:text-neutral-900'
               }`}
             >
@@ -136,9 +136,9 @@ export const TranscriptsAndSlipsView: React.FC = () => {
             </button>
             <button
               onClick={() => setDocumentType('semester_slip')}
-              className={`px-3 py-1.5 rounded-lg transition-colors ${
+              className={`flex-1 sm:flex-initial min-h-[38px] px-3 py-1.5 rounded-lg transition-colors text-center ef-tap-area cursor-pointer ${
                 documentType === 'semester_slip'
-                  ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 shadow-xs'
+                  ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 shadow-xs font-bold'
                   : 'text-neutral-500 hover:text-neutral-900'
               }`}
             >
@@ -148,15 +148,15 @@ export const TranscriptsAndSlipsView: React.FC = () => {
 
           {/* Student Selector for Staff */}
           {isStaffOrAdmin && (
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-neutral-500">Student:</span>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <span className="text-xs text-neutral-500 shrink-0">Student:</span>
               <select
                 value={activeStudent.id}
                 onChange={(e) => {
                   const target = students.find(s => s.id === e.target.value);
                   if (target) setActiveStudent(target);
                 }}
-                className="text-xs px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200"
+                className="w-full sm:w-auto text-xs px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200"
               >
                 {students.map(s => (
                   <option key={s.id} value={s.id}>
@@ -172,7 +172,7 @@ export const TranscriptsAndSlipsView: React.FC = () => {
             <select
               value={selectedSemesterId}
               onChange={(e) => setSelectedSemesterId(e.target.value)}
-              className="text-xs px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200"
+              className="w-full sm:w-auto text-xs px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200"
             >
               {semesterResults.map(sem => (
                 <option key={sem.id} value={sem.id}>
@@ -184,7 +184,7 @@ export const TranscriptsAndSlipsView: React.FC = () => {
         </div>
 
         {/* Print / Export Action & Verification Test */}
-        <div className="flex items-center gap-2">
+        <div className="grid grid-cols-1 sm:flex items-center gap-2 w-full sm:w-auto">
           <button
             type="button"
             onClick={() => {
@@ -192,7 +192,7 @@ export const TranscriptsAndSlipsView: React.FC = () => {
               handleRunVerificationCheck(defaultVerifyRef);
               setShowVerifyModal(true);
             }}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 rounded-xl text-xs font-semibold transition-colors"
+            className="w-full sm:w-auto min-h-[42px] inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 rounded-xl text-xs font-semibold transition-colors ef-tap-area cursor-pointer"
           >
             <QrIcon className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
             <span>Verify QR Integrity</span>
@@ -200,31 +200,31 @@ export const TranscriptsAndSlipsView: React.FC = () => {
 
           <button
             onClick={handlePrint}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors"
+            className="w-full sm:w-auto min-h-[42px] inline-flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors ef-tap-area cursor-pointer"
           >
             <Printer className="w-4 h-4" />
-            <span>Print / Export Official PDF</span>
+            <span>Print / Export PDF</span>
           </button>
         </div>
       </div>
 
       {/* Official Document Sheet */}
-      <div className="max-w-4xl mx-auto bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xl p-8 sm:p-12 text-neutral-900 dark:text-neutral-100 print:border-none print:shadow-none print:p-0 print:m-0 print:max-w-full">
+      <div className="max-w-4xl mx-auto bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xl p-3 sm:p-8 md:p-12 text-neutral-900 dark:text-neutral-100 print:border-none print:shadow-none print:p-0 print:m-0 print:max-w-full overflow-x-auto">
         {/* Institutional Letterhead */}
         <div className="border-b-2 border-neutral-900 dark:border-neutral-100 pb-6 mb-6">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-indigo-950 text-white flex items-center justify-center font-black text-2xl border-2 border-indigo-600 shadow-md">
+          <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+            <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-indigo-950 text-white flex items-center justify-center font-black text-xl sm:text-2xl border-2 border-indigo-600 shadow-md shrink-0">
                 PU
               </div>
-              <div>
-                <h1 className="text-xl sm:text-2xl font-black uppercase tracking-wider text-neutral-900 dark:text-neutral-100">
+              <div className="min-w-0">
+                <h1 className="text-base sm:text-xl md:text-2xl font-black uppercase tracking-wider text-neutral-900 dark:text-neutral-100 leading-tight">
                   {settings.institutionName}
                 </h1>
-                <p className="text-xs font-serif italic text-neutral-500">
-                  "{settings.motto}" • Office of the Registrar (Academic Affairs)
+                <p className="text-[10px] sm:text-xs font-serif italic text-neutral-500 mt-0.5">
+                  "{settings.motto}" • Office of the Registrar
                 </p>
-                <p className="text-[11px] text-neutral-400 mt-0.5">
+                <p className="text-[10px] text-neutral-400 mt-0.5 hidden sm:block">
                   {settings.campusAddress} • Email: registrar@premier.edu • Tel: +233 302 700 000
                 </p>
               </div>
@@ -238,11 +238,11 @@ export const TranscriptsAndSlipsView: React.FC = () => {
                 setShowVerifyModal(true);
               }}
               title="Click to test official cryptographic verification"
-              className="text-center shrink-0 cursor-pointer group p-1.5 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+              className="text-center shrink-0 cursor-pointer group p-1.5 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors self-start"
             >
-              <QrCode value={verificationPayload} size={84} />
+              <QrCode value={verificationPayload} size={72} />
               <p className="text-[8px] font-mono text-indigo-600 dark:text-indigo-400 font-bold mt-1 uppercase group-hover:underline">
-                Scan or Click to Verify
+                Scan to Verify
               </p>
             </div>
           </div>
@@ -306,89 +306,139 @@ export const TranscriptsAndSlipsView: React.FC = () => {
           <div className="space-y-6 mb-8">
             {semesterResults.map((sem, idx) => (
               <div key={sem.id} className="border border-neutral-200 dark:border-neutral-700 rounded-xl overflow-hidden">
-                <div className="bg-neutral-100 dark:bg-neutral-800 px-4 py-2 flex items-center justify-between text-xs font-bold">
+                <div className="bg-neutral-100 dark:bg-neutral-800 px-3 sm:px-4 py-2 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs font-bold">
                   <span>LEVEL {sem.level} • {sem.semester.toUpperCase()} ({sem.session})</span>
-                  <span className="font-mono text-indigo-600 dark:text-indigo-400">Semester GPA: {sem.gpa.toFixed(2)}</span>
+                  <span className="font-mono text-indigo-600 dark:text-indigo-400">GPA: {sem.gpa.toFixed(2)}</span>
                 </div>
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-neutral-50 dark:bg-neutral-800/40 text-neutral-500 font-semibold border-b border-neutral-200 dark:border-neutral-700 text-[11px]">
-                    <tr>
-                      <th className="py-2 px-3">Course Code</th>
-                      <th className="py-2 px-3">Course Title</th>
-                      <th className="py-2 px-3 text-center">Credit Hours</th>
-                      <th className="py-2 px-3 text-center">Score (%)</th>
-                      <th className="py-2 px-3 text-center">Grade</th>
-                      <th className="py-2 px-3 text-right">Grade Point</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800 font-mono">
-                    {sem.courses.map(course => (
-                      <tr key={course.courseCode}>
-                        <td className="py-2 px-3 font-bold text-neutral-900 dark:text-neutral-100">{course.courseCode}</td>
-                        <td className="py-2 px-3 font-sans text-neutral-700 dark:text-neutral-300">{course.courseTitle}</td>
-                        <td className="py-2 px-3 text-center">{course.creditHours}</td>
-                        <td className="py-2 px-3 text-center">{course.score}</td>
-                        <td className="py-2 px-3 text-center font-bold">{course.grade}</td>
-                        <td className="py-2 px-3 text-right">{course.gradePoint.toFixed(1)}</td>
+                {/* Mobile: compact row cards */}
+                <div className="block sm:hidden divide-y divide-neutral-100 dark:divide-neutral-800">
+                  {sem.courses.map(course => (
+                    <div key={course.courseCode} className="p-3 flex items-center justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono font-bold text-[11px] text-neutral-900 dark:text-neutral-100 shrink-0">{course.courseCode}</span>
+                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded font-mono ${
+                            course.grade === 'F' ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300' :
+                            course.grade === 'A' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' :
+                            'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
+                          }`}>{course.grade}</span>
+                        </div>
+                        <p className="text-[10px] text-neutral-500 truncate mt-0.5">{course.courseTitle}</p>
+                      </div>
+                      <div className="text-right shrink-0 text-[11px] font-mono">
+                        <div className="font-bold text-neutral-900 dark:text-neutral-100">{course.score}%</div>
+                        <div className="text-neutral-400">{course.gradePoint.toFixed(1)} GP</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {/* Desktop: full table */}
+                <div className="hidden sm:block overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-neutral-50 dark:bg-neutral-800/40 text-neutral-500 font-semibold border-b border-neutral-200 dark:border-neutral-700 text-[11px]">
+                      <tr>
+                        <th className="py-2 px-3">Course Code</th>
+                        <th className="py-2 px-3">Course Title</th>
+                        <th className="py-2 px-3 text-center">Cr Hrs</th>
+                        <th className="py-2 px-3 text-center">Score</th>
+                        <th className="py-2 px-3 text-center">Grade</th>
+                        <th className="py-2 px-3 text-right">GP</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800 font-mono">
+                      {sem.courses.map(course => (
+                        <tr key={course.courseCode}>
+                          <td className="py-2 px-3 font-bold text-neutral-900 dark:text-neutral-100">{course.courseCode}</td>
+                          <td className="py-2 px-3 font-sans text-neutral-700 dark:text-neutral-300">{course.courseTitle}</td>
+                          <td className="py-2 px-3 text-center">{course.creditHours}</td>
+                          <td className="py-2 px-3 text-center">{course.score}</td>
+                          <td className="py-2 px-3 text-center font-bold">{course.grade}</td>
+                          <td className="py-2 px-3 text-right">{course.gradePoint.toFixed(1)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             ))}
           </div>
         ) : (
           /* Single semester slip */
           <div className="mb-8 border border-neutral-200 dark:border-neutral-700 rounded-xl overflow-hidden">
-            <div className="bg-neutral-100 dark:bg-neutral-800 px-4 py-2.5 flex items-center justify-between text-xs font-bold">
+            <div className="bg-neutral-100 dark:bg-neutral-800 px-3 sm:px-4 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs font-bold">
               <span>LEVEL {selectedSemester.level} • {selectedSemester.semester.toUpperCase()} ({selectedSemester.session})</span>
-              <span className="font-mono text-indigo-600 dark:text-indigo-400">Semester GPA: {selectedSemester.gpa.toFixed(2)}</span>
+              <span className="font-mono text-indigo-600 dark:text-indigo-400">GPA: {selectedSemester.gpa.toFixed(2)}</span>
             </div>
-            <table className="w-full text-left text-xs">
-              <thead className="bg-neutral-50 dark:bg-neutral-800/40 text-neutral-500 font-semibold border-b border-neutral-200 dark:border-neutral-700 text-[11px]">
-                <tr>
-                  <th className="py-2.5 px-3">Course Code</th>
-                  <th className="py-2.5 px-3">Course Title</th>
-                  <th className="py-2.5 px-3 text-center">Credit Hours</th>
-                  <th className="py-2.5 px-3 text-center">Score (%)</th>
-                  <th className="py-2.5 px-3 text-center">Grade</th>
-                  <th className="py-2.5 px-3 text-right">Grade Point</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800 font-mono">
-                {selectedSemester.courses.map(course => (
-                  <tr key={course.courseCode}>
-                    <td className="py-2.5 px-3 font-bold text-neutral-900 dark:text-neutral-100">{course.courseCode}</td>
-                    <td className="py-2.5 px-3 font-sans text-neutral-700 dark:text-neutral-300">{course.courseTitle}</td>
-                    <td className="py-2.5 px-3 text-center">{course.creditHours}</td>
-                    <td className="py-2.5 px-3 text-center">{course.score}</td>
-                    <td className="py-2.5 px-3 text-center font-bold">{course.grade}</td>
-                    <td className="py-2.5 px-3 text-right">{course.gradePoint.toFixed(1)}</td>
+            {/* Mobile: compact row cards */}
+            <div className="block sm:hidden divide-y divide-neutral-100 dark:divide-neutral-800">
+              {selectedSemester.courses.map(course => (
+                <div key={course.courseCode} className="p-3 flex items-center justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-bold text-[11px] text-neutral-900 dark:text-neutral-100 shrink-0">{course.courseCode}</span>
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded font-mono ${
+                        course.grade === 'F' ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300' :
+                        course.grade === 'A' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' :
+                        'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
+                      }`}>{course.grade}</span>
+                    </div>
+                    <p className="text-[10px] text-neutral-500 truncate mt-0.5">{course.courseTitle}</p>
+                  </div>
+                  <div className="text-right shrink-0 text-[11px] font-mono">
+                    <div className="font-bold text-neutral-900 dark:text-neutral-100">{course.score}%</div>
+                    <div className="text-neutral-400">{course.gradePoint.toFixed(1)} GP</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Desktop: full table */}
+            <div className="hidden sm:block overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-neutral-50 dark:bg-neutral-800/40 text-neutral-500 font-semibold border-b border-neutral-200 dark:border-neutral-700 text-[11px]">
+                  <tr>
+                    <th className="py-2.5 px-3">Course Code</th>
+                    <th className="py-2.5 px-3">Course Title</th>
+                    <th className="py-2.5 px-3 text-center">Cr Hrs</th>
+                    <th className="py-2.5 px-3 text-center">Score</th>
+                    <th className="py-2.5 px-3 text-center">Grade</th>
+                    <th className="py-2.5 px-3 text-right">GP</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800 font-mono">
+                  {selectedSemester.courses.map(course => (
+                    <tr key={course.courseCode}>
+                      <td className="py-2.5 px-3 font-bold text-neutral-900 dark:text-neutral-100">{course.courseCode}</td>
+                      <td className="py-2.5 px-3 font-sans text-neutral-700 dark:text-neutral-300">{course.courseTitle}</td>
+                      <td className="py-2.5 px-3 text-center">{course.creditHours}</td>
+                      <td className="py-2.5 px-3 text-center">{course.score}</td>
+                      <td className="py-2.5 px-3 text-center font-bold">{course.grade}</td>
+                      <td className="py-2.5 px-3 text-right">{course.gradePoint.toFixed(1)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
         {/* Cumulative Totals & Classification Banner */}
-        <div className="p-4 rounded-xl bg-neutral-900 text-white dark:bg-neutral-800 flex flex-wrap items-center justify-between gap-4 mb-8 text-xs font-mono">
+        <div className="p-3 sm:p-4 rounded-xl bg-neutral-900 text-white dark:bg-neutral-800 grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-between gap-3 sm:gap-4 mb-8 text-xs font-mono">
           <div>
-            <span className="text-[10px] text-neutral-400 uppercase block">Total Credits Attempted</span>
-            <strong className="text-sm">{activeStudent.creditsEarned} Credits</strong>
+            <span className="text-[10px] text-neutral-400 uppercase block">Credits Attempted</span>
+            <strong className="text-sm">{activeStudent.creditsEarned} Cr</strong>
           </div>
           <div>
-            <span className="text-[10px] text-neutral-400 uppercase block">Total Credits Earned</span>
-            <strong className="text-sm">{activeStudent.creditsEarned} Credits</strong>
+            <span className="text-[10px] text-neutral-400 uppercase block">Credits Earned</span>
+            <strong className="text-sm">{activeStudent.creditsEarned} Cr</strong>
           </div>
           <div>
             <span className="text-[10px] text-neutral-400 uppercase block">Cumulative GPA</span>
             <strong className="text-base text-amber-400">{activeStudent.currentCgpa.toFixed(2)}</strong>
           </div>
           <div>
-            <span className="text-[10px] text-neutral-400 uppercase block">Projected Classification</span>
-            <strong className="text-xs text-emerald-400">
-              {activeStudent.currentCgpa >= 3.6 ? 'FIRST CLASS HONOURS' : activeStudent.currentCgpa >= 3.0 ? 'SECOND CLASS UPPER' : 'SECOND CLASS LOWER'}
+            <span className="text-[10px] text-neutral-400 uppercase block">Classification</span>
+            <strong className="text-[11px] text-emerald-400">
+              {activeStudent.currentCgpa >= 3.6 ? 'FIRST CLASS' : activeStudent.currentCgpa >= 3.0 ? '2ND UPPER' : '2ND LOWER'}
             </strong>
           </div>
         </div>

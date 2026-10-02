@@ -445,9 +445,84 @@ export const AdmissionsView: React.FC = () => {
         </div>
       </div>
 
-      {/* Applications Table */}
+      {/* Applications Table / Mobile Cards */}
       <div className="overflow-hidden rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
-        <div className="overflow-x-auto">
+        {/* Mobile View: Vertical Application Cards */}
+        <div className="block md:hidden divide-y divide-neutral-100 dark:divide-neutral-800">
+          {filteredApps.length === 0 ? (
+            <div className="p-8 text-center text-neutral-400 text-xs">
+              No applications match the selected filter.
+            </div>
+          ) : (
+            filteredApps.map(app => (
+              <div key={app.id} className="p-4 space-y-3 hover:bg-neutral-50/50 dark:hover:bg-neutral-800/40 transition-colors">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h4 className="font-bold text-sm text-neutral-900 dark:text-neutral-100">
+                      {app.firstName} {app.lastName}
+                    </h4>
+                    <p className="text-[11px] font-mono text-neutral-400">
+                      {app.applicationNumber}
+                    </p>
+                  </div>
+                  <div>{getStatusBadge(app.status)}</div>
+                </div>
+
+                <div className="space-y-1 text-xs">
+                  <div className="font-semibold text-neutral-800 dark:text-neutral-200">
+                    {app.programChoiceName}
+                  </div>
+                  <div className="flex items-center gap-2 text-[11px] text-neutral-400">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded font-mono font-bold text-[10px] ${
+                      (app.wassceAggregate ?? app.aggregateScore ?? 12) <= 10 
+                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+                        : 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
+                    }`}>
+                      Agg. {app.wassceAggregate ?? app.aggregateScore ?? 12}
+                    </span>
+                    <span className="truncate">{app.secondarySchool || app.previousSchool || 'Senior High'}</span>
+                  </div>
+                  <div className="text-[11px] text-neutral-400 font-mono">
+                    {app.email} • {app.submittedAt ? new Date(app.submittedAt).toLocaleDateString() : 'Recent'}
+                  </div>
+                </div>
+
+                {app.allocatedStudentId && (
+                  <div className="p-2 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 text-xs font-mono font-bold">
+                    Matric No: {app.allocatedStudentId}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-neutral-100 dark:border-neutral-800">
+                  <button
+                    onClick={() => {
+                      setSelectedApp(app);
+                      setReviewNote(app.reviewNotes || '');
+                      setActiveDrawerTab('details');
+                    }}
+                    className="w-full min-h-[42px] px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-xs font-semibold inline-flex items-center justify-center gap-1.5 ef-tap-area cursor-pointer"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    Inspect & Verify
+                  </button>
+
+                  {app.status === 'offer_accepted' && !app.allocatedStudentId && (
+                    <button
+                      onClick={() => handleEnrollStudent(app)}
+                      className="w-full min-h-[42px] px-3 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold inline-flex items-center justify-center gap-1.5 shadow-2xs ef-tap-area cursor-pointer"
+                    >
+                      <UserPlus className="w-3.5 h-3.5" />
+                      Matriculate Student
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop View: Table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-neutral-50 dark:bg-neutral-800/60 text-neutral-500 font-semibold border-b border-neutral-200/80 dark:border-neutral-800">
               <tr>

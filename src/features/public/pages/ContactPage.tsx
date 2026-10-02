@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   MapPin,
   Phone,
@@ -11,12 +11,60 @@ import {
   Globe,
   MessageSquare,
   Sparkles,
-  ShieldCheck
+  ShieldCheck,
+  Play,
+  Pause,
+  ChevronLeft,
+  ChevronRight,
+  ArrowRight,
+  Calendar,
+  Navigation
 } from 'lucide-react';
 import { usePublicContent } from '../../../context/PublicContentContext';
 
+// ─── Contact Hero Slideshow Data ────────────────────────────────────────────
+interface ContactSlide {
+  id: string;
+  tag: string;
+  headline: string;
+  subhead: string;
+  image: string;
+  badge: string;
+}
+
+const CONTACT_SLIDES: ContactSlide[] = [
+  {
+    id: 'registry',
+    tag: 'UNIVERSITY REGISTRY & INQUIRIES',
+    headline: 'Connect with Premier University',
+    subhead: 'Our academic registry, admissions counselors, faculty deans, and student affairs directorates are here to assist your collegiate journey.',
+    image: '/images/campus-aerial.jpg',
+    badge: 'Open Monday – Friday, 8:00 AM – 5:00 PM GMT'
+  },
+  {
+    id: 'tours',
+    tag: 'CAMPUS VISITS & TOURS',
+    headline: 'Experience Our Historic Quad in Person',
+    subhead: 'Join student-led walking tours through historic lecture halls, advanced robotics laboratories, residential houses, and the riverfront boathouse.',
+    image: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=1920&auto=format&fit=crop&q=85',
+    badge: 'Daily Campus Walking Tours Available'
+  },
+  {
+    id: 'emergency',
+    tag: 'ROUND-THE-CLOCK ASSISTANCE',
+    headline: 'Dedicated Support & Emergency Dispatch',
+    subhead: '24/7 campus ambulance dispatch, mental health emergency counseling hotlines, and international student crisis support across all three campus hubs.',
+    image: 'https://images.unsplash.com/photo-1519452635265-7b1fbfd1e4e0?w=1920&auto=format&fit=crop&q=85',
+    badge: '24/7 Central Emergency Dispatch'
+  }
+];
+
 export const ContactPage: React.FC = () => {
   const { contactPage } = usePublicContent();
+
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(true);
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -27,6 +75,17 @@ export const ContactPage: React.FC = () => {
   });
   const [submitted, setSubmitted] = useState(false);
 
+  const activeSlide = CONTACT_SLIDES[currentSlideIndex];
+
+  // Auto-advance slideshow
+  useEffect(() => {
+    if (!isPlaying) return;
+    const interval = setInterval(() => {
+      setCurrentSlideIndex((prev) => (prev + 1) % CONTACT_SLIDES.length);
+    }, 7000);
+    return () => clearInterval(interval);
+  }, [isPlaying]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
@@ -34,222 +93,399 @@ export const ContactPage: React.FC = () => {
   };
 
   return (
-    <div className="pt-24 pb-20 bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100">
-      {/* ── Page Hero ── */}
-      <section className="relative py-16 lg:py-20 bg-gradient-to-b from-indigo-950 via-neutral-950 to-neutral-950 text-white overflow-hidden">
-        <div className="absolute inset-0">
-          <div
-            className="absolute inset-0 bg-cover bg-center opacity-20"
-            style={{
-              backgroundImage: `url('https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?w=1600&auto=format&fit=crop&q=80')`,
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/80 to-transparent" />
-        </div>
+    <div className="bg-neutral-950 text-neutral-100 min-h-screen selection:bg-[#A51C30] selection:text-white">
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-xs font-bold text-indigo-300 backdrop-blur-md mb-6">
-            <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-            <span>{contactPage.heroBadge}</span>
+      {/* ── 1. CINEMATIC CONTACT HERO SLIDESHOW ── */}
+      <section className="relative min-h-[82vh] sm:min-h-[88vh] flex items-end justify-center overflow-hidden bg-neutral-950">
+        
+        {/* Full-bleed Slideshow Backgrounds with Smooth Crossfade */}
+        {CONTACT_SLIDES.map((slide, idx) => (
+          <div
+            key={slide.id}
+            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+              idx === currentSlideIndex ? 'opacity-100 z-0' : 'opacity-0 -z-10 pointer-events-none'
+            }`}
+          >
+            <img
+              src={slide.image}
+              alt={slide.headline}
+              className="w-full h-full object-cover object-center transform scale-105 transition-transform duration-10000"
+            />
+            {/* Cinematic Gradient Overlays */}
+            <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/45 to-neutral-950/70" />
+            <div className="absolute inset-0 bg-neutral-950/25 backdrop-blur-[0.5px]" />
           </div>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4">
-            {contactPage.heroTitle}
-          </h1>
-          <p className="max-w-2xl mx-auto text-base sm:text-lg text-neutral-300 leading-relaxed">
-            {contactPage.heroSubtitle}
-          </p>
+        ))}
+
+        {/* Hero Slideshow Content */}
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-16 sm:pb-20">
+          <div className="max-w-4xl space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-3 duration-700">
+
+            {/* Pill & Badge */}
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/50 border border-white/20 text-xs sm:text-sm font-semibold tracking-wider text-rose-300 backdrop-blur-md">
+                <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                <span>{activeSlide.tag}</span>
+              </span>
+              <span className="px-3 py-1 rounded-full text-xs font-medium bg-white/10 text-neutral-300 border border-white/10">
+                {activeSlide.badge}
+              </span>
+            </div>
+
+            {/* Display Serif Headline */}
+            <h1
+              className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-normal text-white tracking-tight leading-[1.06] drop-shadow-2xl"
+              style={{ fontFamily: "'Playfair Display', 'Newsreader', 'Libre Baskerville', Georgia, serif" }}
+            >
+              {activeSlide.headline}
+            </h1>
+
+            {/* Lead Subtitle */}
+            <p
+              className="text-lg sm:text-xl md:text-2xl text-neutral-100/95 max-w-3xl leading-relaxed sm:leading-relaxed font-light drop-shadow-md"
+              style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+            >
+              {activeSlide.subhead}
+            </p>
+
+            {/* Call to Action Buttons */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 pt-2">
+              <a
+                href="#message-form"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById('message-form')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-white hover:bg-neutral-100 text-neutral-900 font-bold text-sm tracking-wide shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
+              >
+                <span>Send a Direct Message</span>
+                <ArrowRight className="w-4 h-4 text-neutral-700" />
+              </a>
+
+              <a
+                href="#offices"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById('offices')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-[#A51C30] hover:bg-[#8f1829] text-white font-bold text-sm tracking-wide shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all"
+              >
+                <span>Departmental Directory</span>
+              </a>
+
+              <a
+                href="#campus-visit"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById('campus-visit')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-black/40 hover:bg-black/60 border border-white/20 text-white font-semibold text-sm backdrop-blur-md transition-all"
+              >
+                <span>Plan a Campus Visit</span>
+              </a>
+            </div>
+
+            {/* Slideshow Selector & Controls */}
+            <div className="pt-8 sm:pt-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-t border-white/15">
+              
+              {/* Slide indicators / tabs */}
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+                {CONTACT_SLIDES.map((slide, idx) => (
+                  <button
+                    key={slide.id}
+                    type="button"
+                    onClick={() => setCurrentSlideIndex(idx)}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all flex items-center gap-2 ${
+                      idx === currentSlideIndex
+                        ? 'bg-[#A51C30] text-white font-bold shadow-md'
+                        : 'bg-white/10 hover:bg-white/20 text-neutral-300 border border-white/10'
+                    }`}
+                  >
+                    <span>{idx + 1}. {slide.tag.split(' ')[0]}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Play/Pause and Next/Prev */}
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setIsPlaying(!isPlaying)}
+                  className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors"
+                  aria-label={isPlaying ? 'Pause slideshow' : 'Play slideshow'}
+                >
+                  {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCurrentSlideIndex((prev) => (prev === 0 ? CONTACT_SLIDES.length - 1 : prev - 1))}
+                  className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors"
+                  aria-label="Previous slide"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCurrentSlideIndex((prev) => (prev + 1) % CONTACT_SLIDES.length)}
+                  className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors"
+                  aria-label="Next slide"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+
+            </div>
+
+          </div>
         </div>
       </section>
 
-      {/* ── Main Content Area ── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid lg:grid-cols-12 gap-12 items-start">
-          
-          {/* Left Column: Contact Form (7 Cols) */}
-          <div className="lg:col-span-7">
-            <div className="p-6 sm:p-10 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-xl">
-              <div className="mb-8">
-                <span className="text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Direct Inquiries</span>
-                <h2 className="text-2xl sm:text-3xl font-black text-neutral-900 dark:text-white mt-1">Send Us a Message</h2>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-                  Fill in the details below and your ticket will be routed directly to the appropriate university department.
-                </p>
-              </div>
+      {/* ── 2. EMERGENCY & ASSISTANCE BANNER ── */}
+      <div className="bg-rose-950/60 border-y border-rose-900/50 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2.5 text-rose-300 font-medium">
+            <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping shrink-0" />
+            <span className="font-bold">{contactPage.emergencyTitle}:</span>
+            <span>24/7 Security & Medical Hotline</span>
+          </div>
+          <a
+            href={`tel:${contactPage.emergencyHotline}`}
+            className="px-3.5 py-1.5 rounded-xl bg-rose-900/80 hover:bg-rose-800 text-white font-mono font-bold tracking-wider transition-colors flex items-center gap-1.5"
+          >
+            <Phone className="w-3.5 h-3.5" />
+            <span>{contactPage.emergencyHotline}</span>
+          </a>
+        </div>
+      </div>
 
-              {submitted ? (
-                <div className="py-12 text-center space-y-4">
-                  <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto shadow-inner">
-                    <CheckCircle2 className="w-8 h-8" />
-                  </div>
-                  <div>
-                    <h3 className="font-extrabold text-xl text-neutral-900 dark:text-white">Message Dispatched!</h3>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2 max-w-sm mx-auto">
-                      Thank you for contacting Premier University, {formData.name}. Our staff will review your message and respond to <span className="font-semibold text-neutral-800 dark:text-neutral-200">{formData.email}</span> shortly.
-                    </p>
-                  </div>
+      {/* ── 3. MAIN CONTACT & DIRECTORY AREA ── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 space-y-32">
+
+        {/* Message Form & Key Coordinates */}
+        <section id="message-form" className="scroll-mt-36">
+          <div className="grid lg:grid-cols-12 gap-12 items-start">
+            
+            {/* Left: Interactive Inquiry Form (7 Cols) */}
+            <div className="lg:col-span-7">
+              <div className="p-8 sm:p-12 rounded-3xl bg-neutral-900/60 border border-neutral-800 shadow-2xl">
+                <div className="mb-8">
+                  <span className="text-xs font-bold uppercase tracking-widest text-[#A51C30]">
+                    Direct Correspondence
+                  </span>
+                  <h2
+                    className="text-3xl sm:text-4xl font-normal text-white mt-1"
+                    style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                  >
+                    Send Us an Official Message
+                  </h2>
+                  <p className="text-xs text-neutral-400 mt-2">
+                    Inquiries are routed directly to departmental directorates and responded to within 1 business day.
+                  </p>
                 </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                {submitted ? (
+                  <div className="py-14 text-center space-y-4">
+                    <div className="w-16 h-16 rounded-full bg-emerald-950/60 text-emerald-400 border border-emerald-800 flex items-center justify-center mx-auto shadow-inner">
+                      <CheckCircle2 className="w-8 h-8" />
+                    </div>
                     <div>
-                      <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1">Your Full Name</label>
+                      <h3 className="font-bold text-xl text-white">Message Dispatched Successfully</h3>
+                      <p className="text-xs text-neutral-400 mt-2 max-w-sm mx-auto">
+                        Thank you for contacting Premier University, {formData.name}. Our staff will review your message and reply to <span className="font-semibold text-rose-300">{formData.email}</span>.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-neutral-400 mb-1">Your Full Name</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="Dr. / Mr. / Ms. Full Name"
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          className="w-full px-4 py-3 rounded-xl border border-neutral-800 bg-neutral-950 text-sm text-white focus:outline-none focus:border-rose-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-neutral-400 mb-1">Email Address</label>
+                        <input
+                          type="email"
+                          required
+                          placeholder="you@domain.com"
+                          value={formData.email}
+                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          className="w-full px-4 py-3 rounded-xl border border-neutral-800 bg-neutral-950 text-sm text-white focus:outline-none focus:border-rose-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-neutral-400 mb-1">Phone Number (Optional)</label>
+                        <input
+                          type="tel"
+                          placeholder="+233 ..."
+                          value={formData.phone}
+                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                          className="w-full px-4 py-3 rounded-xl border border-neutral-800 bg-neutral-950 text-sm text-white focus:outline-none focus:border-rose-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-neutral-400 mb-1">Department</label>
+                        <select
+                          value={formData.department}
+                          onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                          className="w-full px-4 py-3 rounded-xl border border-neutral-800 bg-neutral-950 text-sm text-white focus:outline-none focus:border-rose-500"
+                        >
+                          <option value="admissions">Undergraduate & Graduate Admissions</option>
+                          <option value="registry">Academic Affairs & Registry</option>
+                          <option value="finance">Bursary & Student Accounts</option>
+                          <option value="research">Office of Research & Innovation</option>
+                          <option value="student-affairs">Dean of Student Affairs & Housing</option>
+                          <option value="international">International Students Office</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-neutral-400 mb-1">Subject</label>
                       <input
                         type="text"
                         required
-                        placeholder="Dr. / Mr. / Ms. Full Name"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-neutral-900"
+                        placeholder="Nature of your inquiry..."
+                        value={formData.subject}
+                        onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl border border-neutral-800 bg-neutral-950 text-sm text-white focus:outline-none focus:border-rose-500"
                       />
                     </div>
+
                     <div>
-                      <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1">Email Address</label>
-                      <input
-                        type="email"
+                      <label className="block text-xs font-bold text-neutral-400 mb-1">Detailed Message</label>
+                      <textarea
                         required
-                        placeholder="you@email.com"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-neutral-900"
+                        rows={5}
+                        placeholder="Please share specific details so we can route your ticket directly..."
+                        value={formData.message}
+                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl border border-neutral-800 bg-neutral-950 text-sm text-white focus:outline-none focus:border-rose-500 resize-none"
                       />
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1">Phone Number (Optional)</label>
-                      <input
-                        type="tel"
-                        placeholder="+233 XX XXX XXXX"
-                        value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-neutral-900"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1">Target Department</label>
-                      <select
-                        value={formData.department}
-                        onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                        className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-neutral-900"
-                      >
-                        <option value="admissions">Admissions & Enrollment</option>
-                        <option value="academic">Academic Affairs & Records</option>
-                        <option value="research">Research & Commercialization</option>
-                        <option value="finance">Student Accounts & Fees</option>
-                        <option value="international">International Student Office</option>
-                        <option value="general">General Administrative Inquiries</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1">Subject</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Brief summary of inquiry..."
-                      value={formData.subject}
-                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                      className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-neutral-900"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1">Message Content</label>
-                    <textarea
-                      rows={5}
-                      required
-                      placeholder="Please include any relevant student ID numbers, application reference IDs, or details..."
-                      value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-neutral-900 resize-none"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full py-3.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-md shadow-indigo-600/30 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] transition-all"
-                  >
-                    <Send className="w-4 h-4" />
-                    Transmit Inquiries to Department
-                  </button>
-                </form>
-              )}
-            </div>
-          </div>
-
-          {/* Right Column: Key Offices & Campus Location (5 Cols) */}
-          <div className="lg:col-span-5 space-y-6">
-            
-            {/* Campus Address Card */}
-            <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
-                  <MapPin className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-extrabold text-base text-neutral-900 dark:text-white">Main Campus Location</h3>
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400">Premier University, Legon Hill</p>
-                </div>
+                    <button
+                      type="submit"
+                      className="w-full py-4 rounded-xl bg-[#A51C30] hover:bg-[#8f1829] text-white font-bold text-sm shadow-xl flex items-center justify-center gap-2 transition-all"
+                    >
+                      <Send className="w-4 h-4" />
+                      <span>Transmit Message to Directorate</span>
+                    </button>
+                  </form>
+                )}
               </div>
+            </div>
 
-              <p className="text-sm text-neutral-600 dark:text-neutral-300 leading-relaxed">
-                {contactPage.campusAddress}<br />
-                <span className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold font-mono">Digital Address: {contactPage.digitalAddress}</span>
-              </p>
-
-              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400">
-                <span className="flex items-center gap-1.5 font-medium">
-                  <Compass className="w-4 h-4 text-indigo-500" />
-                  {contactPage.airportProximity}
+            {/* Right: Key University Coordinates (5 Cols) */}
+            <div className="lg:col-span-5 space-y-6">
+              <div className="p-8 rounded-3xl bg-neutral-900/60 border border-neutral-800 space-y-5">
+                <span className="text-xs font-bold uppercase tracking-widest text-[#A51C30]">
+                  Official Address
                 </span>
-              </div>
-            </div>
-
-            {/* Department Office Directory */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 px-1">
-                Departmental Contacts
-              </h3>
-              {contactPage.offices.map((office) => (
-                <div
-                  key={office.id}
-                  className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-xs hover:border-indigo-300 dark:hover:border-indigo-700 transition-all space-y-2"
+                <h3
+                  className="text-2xl font-normal text-white"
+                  style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
                 >
-                  <h4 className="font-bold text-sm text-neutral-900 dark:text-white">{office.title}</h4>
-                  <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium">{office.lead}</p>
-                  
-                  <div className="pt-1 text-xs space-y-1 text-neutral-600 dark:text-neutral-400">
-                    <div className="flex items-center gap-2">
-                      <Phone className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
-                      <span>{office.phone}</span>
+                  Premier University Campus
+                </h3>
+
+                <div className="space-y-4 text-xs text-neutral-300">
+                  <div className="flex items-start gap-3">
+                    <MapPin className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                    <div>
+                      <strong className="text-white block">Main Campus:</strong>
+                      <span>{contactPage.campusAddress}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Mail className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
-                      <span>{office.email}</span>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <Navigation className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                    <div>
+                      <strong className="text-white block">GPS Digital Address:</strong>
+                      <span>{contactPage.digitalAddress}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
-                      <span>{office.hours}</span>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <Compass className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                    <div>
+                      <strong className="text-white block">Airport Access:</strong>
+                      <span>{contactPage.airportProximity}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <Clock className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                    <div>
+                      <strong className="text-white block">Public Hours:</strong>
+                      <span>Monday – Friday, 8:00 AM – 5:00 PM GMT</span>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-
-            {/* Emergency Support Banner */}
-            <div className="p-5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 text-amber-900 dark:text-amber-300 flex items-center gap-3">
-              <ShieldCheck className="w-6 h-6 text-amber-600 dark:text-amber-400 shrink-0" />
-              <div className="text-xs">
-                <p className="font-bold">{contactPage.emergencyTitle}</p>
-                <p className="text-amber-700 dark:text-amber-400 mt-0.5">Emergency Hotline: {contactPage.emergencyHotline} (Available all hours)</p>
               </div>
             </div>
 
           </div>
+        </section>
 
-        </div>
+        {/* ── 4. DEPARTMENTAL DIRECTORY ── */}
+        <section id="offices" className="scroll-mt-36">
+          <div className="space-y-4 mb-12">
+            <span className="text-xs font-bold uppercase tracking-widest text-[#A51C30]">
+              Institutional Directory
+            </span>
+            <h2
+              className="text-3xl sm:text-4xl md:text-5xl font-normal text-white tracking-tight"
+              style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+            >
+              Principal Offices & Directorates
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {contactPage.offices.map((office) => (
+              <div
+                key={office.id}
+                className="p-7 rounded-3xl bg-neutral-900/60 border border-neutral-800/80 hover:border-neutral-700 transition-all flex flex-col justify-between"
+              >
+                <div className="space-y-3">
+                  <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-rose-400">
+                    <Building2 className="w-5 h-5" />
+                  </div>
+                  <h3
+                    className="text-xl font-normal text-white"
+                    style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                  >
+                    {office.title}
+                  </h3>
+                  <p className="text-xs text-neutral-400 font-light leading-relaxed">{office.location}</p>
+                </div>
+
+                <div className="pt-4 mt-4 border-t border-neutral-800 space-y-1.5 text-xs text-neutral-300">
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                    <span className="font-mono">{office.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                    <span className="font-mono text-neutral-400">{office.email}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
       </div>
     </div>
   );

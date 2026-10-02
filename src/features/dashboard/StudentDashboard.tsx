@@ -282,12 +282,12 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
           </div>
 
           {/* Quick actions */}
-          <div className="flex flex-wrap gap-3 shrink-0">
+          <div className="grid grid-cols-2 sm:flex sm:flex-row gap-2.5 sm:gap-3 shrink-0 w-full md:w-auto">
             <button
               id="dash-quick-register"
               type="button"
               onClick={() => onNavigate('registration')}
-              className="ef-btn ef-btn-sm px-5 py-2.5 font-bold"
+              className="ef-btn ef-btn-sm px-4 py-2.5 font-bold w-full justify-center ef-touch-target cursor-pointer"
               style={{
                 background: 'rgba(255,255,255,0.15)',
                 color: 'white',
@@ -296,13 +296,13 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
               }}
             >
               <BookOpen className="w-4 h-4" />
-              <span>Register Courses</span>
+              <span className="truncate">Register Courses</span>
             </button>
             <button
               id="dash-quick-transcripts"
               type="button"
               onClick={() => onNavigate('transcripts')}
-              className="ef-btn ef-btn-sm px-5 py-2.5 font-semibold"
+              className="ef-btn ef-btn-sm px-4 py-2.5 font-semibold w-full justify-center ef-touch-target cursor-pointer"
               style={{
                 background: 'rgba(255,255,255,0.08)',
                 color: 'rgba(255,255,255,0.8)',
@@ -356,7 +356,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
       </div>
 
       {/* ── KPI METRIC CARDS ────────────────────────────────── */}
-      <div className="ef-grid-kpi">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {kpiCards.map((card, i) => (
           <motion.div
             key={card.id}
@@ -364,7 +364,9 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05, duration: 0.25 }}
             onClick={() => onNavigate(card.tab)}
-            className={`ef-metric-card border ${card.accent} transition-all`}
+            className={`ef-metric-card border ${card.accent} transition-all cursor-pointer ${
+              card.id === 'cgpa' ? 'sm:col-span-2 lg:col-span-1' : ''
+            }`}
             style={{ borderColor: 'var(--border-default)' }}
           >
             <div className="flex items-center justify-between mb-3">

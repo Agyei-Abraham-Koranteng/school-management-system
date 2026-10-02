@@ -206,10 +206,10 @@ export const FinanceView: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="grid grid-cols-1 sm:flex items-center gap-2.5 w-full sm:w-auto">
           <button
             onClick={() => setIsWebhookSimulatorOpen(true)}
-            className="px-3.5 py-2 rounded-xl border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+            className="w-full sm:w-auto min-h-[44px] justify-center px-3.5 py-2 rounded-xl border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-xs font-semibold flex items-center gap-1.5 transition-colors ef-tap-area cursor-pointer"
           >
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
             Gateway & Webhook Inspector
@@ -217,7 +217,7 @@ export const FinanceView: React.FC = () => {
 
           <button
             onClick={() => setIsPayModalOpen(true)}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 transition-colors"
+            className="w-full sm:w-auto min-h-[44px] justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 transition-colors ef-tap-area cursor-pointer"
           >
             <CreditCard className="w-4 h-4" />
             Make Online Payment
@@ -287,18 +287,18 @@ export const FinanceView: React.FC = () => {
       </div>
 
       {/* Clearance Banner */}
-      <div className={`p-4 rounded-2xl border flex items-center justify-between text-xs ${
+      <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs ${
         isFullyCleared 
           ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300'
           : 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300'
       }`}>
-        <div className="flex items-center gap-2.5">
-          {isFullyCleared ? <CheckCircle className="w-5 h-5 text-emerald-600" /> : <Clock className="w-5 h-5 text-amber-600" />}
+        <div className="flex items-start sm:items-center gap-2.5">
+          {isFullyCleared ? <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5 sm:mt-0" /> : <Clock className="w-5 h-5 text-amber-600 shrink-0 mt-0.5 sm:mt-0" />}
           <div>
             <p className="font-bold">
               {isFullyCleared ? 'Statutory Financial Clearance: ACTIVE & CONFERRED' : 'Statutory Financial Clearance: PENDING DEFICIT CLEARANCE'}
             </p>
-            <p className="text-[11px] opacity-90">
+            <p className="text-[11px] opacity-90 mt-0.5">
               {isFullyCleared 
                 ? 'All semester institutional dues are fully cleared. Unrestricted access to exam cards and degree clearance.'
                 : `A balance of GHS ${outstandingBalance.toLocaleString()} is required prior to end-of-semester examination clearance.`}
@@ -312,14 +312,14 @@ export const FinanceView: React.FC = () => {
               setPaymentAmount(outstandingBalance);
               setIsPayModalOpen(true);
             }}
-            className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold shrink-0 shadow-2xs"
+            className="w-full sm:w-auto min-h-[40px] px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold shrink-0 shadow-2xs ef-tap-area cursor-pointer flex items-center justify-center"
           >
             Clear Full Balance
           </button>
         )}
       </div>
 
-      {/* Verified Transactions Table */}
+      {/* Verified Transactions Table / Mobile Cards */}
       <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/80 dark:border-neutral-800 shadow-xs overflow-hidden">
         <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -329,11 +329,49 @@ export const FinanceView: React.FC = () => {
             </h3>
           </div>
           <span className="text-[11px] font-mono font-semibold text-emerald-600">
-            Immutable Supabase Audit Ledger
+            Immutable Audit Ledger
           </span>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Mobile View: Vertical Transaction Cards */}
+        <div className="block md:hidden divide-y divide-neutral-100 dark:divide-neutral-800">
+          {transactions.length === 0 ? (
+            <div className="p-8 text-center text-xs text-neutral-400">
+              No financial payment transactions recorded yet. Outstanding fees can be settled via the Pay Fees Online terminal.
+            </div>
+          ) : (
+            transactions.map((tx: any) => (
+              <div key={tx.id} className="p-4 space-y-2 hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30 transition-colors">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-mono font-bold text-xs text-indigo-600 dark:text-indigo-400">
+                    {tx.receiptNumber || tx.reference}
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 font-bold text-[10px]">
+                    <CheckCircle className="w-3 h-3" /> Verified
+                  </span>
+                </div>
+
+                <p className="font-semibold text-xs text-neutral-900 dark:text-neutral-100">
+                  {tx.description}
+                </p>
+
+                <div className="flex items-center justify-between pt-1">
+                  <div className="flex items-center gap-2 text-[11px] text-neutral-400 font-mono">
+                    <span>{tx.date}</span>
+                    <span>•</span>
+                    <span className="uppercase">{(tx.method || tx.gateway || 'ONLINE').replace('_', ' ')}</span>
+                  </div>
+                  <div className="font-mono font-black text-sm text-neutral-900 dark:text-neutral-100">
+                    GHS {tx.amount.toLocaleString()}
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop View: Table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-neutral-50 dark:bg-neutral-800/40 text-neutral-500 dark:text-neutral-400 font-bold uppercase tracking-wider border-b border-neutral-200 dark:border-neutral-800">
               <tr>
@@ -387,14 +425,14 @@ export const FinanceView: React.FC = () => {
 
       {/* MODAL 1: ONLINE PAYMENT TERMINAL */}
       {isPayModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/60 backdrop-blur-xs">
-          <div className="w-full max-w-md bg-white dark:bg-neutral-900 rounded-2xl shadow-xl border border-neutral-200 dark:border-neutral-800 p-6 space-y-4 text-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-neutral-900/60 backdrop-blur-xs">
+          <div className="w-full max-w-md max-h-[92vh] overflow-y-auto bg-white dark:bg-neutral-900 rounded-3xl shadow-xl border border-neutral-200 dark:border-neutral-800 p-5 sm:p-6 space-y-4 text-xs">
             <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
               <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
                 <CreditCard className="w-5 h-5 text-indigo-600" />
                 Institutional Online Fee Payment
               </h3>
-              <button onClick={() => setIsPayModalOpen(false)} className="text-neutral-400 hover:text-neutral-600">✕</button>
+              <button onClick={() => setIsPayModalOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-600 ef-tap-area cursor-pointer">✕</button>
             </div>
 
             <form onSubmit={handleInitiatePayment} className="space-y-3.5">
@@ -403,7 +441,7 @@ export const FinanceView: React.FC = () => {
                 <select
                   value={selectedFeeType}
                   onChange={(e) => setSelectedFeeType(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800"
+                  className="w-full px-3 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-xs"
                 >
                   <option value="Tuition Fee Balance">Tuition Fee Balance</option>
                   <option value="Examination Clearance Fee">Examination Clearance Fee</option>
@@ -422,27 +460,27 @@ export const FinanceView: React.FC = () => {
                   required
                   value={paymentAmount}
                   onChange={(e) => setPaymentAmount(Number(e.target.value))}
-                  className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 font-mono font-bold text-sm"
+                  className="w-full min-h-[44px] px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 font-mono font-bold text-base"
                 />
-                <div className="flex gap-2 mt-1.5">
+                <div className="flex flex-wrap gap-2 mt-2">
                   <button
                     type="button"
                     onClick={() => setPaymentAmount(outstandingBalance)}
-                    className="px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-[10px] text-neutral-600 font-bold"
+                    className="px-2.5 py-1.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-[11px] text-neutral-600 dark:text-neutral-300 font-bold ef-tap-area"
                   >
                     Outstanding (GHS {outstandingBalance})
                   </button>
                   <button
                     type="button"
                     onClick={() => setPaymentAmount(500)}
-                    className="px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-[10px] text-neutral-600 font-bold"
+                    className="px-2.5 py-1.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-[11px] text-neutral-600 dark:text-neutral-300 font-bold ef-tap-area"
                   >
                     GHS 500
                   </button>
                   <button
                     type="button"
                     onClick={() => setPaymentAmount(1000)}
-                    className="px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-[10px] text-neutral-600 font-bold"
+                    className="px-2.5 py-1.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-[11px] text-neutral-600 dark:text-neutral-300 font-bold ef-tap-area"
                   >
                     GHS 1,000
                   </button>
@@ -461,9 +499,9 @@ export const FinanceView: React.FC = () => {
                       key={gw.id}
                       type="button"
                       onClick={() => setSelectedGateway(gw.id as PaymentGatewayType)}
-                      className={`p-2.5 rounded-xl border text-left transition-all ${
+                      className={`p-2.5 rounded-xl border text-left transition-all ef-tap-area cursor-pointer ${
                         selectedGateway === gw.id
-                          ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/40 text-indigo-900 dark:text-indigo-200 font-bold'
+                          ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/40 text-indigo-900 dark:text-indigo-200 font-bold shadow-xs'
                           : 'border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-600'
                       }`}
                     >
@@ -485,22 +523,22 @@ export const FinanceView: React.FC = () => {
                 </div>
                 <div className="flex justify-between">
                   <span>Security Layer:</span>
-                  <strong className="text-emerald-600">Server-Side HMAC-SHA512 Verified</strong>
+                  <strong className="text-emerald-600">HMAC-SHA512 Verified</strong>
                 </div>
               </div>
 
-              <div className="pt-2 flex justify-end gap-2">
+              <div className="pt-2 flex flex-col-reverse sm:flex-row justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setIsPayModalOpen(false)}
-                  className="px-4 py-2 border rounded-xl"
+                  className="w-full sm:w-auto min-h-[44px] px-4 py-2 border border-neutral-200 dark:border-neutral-700 rounded-xl ef-tap-area cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isProcessing}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl flex items-center gap-1.5 disabled:opacity-50"
+                  className="w-full sm:w-auto min-h-[44px] px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl flex items-center justify-center gap-1.5 disabled:opacity-50 ef-tap-area cursor-pointer"
                 >
                   {isProcessing ? (
                     <>
@@ -522,8 +560,8 @@ export const FinanceView: React.FC = () => {
 
       {/* MODAL 2: PAYMENT GATEWAY & WEBHOOK SIMULATOR / INSPECTOR */}
       {isWebhookSimulatorOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/60 backdrop-blur-xs">
-          <div className="w-full max-w-2xl bg-white dark:bg-neutral-900 rounded-2xl shadow-xl border border-neutral-200 dark:border-neutral-800 p-6 space-y-4 text-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-neutral-900/60 backdrop-blur-xs">
+          <div className="w-full max-w-2xl max-h-[92vh] overflow-y-auto bg-white dark:bg-neutral-900 rounded-3xl shadow-xl border border-neutral-200 dark:border-neutral-800 p-5 sm:p-6 space-y-4 text-xs">
             <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
               <div>
                 <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">

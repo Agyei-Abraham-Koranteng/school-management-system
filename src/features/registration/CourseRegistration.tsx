@@ -374,48 +374,49 @@ export const CourseRegistration: React.FC = () => {
       {/* 3. Sticky Registration Drawer Summary at Bottom */}
       <div 
         id="registration-sticky-summary"
-        className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-t border-neutral-200 dark:border-neutral-800 py-3.5 px-4 md:px-8 shadow-2xl transition-all"
+        className="fixed bottom-[calc(var(--mobile-nav-h)+var(--safe-bottom))] lg:bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-t border-neutral-200 dark:border-neutral-800 py-3 px-3 sm:px-6 md:px-8 shadow-2xl transition-all"
       >
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-4 sm:gap-8 w-full md:w-auto justify-between md:justify-start">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+          <div className="flex items-center justify-between sm:justify-start gap-3 sm:gap-8 w-full md:w-auto">
             <div>
-              <div className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-                Courses Selected
+              <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                Selected
               </div>
-              <div className="text-lg font-extrabold text-neutral-900 dark:text-neutral-100">
+              <div className="text-base sm:text-lg font-extrabold text-neutral-900 dark:text-neutral-100">
                 {selectedCourses.length} Courses
               </div>
             </div>
 
             <div>
-              <div className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+              <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
                 Total Credits
               </div>
-              <div className={`text-lg font-extrabold ${
+              <div className={`text-base sm:text-lg font-extrabold ${
                 isBelowMin || isAboveMax ? 'text-rose-600 dark:text-rose-400' : 'text-indigo-600 dark:text-indigo-400'
               }`}>
                 {totalCredits} <span className="text-xs font-semibold text-neutral-400">/ {MAX_CREDITS} Max</span>
               </div>
             </div>
 
-            <div className="hidden sm:block">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-                Validation Status
+            <div className="block">
+              <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                Validation
               </div>
               {isValidRegistration ? (
-                <div className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Valid for Submission</span>
+                <div className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Valid for Submission</span>
+                  <span className="sm:hidden">Ready</span>
                 </div>
               ) : isBelowMin ? (
-                <div className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400">
-                  <AlertTriangle className="w-4 h-4" />
-                  <span>Need +{MIN_CREDITS - totalCredits} credits</span>
+                <div className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold text-amber-600 dark:text-amber-400">
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                  <span>+{MIN_CREDITS - totalCredits} req.</span>
                 </div>
               ) : (
-                <div className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-600 dark:text-rose-400">
-                  <ShieldAlert className="w-4 h-4" />
-                  <span>Exceeds max limit</span>
+                <div className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold text-rose-600 dark:text-rose-400">
+                  <ShieldAlert className="w-3.5 h-3.5" />
+                  <span>Over limit</span>
                 </div>
               )}
             </div>
@@ -423,8 +424,8 @@ export const CourseRegistration: React.FC = () => {
 
           <div className="w-full md:w-auto flex items-center gap-3">
             {isSubmitted ? (
-              <div className="w-full md:w-auto px-6 py-2.5 rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold flex items-center justify-center gap-2">
-                <CheckCircle2 className="w-4 h-4" />
+              <div className="w-full md:w-auto px-4 py-2.5 rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold flex items-center justify-center gap-2 ef-touch-target">
+                <CheckCircle2 className="w-4 h-4 shrink-0" />
                 <span>Registration Submitted (Pending Vetting)</span>
               </div>
             ) : (
@@ -433,9 +434,9 @@ export const CourseRegistration: React.FC = () => {
                 type="button"
                 onClick={handleSubmitRegistration}
                 disabled={!isValidRegistration}
-                className={`w-full md:w-auto px-6 py-3 rounded-xl font-bold text-xs sm:text-sm tracking-wide shadow-md transition-all flex items-center justify-center gap-2 ${
+                className={`w-full md:w-auto px-5 py-3 rounded-xl font-bold text-xs sm:text-sm tracking-wide shadow-md transition-all flex items-center justify-center gap-2 ef-touch-target cursor-pointer ${
                   isValidRegistration
-                    ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/20 active:scale-95'
+                    ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/20 active:scale-98'
                     : 'bg-neutral-200 dark:bg-neutral-800 text-neutral-400 cursor-not-allowed'
                 }`}
               >

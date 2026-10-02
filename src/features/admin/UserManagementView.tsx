@@ -120,10 +120,11 @@ export const UserManagementView: React.FC = () => {
         <button
           id="btn-add-user"
           onClick={() => setIsAddModalOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors"
+          className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
         >
           <UserPlus className="w-4 h-4" />
-          Provision New User
+          <span className="hidden sm:inline">Provision New User</span>
+          <span className="sm:hidden">Add User</span>
         </button>
       </div>
 
@@ -189,7 +190,65 @@ export const UserManagementView: React.FC = () => {
 
       {/* Users Table */}
       <div className="overflow-hidden rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
-        <div className="overflow-x-auto">
+
+        {/* Mobile: User Cards (hidden on lg+) */}
+        <div className="block lg:hidden divide-y divide-neutral-100 dark:divide-neutral-800">
+          {filteredUsers.length === 0 ? (
+            <div className="p-8 text-center text-xs text-neutral-400">No users match your criteria.</div>
+          ) : (
+            filteredUsers.map(user => (
+              <div key={user.id} className="p-4 space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <img
+                      src={user.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"}
+                      alt={user.name}
+                      className="w-9 h-9 rounded-full object-cover border border-neutral-200 dark:border-neutral-700 shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <p className="font-bold text-sm text-neutral-900 dark:text-neutral-100 truncate">{user.name}</p>
+                      <p className="text-[11px] text-neutral-400 truncate">{user.email}</p>
+                    </div>
+                  </div>
+                  <span className={`shrink-0 inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md ${
+                    user.status === 'active'
+                      ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
+                      : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300'
+                  }`}>
+                    {user.status === 'active' ? <CheckCircle className="w-2.5 h-2.5" /> : <AlertCircle className="w-2.5 h-2.5" />}
+                    {user.status.toUpperCase()}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    {getRoleBadge(user.role)}
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => handleToggleStatus(user)}
+                      title={user.status === 'active' ? 'Suspend user' : 'Reactivate user'}
+                      className="min-h-[38px] px-2.5 py-1 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-[11px] font-semibold text-neutral-600 dark:text-neutral-400 flex items-center gap-1 cursor-pointer"
+                    >
+                      <Lock className="w-3 h-3" />
+                      {user.status === 'active' ? 'Suspend' : 'Activate'}
+                    </button>
+                    <button
+                      onClick={() => handleResetPassword(user)}
+                      title="Reset password"
+                      className="min-h-[38px] px-2.5 py-1 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-[11px] font-semibold text-neutral-600 dark:text-neutral-400 flex items-center gap-1 cursor-pointer"
+                    >
+                      <Key className="w-3 h-3" />
+                      Reset
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop: Full Table (hidden on mobile) */}
+        <div className="hidden lg:block overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-neutral-50 dark:bg-neutral-800/60 text-neutral-500 font-semibold border-b border-neutral-200/80 dark:border-neutral-800">
               <tr>

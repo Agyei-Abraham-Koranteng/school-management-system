@@ -66,10 +66,11 @@ export const StudentsDirectory: React.FC = () => {
           <button
             type="button"
             onClick={handleExportCSV}
-            className="px-4 py-2 rounded-xl border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-xs font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-2 shadow-2xs cursor-pointer"
+            className="min-h-[44px] px-4 py-2 rounded-xl border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-xs font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-2 shadow-2xs cursor-pointer"
           >
             <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
-            <span>Export Roster (CSV)</span>
+            <span className="hidden sm:inline">Export Roster (CSV)</span>
+            <span className="sm:hidden">Export</span>
           </button>
         </div>
       </div>
@@ -105,7 +106,60 @@ export const StudentsDirectory: React.FC = () => {
 
       {/* Directory Table */}
       <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/80 dark:border-neutral-800 shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
+
+        {/* Mobile: Student Cards (hidden on md+) */}
+        <div className="block md:hidden divide-y divide-neutral-100 dark:divide-neutral-800">
+          {filtered.length === 0 ? (
+            <div className="p-8 text-center text-xs text-neutral-400">No students match your search criteria.</div>
+          ) : (
+            filtered.map((std) => (
+              <div key={std.id} className="p-4 space-y-2.5 hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30 transition-colors">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-sm text-neutral-900 dark:text-neutral-100">
+                      {std.firstName} {std.lastName}
+                    </p>
+                    <p className="text-[11px] font-mono text-neutral-400 mt-0.5">{std.studentId}</p>
+                    <p className="text-[11px] text-neutral-500 truncate mt-0.5">{std.programName}</p>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <span className="font-mono font-bold text-sm text-indigo-600 dark:text-indigo-400">
+                      {std.currentCgpa.toFixed(2)}
+                    </span>
+                    <p className="text-[10px] text-neutral-400">CGPA</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
+                      L{std.currentLevel}
+                    </span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      std.academicStanding.includes('Dean')
+                        ? 'bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300'
+                        : std.academicStanding.includes('Good')
+                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
+                        : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300'
+                    }`}>
+                      {std.academicStanding.split(' ').slice(0, 2).join(' ')}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedStudent(std)}
+                    className="min-h-[38px] px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-xs font-bold text-indigo-700 dark:text-indigo-300 flex items-center gap-1"
+                  >
+                    <ChevronRight className="w-3.5 h-3.5" />
+                    Dossier
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop: Full Table (hidden on mobile) */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-neutral-50 dark:bg-neutral-800/40 text-neutral-500 dark:text-neutral-400 font-bold uppercase tracking-wider border-b border-neutral-200 dark:border-neutral-800">
               <tr>

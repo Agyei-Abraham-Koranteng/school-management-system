@@ -66,8 +66,8 @@ export const AcademicJourney: React.FC<AcademicJourneyProps> = ({
   ];
 
   return (
-    <div id="academic-journey-card" className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/80 dark:border-neutral-800 p-6 md:p-8 shadow-xs">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-6 border-b border-neutral-100 dark:border-neutral-800/80">
+    <div id="academic-journey-card" className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/80 dark:border-neutral-800 p-4 sm:p-6 md:p-8 shadow-xs">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 sm:mb-8 pb-5 sm:pb-6 border-b border-neutral-100 dark:border-neutral-800/80">
         <div>
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
@@ -79,30 +79,30 @@ export const AcademicJourney: React.FC<AcademicJourneyProps> = ({
               4-Year Degree Track
             </span>
           </div>
-          <h2 className="text-xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50 mt-2">
+          <h2 className="text-lg sm:text-xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50 mt-2">
             Student Academic Journey
           </h2>
-          <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
+          <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mt-1">
             Audited semester progression and required milestone completion matrix.
           </p>
         </div>
 
         {/* Milestone Quick Summary */}
-        <div className="flex items-center gap-3 self-start md:self-auto bg-neutral-50 dark:bg-neutral-800/50 p-3 rounded-xl border border-neutral-200/60 dark:border-neutral-700/60">
+        <div className="flex items-center gap-3 self-start md:self-auto bg-neutral-50 dark:bg-neutral-800/50 p-2.5 sm:p-3 rounded-xl border border-neutral-200/60 dark:border-neutral-700/60">
           <div className="text-right">
-            <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400">Completion Status</div>
-            <div className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
+            <div className="text-[11px] sm:text-xs font-medium text-neutral-500 dark:text-neutral-400">Completion Status</div>
+            <div className="text-xs sm:text-sm font-bold text-neutral-900 dark:text-neutral-100">
               {Math.round((creditsEarned / requiredCredits) * 100)}% to Degree
             </div>
           </div>
-          <div className="w-10 h-10 rounded-lg bg-indigo-600 dark:bg-indigo-500 text-white flex items-center justify-center font-bold text-xs shadow-xs">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-indigo-600 dark:bg-indigo-500 text-white flex items-center justify-center font-bold text-xs shadow-xs shrink-0">
             {creditsEarned}/{requiredCredits}
           </div>
         </div>
       </div>
 
       {/* Interactive Timeline */}
-      <div className="relative pl-6 md:pl-8 space-y-8 before:absolute before:left-3.5 md:before:left-4 before:top-3 before:bottom-3 before:w-0.5 before:bg-neutral-200 dark:before:bg-neutral-800">
+      <div className="relative pl-6 sm:pl-8 space-y-6 sm:space-y-8 before:absolute before:left-3 before:top-3 before:bottom-3 before:w-0.5 before:bg-neutral-200 dark:before:bg-neutral-800">
         {steps.map((step, idx) => {
           const isCompleted = step.status === 'completed';
           const isCurrent = step.status === 'current';

@@ -157,53 +157,95 @@ export const FinanceDashboard: React.FC<FinanceDashboardProps> = ({ onNavigate }
           </div>
 
           <div className="overflow-hidden rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-neutral-50 dark:bg-neutral-800/60 text-neutral-500 font-semibold border-b border-neutral-200 dark:border-neutral-800">
-                <tr>
-                  <th className="py-3 px-4">Student</th>
-                  <th className="py-3 px-4">Program & Level</th>
-                  <th className="py-3 px-4">Outstanding</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
-                {debtorStudents.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="py-6 text-center text-xs text-neutral-400">
-                      All enrolled students have 100% tuition clearance! No outstanding debtors.
-                    </td>
-                  </tr>
-                ) : (
-                  debtorStudents.map(({ student, ledger }) => (
-                    <tr key={student.id} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/40">
-                      <td className="py-3 px-4 font-bold text-neutral-900 dark:text-neutral-100">
-                        {student.firstName} {student.lastName} ({student.studentId})
-                      </td>
-                      <td className="py-3 px-4 text-neutral-500">
-                        {student.programName} · L{student.currentLevel}
-                      </td>
-                      <td className="py-3 px-4 font-mono font-bold text-amber-600">
-                        {settings.currency || 'GHS'} {ledger.balance.toLocaleString()}
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300">
-                          {ledger.totalPaid > 0 ? 'PARTIAL PAYMENT' : 'UNPAID'}
+
+            {/* Mobile: Debtor Cards */}
+            <div className="block md:hidden divide-y divide-neutral-100 dark:divide-neutral-800">
+              {debtorStudents.length === 0 ? (
+                <div className="py-6 text-center text-xs text-neutral-400">
+                  All students have 100% tuition clearance!
+                </div>
+              ) : (
+                debtorStudents.map(({ student, ledger }) => (
+                  <div key={student.id} className="p-4 space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-bold text-sm text-neutral-900 dark:text-neutral-100">
+                          {student.firstName} {student.lastName}
+                        </p>
+                        <p className="text-[11px] font-mono text-neutral-400">{student.studentId}</p>
+                        <p className="text-[11px] text-neutral-500 truncate mt-0.5">{student.programName} · L{student.currentLevel}</p>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <p className="font-mono font-bold text-amber-600 dark:text-amber-400">
+                          {settings.currency || 'GHS'} {ledger.balance.toLocaleString()}
+                        </p>
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300">
+                          {ledger.totalPaid > 0 ? 'PARTIAL' : 'UNPAID'}
                         </span>
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <button
-                          onClick={() => handleApprovePayment(student.studentId, `${student.firstName} ${student.lastName}`, ledger.balance, `BANK-RECON-${Date.now().toString().slice(-6)}`)}
-                          className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[11px] cursor-pointer"
-                        >
-                          Clear Balance
-                        </button>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleApprovePayment(student.studentId, `${student.firstName} ${student.lastName}`, ledger.balance, `BANK-RECON-${Date.now().toString().slice(-6)}`)}
+                      className="w-full min-h-[44px] rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs cursor-pointer flex items-center justify-center gap-1.5 transition-colors"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      Clear — {settings.currency || 'GHS'} {ledger.balance.toLocaleString()}
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Desktop: Full Table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-neutral-50 dark:bg-neutral-800/60 text-neutral-500 font-semibold border-b border-neutral-200 dark:border-neutral-800">
+                  <tr>
+                    <th className="py-3 px-4">Student</th>
+                    <th className="py-3 px-4">Program &amp; Level</th>
+                    <th className="py-3 px-4">Outstanding</th>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+                  {debtorStudents.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="py-6 text-center text-xs text-neutral-400">
+                        All enrolled students have 100% tuition clearance! No outstanding debtors.
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    debtorStudents.map(({ student, ledger }) => (
+                      <tr key={student.id} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/40">
+                        <td className="py-3 px-4 font-bold text-neutral-900 dark:text-neutral-100">
+                          {student.firstName} {student.lastName} ({student.studentId})
+                        </td>
+                        <td className="py-3 px-4 text-neutral-500">
+                          {student.programName} · L{student.currentLevel}
+                        </td>
+                        <td className="py-3 px-4 font-mono font-bold text-amber-600">
+                          {settings.currency || 'GHS'} {ledger.balance.toLocaleString()}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300">
+                            {ledger.totalPaid > 0 ? 'PARTIAL PAYMENT' : 'UNPAID'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <button
+                            onClick={() => handleApprovePayment(student.studentId, `${student.firstName} ${student.lastName}`, ledger.balance, `BANK-RECON-${Date.now().toString().slice(-6)}`)}
+                            className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[11px] cursor-pointer"
+                          >
+                            Clear Balance
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 

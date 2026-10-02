@@ -8,6 +8,11 @@ export const TimetableView: React.FC = () => {
   const { currentRole, user } = useAuth();
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] as const;
 
+  // Determine current day of week (1 = Monday, 5 = Friday)
+  const currentDayIndex = new Date().getDay();
+  const defaultDay = (currentDayIndex >= 1 && currentDayIndex <= 5) ? days[currentDayIndex - 1] : 'Monday';
+  const [selectedDay, setSelectedDay] = useState<typeof days[number] | 'All'>('All');
+
   // Derive relevant courses for current user
   const relevantCourses = useMemo(() => {
     if (currentRole === 'lecturer') {
@@ -122,73 +127,93 @@ export const TimetableView: React.FC = () => {
         </div>
       )}
 
+      {/* Day Selector Pill Navigation (Touch-friendly & swipeable on mobile) */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar max-w-full">
+        {(['All', ...days] as const).map((dayOption) => (
+          <button
+            key={dayOption}
+            type="button"
+            onClick={() => setSelectedDay(dayOption)}
+            className={`shrink-0 min-h-[40px] px-4 py-2 rounded-xl text-xs font-bold transition-all ef-tap-area cursor-pointer ${
+              selectedDay === dayOption
+                ? 'bg-indigo-600 text-white shadow-xs font-extrabold'
+                : 'bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800'
+            }`}
+          >
+            {dayOption === 'All' ? 'All Week' : dayOption}
+          </button>
+        ))}
+      </div>
+
       {/* Days Matrix */}
       <div className="space-y-6">
-        {days.map((day) => {
-          const slots = dynamicTimetable.filter(s => s.day === day);
+        {days
+          .filter(day => selectedDay === 'All' || selectedDay === day)
+          .map((day) => {
+            const slots = dynamicTimetable.filter(s => s.day === day);
 
-          return (
-            <div key={day} className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/80 dark:border-neutral-800 shadow-xs overflow-hidden">
-              <div className="px-5 py-3.5 bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-200/80 dark:border-neutral-800 flex items-center justify-between">
-                <h3 className="font-bold text-sm text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                  <span>{day}</span>
-                </h3>
-                <span className="text-xs font-semibold text-neutral-500">
-                  {slots.length} {slots.length === 1 ? 'Lecture' : 'Lectures'}
-                </span>
+            return (
+              <div key={day} className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/80 dark:border-neutral-800 shadow-xs overflow-hidden">
+                <div className="px-4 sm:px-5 py-3.5 bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-200/80 dark:border-neutral-800 flex items-center justify-between">
+                  <h3 className="font-bold text-sm text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                    <span>{day}</span>
+                  </h3>
+                  <span className="text-xs font-semibold text-neutral-500">
+                    {slots.length} {slots.length === 1 ? 'Lecture' : 'Lectures'}
+                  </span>
+                </div>
+
+                {slots.length === 0 ? (
+                  <div className="p-6 text-center text-xs text-neutral-400">
+                    No scheduled lecture sessions on {day}.
+                  </div>
+                ) : (
+                  <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
+                    {slots.map((slot) => (
+                      <div key={slot.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30 transition-colors">
+                        <div className="flex items-start gap-3 sm:gap-4 min-w-0">
+                          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-bold flex flex-col items-center justify-center shrink-0 border border-indigo-100 dark:border-indigo-900/60">
+                            <span className="text-xs font-extrabold">{slot.courseCode.substring(0, 2)}</span>
+                            <span className="text-[10px]">{slot.courseCode.substring(2)}</span>
+                          </div>
+
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-mono font-bold text-xs text-indigo-600 dark:text-indigo-400">
+                                {slot.courseCode}
+                              </span>
+                              <span className="text-neutral-300 dark:text-neutral-700 hidden sm:inline">•</span>
+                              <h4 className="text-xs sm:text-sm font-bold text-neutral-900 dark:text-neutral-100 line-clamp-2">
+                                {slot.courseTitle}
+                              </h4>
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mt-1.5 text-xs text-neutral-500 dark:text-neutral-400">
+                              <span className="flex items-center gap-1 truncate">
+                                <MapPin className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                                <span className="truncate">{slot.room}</span>
+                              </span>
+                              <span className="hidden sm:inline">•</span>
+                              <span className="flex items-center gap-1 truncate">
+                                <User className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                                <span className="truncate">{slot.lecturer}</span>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 self-start sm:self-auto px-3 py-1.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-xs font-bold text-neutral-800 dark:text-neutral-200 shrink-0 font-mono">
+                          <Clock className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                          <span>{slot.startTime} – {slot.endTime}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-
-              {slots.length === 0 ? (
-                <div className="p-6 text-center text-xs text-neutral-400">
-                  No scheduled lecture sessions on {day}.
-                </div>
-              ) : (
-                <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
-                  {slots.map((slot) => (
-                    <div key={slot.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30 transition-colors">
-                      <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-bold flex flex-col items-center justify-center shrink-0 border border-indigo-100 dark:border-indigo-900/60">
-                          <span className="text-xs font-extrabold">{slot.courseCode.substring(0, 2)}</span>
-                          <span className="text-[10px]">{slot.courseCode.substring(2)}</span>
-                        </div>
-
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono font-bold text-xs text-indigo-600 dark:text-indigo-400">
-                              {slot.courseCode}
-                            </span>
-                            <span className="text-neutral-400">•</span>
-                            <h4 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
-                              {slot.courseTitle}
-                            </h4>
-                          </div>
-
-                          <div className="flex flex-wrap items-center gap-3 mt-1.5 text-xs text-neutral-500 dark:text-neutral-400">
-                            <span className="flex items-center gap-1">
-                              <MapPin className="w-3.5 h-3.5 text-neutral-400" />
-                              {slot.room}
-                            </span>
-                            <span>•</span>
-                            <span className="flex items-center gap-1">
-                              <User className="w-3.5 h-3.5 text-neutral-400" />
-                              {slot.lecturer}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 self-start sm:self-auto px-3 py-1.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-xs font-bold text-neutral-800 dark:text-neutral-200">
-                        <Clock className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                        <span>{slot.startTime} – {slot.endTime}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
+            );
+          })}
       </div>
     </div>
   );

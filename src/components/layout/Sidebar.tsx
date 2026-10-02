@@ -24,7 +24,8 @@ import {
   Sliders,
   Globe,
   ChevronRight,
-  BookMarked
+  BookMarked,
+  X
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { UserRole } from '../../types';
@@ -229,20 +230,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
         style={{ width: 'var(--sidebar-w)' }}
       >
         {/* Brand Header */}
-        <div className="h-[3.75rem] px-5 flex items-center gap-3 border-b shrink-0"
+        <div className="h-[3.75rem] px-4 sm:px-5 flex items-center justify-between gap-2 border-b shrink-0"
           style={{ borderColor: 'var(--border-subtle)' }}>
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm"
-            style={{ background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)' }}>
-            <GraduationCap className="w-4 h-4 text-white" />
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm"
+              style={{ background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)' }}>
+              <GraduationCap className="w-4 h-4 text-white" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-sm font-bold tracking-tight truncate" style={{ color: 'var(--text-primary)' }}>
+                Premier University
+              </h1>
+              <p className="text-[10px] font-medium truncate" style={{ color: 'var(--text-muted)' }}>
+                Student Information System
+              </p>
+            </div>
           </div>
-          <div className="min-w-0">
-            <h1 className="text-sm font-bold tracking-tight truncate" style={{ color: 'var(--text-primary)' }}>
-              Premier University
-            </h1>
-            <p className="text-[10px] font-medium truncate" style={{ color: 'var(--text-muted)' }}>
-              Student Information System
-            </p>
-          </div>
+
+          <button
+            type="button"
+            onClick={onCloseMobile}
+            className="lg:hidden ef-btn-icon w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer"
+            aria-label="Close navigation drawer"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
 
         {/* Role Portal Switcher */}

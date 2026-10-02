@@ -101,30 +101,43 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
   const totalResults = filteredStudents.length + filteredStaff.length + filteredCourses.length + filteredPrograms.length + filteredAnnouncements.length;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 bg-neutral-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+    <div 
+      className="fixed inset-0 z-50 flex items-start justify-center pt-3 sm:pt-20 px-2.5 sm:px-4 bg-neutral-900/60 backdrop-blur-xs animate-in fade-in duration-150"
+      onClick={onClose}
+    >
       <div 
-        className="w-full max-w-2xl bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden"
+        className="w-full max-w-2xl bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden mt-1 sm:mt-0"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Input Bar */}
-        <div className="flex items-center px-4 py-3.5 border-b border-neutral-100 dark:border-neutral-800 gap-3">
-          <Search className="w-5 h-5 text-neutral-400 dark:text-neutral-500" />
+        <div className="flex items-center px-3.5 sm:px-4 py-3 sm:py-3.5 border-b border-neutral-100 dark:border-neutral-800 gap-2.5 sm:gap-3">
+          <Search className="w-5 h-5 shrink-0 text-neutral-400 dark:text-neutral-500" />
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search students, staff, courses, programs, announcements... (Press ESC to exit)"
-            className="flex-1 bg-transparent border-none text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none"
+            placeholder="Search students, courses, staff..."
+            className="flex-1 min-w-0 bg-transparent border-none text-base sm:text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none"
           />
           {query && (
             <button 
+              type="button"
               onClick={() => setQuery('')}
-              className="p-1 rounded-md text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
+              className="p-1.5 rounded-md text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 min-h-[36px] min-w-[36px] flex items-center justify-center"
+              aria-label="Clear query"
             >
               <X className="w-4 h-4" />
             </button>
           )}
+          <button
+            type="button"
+            onClick={onClose}
+            className="sm:hidden px-2 py-1 text-xs font-semibold text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 min-h-[44px] flex items-center justify-center"
+            aria-label="Close search"
+          >
+            Cancel
+          </button>
           <kbd className="hidden sm:inline-flex items-center px-2 py-0.5 text-[10px] font-mono text-neutral-400 bg-neutral-100 dark:bg-neutral-800 rounded border border-neutral-200 dark:border-neutral-700">
             ESC
           </kbd>
