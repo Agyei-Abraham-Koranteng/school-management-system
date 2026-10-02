@@ -291,56 +291,61 @@ export const ProgramsPage: React.FC = () => {
               {activeSlide.subhead}
             </p>
 
-            {/* Slide Highlights Badges */}
-            <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 pt-0.5">
+            {/* Slide Highlights Badges - Horizontal scrolling on mobile */}
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 sm:flex-wrap">
               {activeSlide.highlights.map((h, i) => (
                 <div
                   key={i}
-                  className="px-2.5 py-1 sm:px-3 sm:py-1 rounded-lg text-[11px] sm:text-xs font-medium bg-white/10 border border-white/15 text-neutral-200 backdrop-blur-md flex items-center gap-1.5 sm:gap-2"
+                  className="shrink-0 px-3 py-1.5 rounded-full text-[11px] sm:text-xs font-medium bg-white/10 border border-white/15 text-neutral-200 backdrop-blur-md flex items-center gap-1.5 whitespace-nowrap shadow-xs"
                 >
-                  <CheckCircle2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-400 shrink-0" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                   <span>{h}</span>
                 </div>
               ))}
             </div>
 
-            {/* Call to Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3.5 pt-1 sm:pt-2 w-full max-w-2xl">
-              <a
-                href="#curriculum"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.getElementById('curriculum')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="inline-flex items-center justify-center gap-2 px-5 py-3 sm:px-7 sm:py-3.5 rounded-xl bg-white hover:bg-neutral-100 text-neutral-900 font-bold text-xs sm:text-sm tracking-wide shadow-xl active:scale-[0.98] transition-all text-center"
-              >
-                <span>Browse {programs.length}+ Programs</span>
-                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neutral-700" />
-              </a>
+            {/* Call to Action Buttons - Balanced 2-column grid on mobile */}
+            <div className="w-full max-w-xl pt-2 space-y-2.5">
+              <div className="grid grid-cols-2 gap-2.5 sm:flex sm:items-center sm:gap-3.5">
+                <a
+                  href="#curriculum"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById('curriculum')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2.5 sm:py-3.5 rounded-xl bg-white hover:bg-neutral-100 text-neutral-900 font-bold text-xs sm:text-sm tracking-wide shadow-xl active:scale-[0.98] transition-all text-center"
+                >
+                  <span>Browse Programs</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-neutral-700 shrink-0" />
+                </a>
 
-              <button
-                type="button"
-                onClick={() => {
-                  navigate('/apply');
-                  window.scrollTo({ top: 0 });
-                }}
-                className="inline-flex items-center justify-center gap-2 px-5 py-3 sm:px-7 sm:py-3.5 rounded-xl bg-[#A51C30] hover:bg-[#8f1829] text-white font-bold text-xs sm:text-sm tracking-wide shadow-lg active:scale-[0.98] transition-all text-center"
-              >
-                <span>Apply for Admission</span>
-                <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigate('/apply');
+                    window.scrollTo({ top: 0 });
+                  }}
+                  className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2.5 sm:py-3.5 rounded-xl bg-[#A51C30] hover:bg-[#8f1829] text-white font-bold text-xs sm:text-sm tracking-wide shadow-lg active:scale-[0.98] transition-all text-center"
+                >
+                  <span>Apply Now</span>
+                  <ChevronRight className="w-3.5 h-3.5 shrink-0" />
+                </button>
+              </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  setLevelFilter('Academic Calendar');
-                  document.getElementById('calendar-section')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3.5 rounded-xl bg-black/40 hover:bg-black/60 border border-white/20 text-white font-medium text-xs sm:text-sm backdrop-blur-md transition-all text-center"
-              >
-                <CalendarDays className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-300" />
-                <span>Calendar</span>
-              </button>
+              <div className="flex items-center justify-start">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLevelFilter('Academic Calendar');
+                    document.getElementById('calendar-section')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-neutral-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-colors"
+                >
+                  <CalendarDays className="w-3.5 h-3.5 text-rose-300" />
+                  <span>Academic Calendar</span>
+                  <ArrowRight className="w-3 h-3 text-neutral-400" />
+                </button>
+              </div>
             </div>
 
             {/* Slideshow Selector & Controls */}

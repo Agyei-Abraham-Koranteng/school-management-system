@@ -253,33 +253,38 @@ export const HomePage: React.FC = () => {
               {activeStory.subhead}
             </p>
 
-            {/* Action Buttons: Responsive for Small Screens */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 sm:gap-4 pt-1 sm:pt-2 w-full max-w-xl mx-auto">
-              <button
-                type="button"
-                onClick={() => setModalStory(activeStory)}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 sm:px-7 sm:py-3.5 rounded-xl bg-white hover:bg-neutral-100 text-neutral-900 font-bold text-xs sm:text-sm tracking-wide shadow-xl active:scale-[0.98] transition-all"
-              >
-                <span>Read Story</span>
-                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neutral-700" />
-              </button>
+            {/* Action Buttons: Responsive 2-column for Small Screens */}
+            <div className="w-full max-w-xl mx-auto pt-2 space-y-2.5">
+              <div className="grid grid-cols-2 gap-2.5 sm:flex sm:items-center sm:justify-center sm:gap-4">
+                <button
+                  type="button"
+                  onClick={() => setModalStory(activeStory)}
+                  className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-7 py-2.5 sm:py-3.5 rounded-xl bg-white hover:bg-neutral-100 text-neutral-900 font-bold text-xs sm:text-sm tracking-wide shadow-xl active:scale-[0.98] transition-all text-center"
+                >
+                  <span>Read Story</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-neutral-700 shrink-0" />
+                </button>
 
-              <button
-                type="button"
-                onClick={goToAdmissions}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 sm:px-6 sm:py-3.5 rounded-xl bg-[#A51C30] hover:bg-[#8f1829] text-white font-bold text-xs sm:text-sm tracking-wide shadow-lg shadow-rose-950/40 active:scale-[0.98] transition-all"
-              >
-                <span>Apply for 2026/2027</span>
-                <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              </button>
+                <button
+                  type="button"
+                  onClick={goToAdmissions}
+                  className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2.5 sm:py-3.5 rounded-xl bg-[#A51C30] hover:bg-[#8f1829] text-white font-bold text-xs sm:text-sm tracking-wide shadow-lg shadow-rose-950/40 active:scale-[0.98] transition-all text-center"
+                >
+                  <span>Apply Now</span>
+                  <ChevronRight className="w-3.5 h-3.5 shrink-0" />
+                </button>
+              </div>
 
-              <button
-                type="button"
-                onClick={() => navigate('/login')}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3.5 rounded-xl bg-black/40 hover:bg-black/60 border border-white/20 text-white font-medium text-xs sm:text-sm backdrop-blur-md transition-all"
-              >
-                <span>Sign In</span>
-              </button>
+              <div className="flex items-center justify-center">
+                <button
+                  type="button"
+                  onClick={() => navigate('/login')}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-neutral-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-colors"
+                >
+                  <span>Sign In to SIS Portal</span>
+                  <ArrowRight className="w-3 h-3 text-neutral-400" />
+                </button>
+              </div>
             </div>
 
             {/* Story Switcher Tabs & Controls - Compact Single Row on Mobile */}
